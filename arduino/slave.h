@@ -1,6 +1,14 @@
 #ifndef SLAVE_H
 #define SLAVE_H
 
+/*!
+ * \file slave.h
+ * \authors Antonin RAFFIN
+ * \date June 2017
+ * \brief Code to communicate with the master and send orders to motors
+ */
+
+
 void cycle();
 void stop();
 int convertOrderToPWM(float speedOrder);
