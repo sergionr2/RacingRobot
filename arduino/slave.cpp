@@ -131,7 +131,7 @@ void getMessageFromSerial()
           sendTwoBytesInt(404);
   				return;
       }
-      // sendOrder(RECEIVED); // Confirm the reception
+      sendOrder(RECEIVED); // Confirm the reception
     }
   }
 }
