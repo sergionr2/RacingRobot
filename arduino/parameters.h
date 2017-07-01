@@ -7,4 +7,6 @@
 #define SERVOMOTOR_PIN 6
 #define INITIAL_THETA 90
 
+#define DEBUG true
+
 #endif

@@ -6,76 +6,17 @@
 #include <cstdint>
 #include <bitset>//Binary representation
 #include <unistd.h>
-#include <SerialStream.h>  // libserial-dev
 #include "command_parser.h"
 #include "order.h"
 
-using namespace LibSerial;
 using namespace std;
-
-SerialPort serial_port("/dev/ttyACM0");
 
 fstream serialFile;
 
 int main(int argc, char const *argv[])
 {
-	serial_port.Open(SerialPort::BAUD_115200, SerialPort::CHAR_SIZE_8,
-									 SerialPort::PARITY_NONE, SerialPort::STOP_BITS_1,
-									 SerialPort::FLOW_CONTROL_NONE);
-
 	string defaultFileName = "/dev/ttyACM0";
-	serialFile.open(defaultFileName, ios::out|ios::app|ios::binary);
-
-	char next_char;
-	Order my_order;
-	bool isConnected = false;
-	const unsigned int msTimeout = 0;
-	while (not isConnected)
-	{
-		while (!serial_port.IsDataAvailable()){}
-
-		sendOrder(HELLO);
-		flush(serialFile);
-		next_char = serial_port.ReadByte(msTimeout);
-		my_order = (Order) next_char;
-		if (my_order == HELLO) {
-			std::cout << "Hello" << '\n';
-			// Show bits representation
-			bitset<8> b(next_char);
-			cout << b << endl;
-		}
-		else if(my_order == ALREADY_CONNECTED)
-		{
-			std::cout << "ALREADY_CONNECTED" << '\n';
-			isConnected = true;
-		}
-		else
-		{
-			std::cout << "woops: " << (int8_t) next_char << '\n';
-			bitset<8> b(next_char);
-			cout << b << endl;
-		}
-	}
-	sendOrder(HELLO);
-	flush(serialFile);
-	while (!serial_port.IsDataAvailable()){}
-	next_char = serial_port.ReadByte(msTimeout);
-	my_order = (Order) next_char;
-	// int updateTime = 1;
-	// sleep(updateTime);//Sleep for updateTime seconds
-
-	if (my_order == ALREADY_CONNECTED)
-	{
-		std::cout << "ok" << '\n';
-	}
-	std::cout << "Arduino connected, exiting" << '\n';
-
-	serialFile.close();
-	serial_port.Close();
-	return 0;
-
 	string serialFileName = "";
-	// string defaultFileName = "/dev/ttyACM0";
 	string cmd;// the command name
 	bool exitPrompt = false;
 	bool validCommand = true;
@@ -101,7 +42,7 @@ int main(int argc, char const *argv[])
 	while (!exitPrompt)
 	{
 		cout << "=========" << endl;
-		cout << "Commands: hello | motor | stop | exit " << endl;
+		cout << "Commands: hello | motor | servo | stop | exit " << endl;
 		cout << "=========" << endl;
 		if(cmd != "")
 		{
@@ -122,6 +63,13 @@ int main(int argc, char const *argv[])
 			sendOrder(MOTOR);
 			sendOneByteInt(speed);
 			cmd += " " + to_string(speed);
+		}
+		else if (cmd == "servo")
+		{
+			int angle = getIntFromUserInput("angle (between  0 and 180) ?");
+			sendOrder(SERVO);
+			sendTwoBytesInt(angle);
+			cmd += " " + to_string(angle);
 		}
 		else if (cmd == "hello")
 		{
@@ -147,13 +95,6 @@ int main(int argc, char const *argv[])
   return 0;
 }
 
-
-void sendOneOrder(enum Order myOrder)
-{
-	uint8_t* order = (uint8_t*) &myOrder;
-  serial_port.Write((char *)order);
-}
-
 /**
  * Send one order (one byte) to the other arduino
  * @param myOrder type of order
@@ -168,7 +109,7 @@ void sendOrder(enum Order myOrder)
  * Send a int of one byte
  * @param myOrder type of order
  */
-void sendOneByteInt(int myInt)
+void sendOneByteInt(int8_t myInt)
 {
 	int8_t* oneByte = (int8_t*) &myInt;
   serialFile.write((char *)oneByte, sizeof(int8_t));
@@ -179,7 +120,7 @@ void sendOneByteInt(int myInt)
  * Send a two bytes signed int via the serial
  * @param nb the number to send
  */
-void sendTwoBytesInt(int nb)
+void sendTwoBytesInt(int16_t nb)
 {
 	int8_t buffer[2] = {(int8_t) (nb & 0xff), (int8_t) (nb >> 8)};
 	serialFile.write((char *)buffer, 2*sizeof(int8_t));
@@ -189,7 +130,7 @@ void sendTwoBytesInt(int nb)
  * Send a four bytes signed int (long) via the serial
  * @param nb the number to send (−2,147,483,647, +2,147,483,647)
  */
-void sendFourBytesInt(long nb)
+void sendFourBytesInt(int32_t nb)
 {
 	int8_t buffer[4] = {(int8_t) (nb & 0xff), (int8_t) (nb >> 8 & 0xff), (int8_t) (nb >> 16 & 0xff), (int8_t) (nb >> 24 & 0xff)};
   serialFile.write((char *)buffer, 4*sizeof(int8_t));
@@ -199,7 +140,7 @@ void sendFourBytesInt(long nb)
  * Send a two bytes unsigned (max 2**16 -1) int via the serial
  * @param nb the number to send
  */
-void sendTwoBytesUnsignedInt(unsigned int nb)
+void sendTwoBytesUnsignedInt(uint16_t nb)
 {
 	uint8_t buffer[2] = {(uint8_t) (nb & 0xff), (uint8_t) (nb >> 8)};
 	serialFile.write((char *)buffer, 2*sizeof(uint8_t));

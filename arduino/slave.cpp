@@ -112,17 +112,31 @@ void getMessageFromSerial()
         {
           motorSpeed = 0;
           stop();
+          if (DEBUG)
+          {
+            sendOrder(STOP);
+          }
           break;
         }
         case SERVO:
         {
           servoPosition = readTwoBytesIntFromSerial();
+          if (DEBUG)
+          {
+            sendOrder(SERVO);
+            sendTwoBytesInt(servoPosition);
+          }
           break;
         }
         case MOTOR:
         {
           // between -100 and 100
           motorSpeed = readOneByteIntFromSerial();
+          if (MOTOR)
+          {
+            sendOrder(MOTOR);
+            sendOneByteInt(motorSpeed);
+          }
           break;
         }
   			// Unknown order

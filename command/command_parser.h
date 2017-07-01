@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef COMMAND_PARSER_H
+#define COMMAND_PARSER_H
 #include "order.h"
 
 #define PORT "/dev/ttyACM0"
@@ -11,9 +11,9 @@ long getLongIntFromUserInput(std::string infoMessage);
 void sendOneOrder(enum Order myOrder);
 
 void sendOrder(enum Order myOrder);
-void sendOneByteInt(int nb);
-void sendTwoBytesInt(int nb);
-void sendFourBytesInt(long nb);
-void sendTwoBytesUnsignedInt(unsigned int nb);
+void sendOneByteInt(int8_t nb);
+void sendTwoBytesInt(int16_t nb);
+void sendFourBytesInt(int32_t nb);
+void sendTwoBytesUnsignedInt(uint16_t nb);
 
 #endif
