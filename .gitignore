@@ -1,6 +1,11 @@
 bin/
 lib/
+__pycache__/
 *.x
 build/
 *.png
 *.jpg
+*.pyc
+*.jpeg
+render/
+.blend1

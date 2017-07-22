@@ -16,9 +16,9 @@ sudo apt-get upgrade
 sudo rpi-update
 ```
 
-Arduino + Arduino Makefile + rlwrap
+Arduino + Arduino Makefile + rlwrap + screen
 ```
-sudo apt-get install arduino-core arduino-mk rlwrap
+sudo apt-get install arduino-core arduino-mk rlwrap screen
 ```
 
 OpenCV
@@ -37,6 +37,9 @@ Libserial
 ```
 # Boost
 sudo apt-get install libboost-all-dev
+
+# After libserial installation:
+sudo ldconfig
 ```
 
 Raspicam
