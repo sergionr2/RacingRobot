@@ -51,7 +51,7 @@ void loop()
 void cycle()
 {
   // PID Control -> send orders to motors
-  servomotor.write(servoPosition);
+  servomotor.write(constrain(servoPosition, THETA_MIN, THETA_MAX));
   // Send motor speed order
   if (motorSpeed > 0)
   {
