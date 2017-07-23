@@ -8,4 +8,4 @@ build/
 *.pyc
 *.jpeg
 render/
-.blend1
+*.blend1
