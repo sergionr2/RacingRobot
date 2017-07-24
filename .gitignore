@@ -9,3 +9,4 @@ build/
 *.jpeg
 render/
 *.blend1
+*.log
