@@ -8,6 +8,7 @@
 #define INITIAL_THETA 100
 #define THETA_MIN 60
 #define THETA_MAX 130
+#define SPEED_MAX 100
 
 #define DEBUG true
 
