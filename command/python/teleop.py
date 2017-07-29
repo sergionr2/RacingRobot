@@ -1,21 +1,26 @@
-import sys, select, termios, tty
-import time
 import curses
+import time
 
-msg = """
----------------------------
-Moving around:
-        i
-   j    k    l
-        ,
+UP = (1,0)
+LEFT = (0,1)
+RIGHT = (0,-1)
+DOWN = (-1,0)
+STOP = (0,0)
+KEY_CODE_SPACE = 32
 
-space key, k : force stop
-anything else : stop smoothly
+MAX_SPEED = 0.2
+MAX_TURN = 1
+STEP_SPEED = 0.02
+STEP_TURN = 0.01
 
-CTRL-C to quit
-"""
+moveBindings = {
+                curses.KEY_UP: UP,
+                curses.KEY_LEFT: LEFT,
+                curses.KEY_RIGHT: RIGHT,
+                curses.KEY_DOWN: DOWN
+                }
 
-class TextWindow:
+class Interface:
     def __init__(self, stdscr, lines=10):
         self._screen = stdscr
         self._screen.nodelay(True)
@@ -44,132 +49,63 @@ class TextWindow:
     def refresh(self):
         self._screen.refresh()
 
-def publish(interface):
+def publish(interface, speed, turn, info):
     interface.clear()
-    interface.writeLine(2, 'Linear: {}, Angular: {}'.format(0, 0))
+    interface.writeLine(2, 'Linear: {:.2f}, Angular: {:.2f}'.format(speed, turn))
     interface.writeLine(3, 'Use arrow keys to move, space to stop, q or CTRL-C to exit.')
+    interface.writeLine(4, 'space key, k : force stop ---  anything else : stop smoothly')
+    interface.writeLine(5, info)
     interface.refresh()
 
 # stdscr: main window
-def test(stdscr):
-    interface = TextWindow(stdscr)
-    while True:
-        keycode = interface.readKey()
-        if keycode is not None:
-            publish(interface)
-            if keycode == curses.KEY_DOWN:
-                curses.beep()
-            elif keycode == ord('q'):
-                break
-
-class _Getch:
-    def __call__(self):
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-
-UP = (1,0)
-LEFT = (0,1)
-RIGHT = (0,-1)
-DOWN = (-1,0)
-STOP = (0,0)
-
-moveBindings = {
-                'i':UP,
-                'j': LEFT,
-                'l': RIGHT,
-                ',':DOWN
-                }
-
-moveBindings = {
-                curses.KEY_UP:UP,
-                curses.KEY_LEFT: LEFT,
-                curses.KEY_RIGHT: RIGHT,
-                curses.KEY_DOWN:DOWN
-                }
-def getKey():
-    # file descriptor
-    fd = sys.stdin.fileno()
-    tty.setraw(fd)
-    rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-    # rlist: wait until ready for reading
-    if rlist:
-        key = sys.stdin.read(1)
-    else:
-        key = ''
-
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
-
-MAX_SPEED = .2
-MAX_TURN = 1
-
-if __name__=="__main__":
-    try:
-        curses.wrapper(test)
-    except KeyboardInterrupt:
-        exit()
-    settings = termios.tcgetattr(sys.stdin)
-    x = 0
-    theta = 0
-    status = 0
-    count = 0
+def main(stdscr):
+    interface = Interface(stdscr)
+    x, theta, status, count = 0, 0, 0, 0
     target_speed, target_turn = 0, 0
     control_speed, control_turn = 0, 0
     start_time = time.time()
     counter = 0
+    while True:
+        keycode = interface.readKey()
+        counter += 1
+        info = "{:.2f} fps".format(counter/(time.time()-start_time))
+
+        publish(interface, control_speed, control_turn, info)
+        if keycode in moveBindings.keys():
+            x, theta = moveBindings[keycode]
+            count = 0
+        elif keycode == ord('k') or keycode == KEY_CODE_SPACE:
+                x, theta = 0, 0
+                control_speed, control_turn = 0, 0
+        elif keycode == ord('q'):
+            break
+        else:
+            count += 1
+            if count > 4:
+                x, theta = 0, 0
+
+        target_speed = MAX_SPEED * x
+        target_turn = MAX_TURN * theta
+
+        # Smooth control
+        if target_speed > control_speed:
+            control_speed = min(target_speed, control_speed + STEP_SPEED)
+        elif target_speed < control_speed:
+            control_speed = max(target_speed, control_speed - STEP_SPEED)
+        else:
+            control_speed = target_speed
+
+        if target_turn > control_turn:
+            control_turn = min(target_turn, control_turn + STEP_TURN)
+        elif target_turn < control_turn:
+            control_turn = max(target_turn, control_turn - STEP_TURN)
+        else:
+            control_turn = target_turn
+        # force 30 fps
+        time.sleep(1/30)
+
+if __name__=="__main__":
     try:
-        print(msg)
-        while True:
-            key = getKey()
-            counter += 1
-            if counter % 100 == 0:
-                print("{:.2f} fps".format(counter / (time.time() - start_time)))
-            if key in moveBindings.keys():
-                # print(key)
-                x = moveBindings[key][0]
-                theta = moveBindings[key][1]
-                count = 0
-            elif key == ' ' or key == 'k' :
-                x = 0
-                theta = 0
-                control_speed = 0
-                control_turn = 0
-                # print('STOP')
-            else:
-                count += 1
-                if count > 4:
-                    x = 0
-                    theta = 0
-                if (key == '\x03'):
-                    break
-
-            target_speed = MAX_SPEED * x
-            target_turn = MAX_TURN * theta
-
-            # Smooth control
-            if target_speed > control_speed:
-                control_speed = min(target_speed, control_speed + 0.02)
-            elif target_speed < control_speed:
-                control_speed = max(target_speed, control_speed - 0.02)
-            else:
-                control_speed = target_speed
-
-            if target_turn > control_turn:
-                control_turn = min(target_turn, control_turn + 0.1)
-            elif target_turn < control_turn:
-                control_turn = max(target_turn, control_turn - 0.1)
-            else:
-                control_turn = target_turn
-    except Exception as e:
-        raise e
-
-    finally:
-        pass
-
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+        curses.wrapper(main)
+    except KeyboardInterrupt:
+        exit()
