@@ -1,33 +1,7 @@
+from __future__ import print_function, with_statement, division, unicode_literals
+
 import argparse
 from common import *
-
-def decodeOrder(f, byte):
-    """
-    :param f: file handler or serial file
-    :param byte: (int8_t)
-    """
-    order = Order(byte)
-    if order == Order.HELLO:
-        print("hello")
-    elif order == Order.SERVO:
-        angle = readTwoBytesInt(f)
-        # Bit representation
-        # print('{0:016b}'.format(angle))
-        print("servo {}".format(angle))
-    elif order == Order.MOTOR:
-        speed = readOneByteInt(f)
-        print("motor {}".format(speed))
-    elif order == Order.ALREADY_CONNECTED:
-        print("ALREADY_CONNECTED")
-    elif order == Order.ERROR:
-        code_error = readTwoBytesInt(f)
-        print("Error {}".format(code_error))
-    elif order == Order.RECEIVED:
-        print("RECEIVED")
-    elif order == Order.STOP:
-        print("STOP")
-    else:
-        print("unknown order", byte)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Serial Listener')
@@ -43,14 +17,20 @@ if __name__ == '__main__':
     else:
         # Automatically find the right port (ex: '/dev/ttyACM0')
         try:
-            serial_file = get_serial_ports()[0]
-            serial_port = serial.Serial(port=serial_file, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
+            serial_port = get_serial_ports()[0]
+            serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
         except Exception as e:
             raise e
 
     while True:
-       bytes_array = serial_file.read(1)
-       if not bytes_array:
-          break
-       byte = bytes_array[0]
-       decodeOrder(serial_file, byte)
+        bytes_array = bytearray(serial_file.read(1))
+        if not bytes_array:
+            time.sleep(1)
+            continue
+            # break
+        byte = bytes_array[0]
+        try:
+            order = Order(byte)
+        except ValueError as e:
+            continue
+        decodeOrder(serial_file, byte)

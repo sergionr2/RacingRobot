@@ -1,11 +1,12 @@
+from __future__ import print_function, with_statement, division
+
 import curses
 import time
-import queue
-import threading
 
 import pygame
 from pygame.locals import *
 
+import common
 from common import *
 from listener import decodeOrder
 
@@ -18,8 +19,10 @@ KEY_CODE_SPACE = 32
 
 MAX_SPEED = 100
 MAX_TURN = 45
+THETA_MIN = 60
+THETA_MAX = 130
 STEP_SPEED = 2
-STEP_TURN = 4
+STEP_TURN = 20
 
 moveBindings = {
                 curses.KEY_UP: UP,
@@ -34,58 +37,6 @@ moveBindingsGame = {
                 K_RIGHT: RIGHT,
                 K_DOWN: DOWN
                 }
-
-exit_signal = False
-n_received_semaphore = threading.Semaphore(4)
-serial_lock = threading.Lock()
-command_queue = queue.Queue()
-
-class CommandThread(threading.Thread):
-    def __init__(self, serial_file, command_queue):
-        threading.Thread.__init__(self)
-        self.deamon = True
-        self.serial_file = serial_file
-        self.command_queue = command_queue
-
-    def run(self):
-        while not exit_signal:
-            n_received_semaphore.acquire()
-            if exit_signal:
-                break
-            try:
-                order, param = self.command_queue.get_nowait()
-            except queue.Empty:
-                time.sleep(1/30)
-                n_received_semaphore.release()
-                continue
-
-            with serial_lock:
-                sendOrder(self.serial_file, order.value)
-                print("Sent {}".format(order))
-                if order == Order.MOTOR:
-                    writeOneByteInt(self.serial_file, param)
-                elif order == Order.SERVO:
-                    writeTwoBytesInt(self.serial_file, param)
-            time.sleep(1/30)
-
-class ListenerThread(threading.Thread):
-    def __init__(self, serial_file):
-        threading.Thread.__init__(self)
-        self.deamon = True
-        self.serial_file = serial_file
-
-    def run(self):
-        while not exit_signal:
-            bytes_array = self.serial_file.read(1)
-            if not bytes_array:
-               time.sleep(1/30)
-               continue
-            byte = bytes_array[0]
-            with serial_lock:
-               if Order(byte) == Order.RECEIVED:
-                   n_received_semaphore.release()
-               decodeOrder(self.serial_file, byte)
-
 
 class Interface:
     def __init__(self, stdscr, lines=10):
@@ -200,6 +151,7 @@ def pygameMain():
 
     x, theta, status, count = 0, 0, 0, 0
     control_speed, control_turn = 0, 0
+    angle_order = 0
     updateScreen(window, control_speed, control_turn)
 
     while not end:
@@ -216,14 +168,20 @@ def pygameMain():
                 control_speed, control_turn = 0, 0
 
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
-        updateScreen(window, control_speed, control_turn)
+        # Send Orders
+        common.command_queue.put((Order.MOTOR, control_speed))
+        t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
+        angle_order = int(THETA_MIN  * t + THETA_MAX * (1 - t))
+        common.command_queue.put((Order.SERVO, angle_order))
+
+        updateScreen(window, control_speed, angle_order)
 
         for event in pygame.event.get():
             if event.type == QUIT or event.type == KEYDOWN and event.key in [K_ESCAPE, K_q]:
                 end = True
         pygame.display.flip()
         # force 30 fps
-        pygame.time.Clock().tick(30)
+        pygame.time.Clock().tick(1/common.rate)
 
 if __name__=="__main__":
     # Does not handle multiple key pressed
@@ -232,22 +190,35 @@ if __name__=="__main__":
     # except KeyboardInterrupt:
     #     exit()
     # pygameMain()
-    serial_file_write = open("test.log", 'ab')
-    serial_file_read = open("test.log", 'rb')
-    threads = [CommandThread(serial_file_write, command_queue),
-               ListenerThread(serial_file_read)]
+    try:
+        serial_port = get_serial_ports()[0]
+        serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
+    except Exception as e:
+        raise e
+    # serial_file_write = open("test.log", 'ab')
+    # serial_file_read = open("test.log", 'rb')
+
+    while not is_connected:
+        print("Waiting for arduino...")
+        sendOrder(serial_file, Order.HELLO.value)
+        bytes_array = bytearray(serial_file.read(1))
+        if not bytes_array:
+            time.sleep(2)
+            continue
+        byte = bytes_array[0]
+        if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
+            is_connected = True
+        time.sleep(1)
+
+    threads = [CommandThread(serial_file, command_queue),
+               ListenerThread(serial_file)]
     for t in threads:
         t.start()
 
-    for _ in range(2):
-        command_queue.put((Order.HELLO, 0))
-        command_queue.put((Order.RECEIVED, 0))
-        command_queue.put((Order.MOTOR, 100))
-        command_queue.put((Order.RECEIVED, 0))
-        time.sleep(1)
-
-    exit_signal = True
+    pygameMain()
+    common.exit_signal = True
     n_received_semaphore.release()
+    print("EXIT")
 
     for t in threads:
         t.join()
