@@ -7,7 +7,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
     if args.output_file != "":
         try:
             serial_file = open(args.output_file, 'wb')

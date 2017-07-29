@@ -1,7 +1,13 @@
 import curses
 import time
+import queue
+import threading
+
 import pygame
 from pygame.locals import *
+
+from common import *
+from listener import decodeOrder
 
 UP = (1,0)
 LEFT = (0,1)
@@ -28,6 +34,58 @@ moveBindingsGame = {
                 K_RIGHT: RIGHT,
                 K_DOWN: DOWN
                 }
+
+exit_signal = False
+n_received_semaphore = threading.Semaphore(4)
+serial_lock = threading.Lock()
+command_queue = queue.Queue()
+
+class CommandThread(threading.Thread):
+    def __init__(self, serial_file, command_queue):
+        threading.Thread.__init__(self)
+        self.deamon = True
+        self.serial_file = serial_file
+        self.command_queue = command_queue
+
+    def run(self):
+        while not exit_signal:
+            n_received_semaphore.acquire()
+            if exit_signal:
+                break
+            try:
+                order, param = self.command_queue.get_nowait()
+            except queue.Empty:
+                time.sleep(1/30)
+                n_received_semaphore.release()
+                continue
+
+            with serial_lock:
+                sendOrder(self.serial_file, order.value)
+                print("Sent {}".format(order))
+                if order == Order.MOTOR:
+                    writeOneByteInt(self.serial_file, param)
+                elif order == Order.SERVO:
+                    writeTwoBytesInt(self.serial_file, param)
+            time.sleep(1/30)
+
+class ListenerThread(threading.Thread):
+    def __init__(self, serial_file):
+        threading.Thread.__init__(self)
+        self.deamon = True
+        self.serial_file = serial_file
+
+    def run(self):
+        while not exit_signal:
+            bytes_array = self.serial_file.read(1)
+            if not bytes_array:
+               time.sleep(1/30)
+               continue
+            byte = bytes_array[0]
+            with serial_lock:
+               if Order(byte) == Order.RECEIVED:
+                   n_received_semaphore.release()
+               decodeOrder(self.serial_file, byte)
+
 
 class Interface:
     def __init__(self, stdscr, lines=10):
@@ -66,7 +124,7 @@ def publish(interface, speed, turn, info):
     interface.writeLine(5, info)
     interface.refresh()
 
-def control(target_speed, target_turn, control_speed, control_turn):
+def control(x, theta, control_speed, control_turn):
     target_speed = MAX_SPEED * x
     target_turn = MAX_TURN * theta
     if target_speed > control_speed:
@@ -115,13 +173,7 @@ def main(stdscr):
         # force 30 fps
         time.sleep(1/30)
 
-if __name__=="__main__":
-    # Does not handle multiple key pressed
-    # try:
-    #     curses.wrapper(main)
-    # except KeyboardInterrupt:
-    #     exit()
-
+def pygameMain():
     # Pygame require a window
     pygame.init()
     window = pygame.display.set_mode((800,500), RESIZABLE)
@@ -172,3 +224,30 @@ if __name__=="__main__":
         pygame.display.flip()
         # force 30 fps
         pygame.time.Clock().tick(30)
+
+if __name__=="__main__":
+    # Does not handle multiple key pressed
+    # try:
+    #     curses.wrapper(main)
+    # except KeyboardInterrupt:
+    #     exit()
+    # pygameMain()
+    serial_file_write = open("test.log", 'ab')
+    serial_file_read = open("test.log", 'rb')
+    threads = [CommandThread(serial_file_write, command_queue),
+               ListenerThread(serial_file_read)]
+    for t in threads:
+        t.start()
+
+    for _ in range(2):
+        command_queue.put((Order.HELLO, 0))
+        command_queue.put((Order.RECEIVED, 0))
+        command_queue.put((Order.MOTOR, 100))
+        command_queue.put((Order.RECEIVED, 0))
+        time.sleep(1)
+
+    exit_signal = True
+    n_received_semaphore.release()
+
+    for t in threads:
+        t.join()

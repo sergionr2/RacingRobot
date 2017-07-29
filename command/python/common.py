@@ -53,6 +53,7 @@ def writeOneByteInt(f, value):
     :param value: (int8_t)
     """
     f.write(struct.pack('<b', value))
+    f.flush()
 
 # Alias
 sendOrder = writeOneByteInt
@@ -63,3 +64,4 @@ def writeTwoBytesInt(f, value):
     :param value: (int16_t)
     """
     f.write(struct.pack('<h', value))
+    f.flush()
