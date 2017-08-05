@@ -33,7 +33,9 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
             while not self.stop:
                 frame = self.frame_queue.get(block=True, timeout=2)
                 cx, cy, error = processImage(frame)
+                # print(cx, cy)
                 self.out_queue.put(item=(cx, cy, error), block=False)
+                # self.out_queue.put(item=frame, block=False)
                 self.frame_num += 1
         except:
             pass
@@ -78,6 +80,7 @@ if __name__ == '__main__':
     v = Viewer(out_queue)
     v.start()
     t = time.time()
-    time.sleep(5)
+    time.sleep(20)
     v.stop()
     print('FPS: {:.2f}'.format(v.analyser.frame_num / (time.time() - t)))
+    # cv2.imwrite("test.jpg", out_queue.get())

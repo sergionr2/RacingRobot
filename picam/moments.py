@@ -24,8 +24,16 @@ def processImage(image, debug=False):
     lower_black = np.array([0, 0, 0])
     upper_black = np.array([10, 10, 50])
 
-    # Threshold the HSV image to get only blue colors
-    mask = cv2.inRange(hsv, lower_white, upper_white)
+    # In RGB
+    # lower_orange = np.array([86, 54, 207])
+    # upper_orange = np.array([113, 255, 255])
+
+    # In BGR
+    lower_orange = np.array([2, 48, 54])
+    upper_orange = np.array([41, 255, 255])
+
+    # Threshold the HSV image
+    mask = cv2.inRange(hsv, lower_orange, upper_orange)
     # mask = cv2.inRange(hsv, lower_black, upper_black)
 
     kernel_erode = np.ones((4,4), np.uint8)

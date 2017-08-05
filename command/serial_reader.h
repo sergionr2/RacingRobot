@@ -4,7 +4,7 @@
 
 #define PORT "/dev/ttyACM0"
 #define MAX_N_ORDER 1000
-#define TIMEOUT_MS 10000 // 10s
+#define TIMEOUT_MS 30000 // 30s
 
 Order readOrder(const unsigned int msTimeout);
 int8_t readOneByteIntFromSerial();
