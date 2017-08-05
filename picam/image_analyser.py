@@ -1,4 +1,4 @@
-from __future__ import division, print_function, relative_import
+from __future__ import division, print_function
 
 import time
 import threading
@@ -11,7 +11,7 @@ import picamera.array
 import cv2
 import numpy as np
 
-from ..opencv.moments import processImage
+from moments import processImage
 
 
 class RGBAnalyser(picamera.array.PiRGBAnalysis):
@@ -32,10 +32,9 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         try:
             while not self.stop:
                 frame = self.frame_queue.get(block=True, timeout=2)
+                cx, cy, error = processImage(frame)
+                self.out_queue.put(item=(cx, cy, error), block=False)
                 self.frame_num += 1
-                continue
-                # self.out_queue.put(item=self.data, block=False)
-                # self.frame_num += 1
         except:
             pass
 
@@ -55,7 +54,6 @@ class Viewer(object):
     def __init__(self, out_queue):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
-        # self.camera.sensor_mode = 7
         self.camera.sensor_mode = 7
         self.camera.resolution = (640//2, 480//2)
         print(self.camera.resolution)
@@ -63,7 +61,8 @@ class Viewer(object):
         self.out_queue = out_queue
         # self.camera.zoom = (0.0, 0.0, 1.0, 1.0)
         # self.camera.awb_gains = 1.5
-        # self.camera.awb_mode = 'fluorescent'
+        # self.camera.awb_mode = 'auto'
+        # self.exposure_mode = 'auto'
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue)
@@ -75,8 +74,8 @@ class Viewer(object):
 
 
 if __name__ == '__main__':
-    q = queue.Queue()
-    v = Viewer(q)
+    out_queue = queue.Queue()
+    v = Viewer(out_queue)
     v.start()
     t = time.time()
     time.sleep(5)

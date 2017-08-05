@@ -9,7 +9,7 @@ def processImage(image, debug=False):
     :param debug: (bool)
     :return: (int, int)
     """
-
+    error = False
     r = [50, 150, 400, 100]
     imCrop = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
     if debug:
@@ -21,8 +21,8 @@ def processImage(image, debug=False):
     # lower_white = np.array([0, 0, 200])
     upper_white = np.array([10, 10, 255])
 
-    # lower_black = np.array([0, 0, 0])
-    # upper_black = np.array([10, 10, 50])
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([10, 10, 50])
 
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(hsv, lower_white, upper_white)
@@ -49,16 +49,24 @@ def processImage(image, debug=False):
         # cv2.drawContours(image, contours, 0, (0,255,0), 3)
         cv2.drawContours(image, contours, -1, (0,255,0), 3)
 
-    M = cv2.moments(contours[0])
-    # Centroid
-    cx = int(M['m10']/M['m00'])
-    cy = int(M['m01']/M['m00'])
+    if len(contours) > 0:
+        M = cv2.moments(contours[0])
+        # Centroid
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+    else:
+        cx, cy = 0, 0
+        error = True
 
     if debug:
+        if error:
+            print("No centroid found")
+        else:
+            print("Found centroid at ({}, {})".format(cx, cy))
         cv2.circle(image, (cx,cy), radius=10, color=(0,0,255),
                    thickness=1, lineType=8, shift=0)
         cv2.imshow('result', image)
-    return cx, cy
+    return cx, cy, error
 
 if __name__ == '__main__':
 
