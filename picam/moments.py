@@ -29,8 +29,11 @@ def processImage(image, debug=False):
     # upper_orange = np.array([113, 255, 255])
 
     # In BGR
-    lower_orange = np.array([2, 48, 54])
-    upper_orange = np.array([41, 255, 255])
+    # lower_orange = np.array([2, 48, 54])
+    # upper_orange = np.array([41, 255, 255])
+
+    lower_orange = np.array([19,144,112])
+    upper_orange = np.array([33, 255, 255])
 
     # Threshold the HSV image
     mask = cv2.inRange(hsv, lower_orange, upper_orange)
