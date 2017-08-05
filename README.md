@@ -46,6 +46,20 @@ Raspicam
 - [Userland](https://github.com/raspberrypi/userland)
 - [Raspicam](https://www.uco.es/investiga/grupos/ava/node/40)
 
+PySerial
+```
+sudo apt-get install python-serial
+```
+
+[PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
+```
+pip install pygame
+```
+
+Enum for python 2
+```
+pip install enum34
+```
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 

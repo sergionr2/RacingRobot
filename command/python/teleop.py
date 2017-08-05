@@ -21,8 +21,8 @@ MAX_SPEED = 100
 MAX_TURN = 45
 THETA_MIN = 60
 THETA_MAX = 130
-STEP_SPEED = 2
-STEP_TURN = 20
+STEP_SPEED = 10
+STEP_TURN = 30
 
 moveBindings = {
                 curses.KEY_UP: UP,

@@ -17,8 +17,8 @@ if __name__ == '__main__':
     else:
         # Automatically find the right port (ex: '/dev/ttyACM0')
         try:
-            serial_file = get_serial_ports()[0]
-            serial_port = serial.Serial(port=serial_file, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
+            serial_port = get_serial_ports()[0]
+            serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
         except Exception as e:
             raise e
 
