@@ -31,7 +31,7 @@ while(1):
 
     frame = cv2.imread(args.input_image)
 
-
+    #frame = cv2.resize(frame, (500,500))
     #converting to HSV
     hsv = cv2.cvtColor(frame,cv2.COLOR_RGB2HSV)
 
