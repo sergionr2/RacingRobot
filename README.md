@@ -5,7 +5,7 @@ Autonomous toy racing car
 
 - Arduino 1.0.5
 - [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile)
-- OpenCV
+- OpenCV 3.1
 - libserial-dev (apt-get)
 
 ### Installation
@@ -34,6 +34,7 @@ Libserial
 - [LibSerial](https://github.com/crayzeewulf/libserial)
 - [Boost](http://www.boost.org/)
 - [SIP](http://pyqt.sourceforge.net/Docs/sip4/installation.html)
+
 ```
 # Boost
 sudo apt-get install libboost-all-dev
@@ -62,6 +63,12 @@ pip install enum34
 ```
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
+
+### Orange Object Following
+
+```
+python -m picam.follow_orange.py
+```
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez

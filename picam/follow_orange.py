@@ -7,8 +7,8 @@ try:
 except ImportError:
     import Queue as queue
 
-import common
-from common import *
+import command.python.common as common
+from command.python.common import *
 from image_analyser import *
 
 THETA_MIN = 60

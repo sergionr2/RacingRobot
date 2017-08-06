@@ -14,7 +14,7 @@ import picamera.array
 import cv2
 import numpy as np
 
-from moments import processImage
+from opencv.moments import processImage
 
 class ImageProcessingThread(threading.Thread):
     def __init__(self, viewer, condition):

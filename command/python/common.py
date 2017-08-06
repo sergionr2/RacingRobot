@@ -68,7 +68,7 @@ def writeOneByteInt(f, value):
     :param value: (int8_t)
     """
     f.write(struct.pack('<b', value))
-    f.flush()
+    # f.flush()
 
 # Alias
 sendOrder = writeOneByteInt
@@ -79,35 +79,38 @@ def writeTwoBytesInt(f, value):
     :param value: (int16_t)
     """
     f.write(struct.pack('<h', value))
-    f.flush()
+    # f.flush()
 
-def decodeOrder(f, byte):
+def decodeOrder(f, byte, debug=False):
     """
     :param f: file handler or serial file
     :param byte: (int8_t)
+    :param debug: (bool)
     """
     order = Order(byte)
     if order == Order.HELLO:
-        print("hello")
+        msg = "HELLO"
     elif order == Order.SERVO:
         angle = readTwoBytesInt(f)
         # Bit representation
         # print('{0:016b}'.format(angle))
-        print("servo {}".format(angle))
+        msg = "SERVO {}".format(angle)
     elif order == Order.MOTOR:
         speed = readOneByteInt(f)
-        print("motor {}".format(speed))
+        msg = "motor {}".format(speed)
     elif order == Order.ALREADY_CONNECTED:
-        print("ALREADY_CONNECTED")
+        msg = "ALREADY_CONNECTED"
     elif order == Order.ERROR:
         code_error = readTwoBytesInt(f)
-        print("Error {}".format(code_error))
+        msg = "Error {}".format(code_error)
     elif order == Order.RECEIVED:
-        print("RECEIVED")
+        msg  = "RECEIVED"
     elif order == Order.STOP:
-        print("STOP")
+        msg = "STOP"
     else:
-        print("unknown order", byte)
+        print("Unknown Order", byte)
+    if debug:
+        print(msg)
 
 class CommandThread(threading.Thread):
     def __init__(self, serial_file, command_queue):
