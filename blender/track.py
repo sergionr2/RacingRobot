@@ -31,6 +31,7 @@ class Acceleration(Position):
 U_MAX_ACC = 25
 ANGLE_OFFSET = 0
 dt = 0.01
+ERROR_MAX = 0.6
 
 def convertToDegree(angle):
     return (angle * 180) / np.pi
@@ -77,7 +78,8 @@ class Car(object):
         car.pos.theta += u_angle
 
 def compute_bezier_curve(matrix_world, spline):
-    # Draw the bezier
+    # Draw the bezier curve
+    # From https://blender.stackexchange.com/questions/688/getting-the-list-of-points-that-describe-a-curve-without-converting-to-mesh
     if len(spline.bezier_points) >= 2:
         r = spline.resolution_u + 1
         segments = len(spline.bezier_points)
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     # cam.location[1] = 3.5
 
     car = Car(Position(cam.location[0], cam.location[1], 0),
-              mass=10, friction_coeff=2, dt=dt)
+              mass=10, friction_coeff=1, dt=dt)
 
     traj = [[],[], []]
 
@@ -119,22 +121,66 @@ if __name__ == '__main__':
     matrix_world = track.matrix_world
     points = compute_bezier_curve(matrix_world, spline)
 
-    for i, point in enumerate(points):
-        car.pos.x = point[0]
-        car.pos.y = point[1]
+    u_angle = 0.
+    error, errorD, errorI = 0, 0, 0
+    last_error = 0
 
-        vec = points[(i + 1) % len(points)] - points[i]
-        # Dirty FIX for ref trajectory
+    # Init
+    car.pos.x = points[0][0]
+    car.pos.y = points[0][1]
+    ref_point_idx = 0
+    theta_line = 0
+    errors = []
+
+    for i in range(900):
+        t = constrain(error/float(ERROR_MAX), 0, 1)
+        v_min = 0.5
+        v_max = 0.8
+        v = t * v_min + (1 - t) * v_max
+        # Constant speed
+        car.v = v
+        u_speed = 0
+
+        p0 = points[ref_point_idx]
+        p1 = points[(ref_point_idx + 1) % (len(points) - 1)]
+
+        dist_to_points = [(car.pos.x - p[0])**2 + (car.pos.y - p[1])**2 for p in [p0, p1]]
+        ref_point_idx += np.argmin(dist_to_points)
+        ref_point_idx %= (len(points) - 1)
+        ref_point = points[ref_point_idx]
+
+        a, b = points[ref_point_idx][:2], points[(ref_point_idx + 1) % len(points)][:2]
+        a,b = np.array(a), np.array(b)
+        vec = b - a
+        # Dirty fix for good ref angle
         if abs(vec[0]) < 1e-4:
             vec[0] = 1e-4
 
-        car.pos.theta = np.arctan2(vec[1], vec[0])
+        # Angle Control
+        theta_line = np.arctan2(vec[1], vec[0])
+        m = np.array([car.pos.x, car.pos.y])
+        dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
+        theta_target = theta_line - np.arctan(dist_to_line)
+
+        last_error = error
+        # errors.append(error)
+        # Error between [-pi, pi]
+        error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
+        if i > 0:
+            errorD = error - last_error
+
+        # PD Control
+        u_angle = 0.5 * error + 0.6 * errorD + 0. * errorI
+        # u_angle = 1 * error
+        errorI += error
+
+        # Update Car Position
+        car.step(u_speed, u_angle, skip_speed=False)
 
         # Update Blender
         cam.location[0] = car.pos.x
         cam.location[1] = car.pos.y
         cam.rotation_euler[2] = ANGLE_OFFSET + car.pos.theta
-
 
         # Trajectory
         traj[0].append(car.pos.x)
@@ -145,12 +191,13 @@ if __name__ == '__main__':
         bpy.context.scene.render.filepath = image_path
         bpy.ops.render.render(write_still=True)  # render
 
-
+    # print(np.max(errors), np.std(errors), np.mean(errors))
     plt.plot(traj[0], traj[1])
     ax = plt.axes()
     for idx, a in enumerate(traj[2]):
         if idx % 1 == 0:
-            v = 5
+            # v = 1
+            v = car.v
             x,y = traj[0][idx], traj[1][idx]
             ax.arrow(x,y, v*np.cos(convertToRad(a)), v*np.sin(convertToRad(a)), head_width=0.1)
 
