@@ -5,6 +5,7 @@ import seaborn
 
 def f(x, u):
     theta = x[2]
+    u = np.clip(u, -0.1, 0.1)
     return np.array([np.cos(theta), np.sin(theta), u])
 
 def custom_range(start=0, end=0, step=1):
@@ -26,7 +27,7 @@ total_time = 50
 error = 0
 errorD = 0
 last_error = None
-Kp, Kd = 10, 0
+Kp, Kd = 1, 30
 dt = 0.2
 theta_line = np.arctan2(b[1]-a[1], b[0]-a[0])
 
@@ -34,14 +35,15 @@ for t in custom_range(0, total_time, dt):
     m = x[0:2]
     dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
     theta_target = theta_line - np.arctan(dist_to_line)
+
     error = np.arctan(np.tan((theta_target - x[2])/2))
 
     if last_error is None:
         errorD = 0
         last_error = error
     else:
-        last_error = error
         errorD = error - last_error
+        last_error = error
 
     u = Kp * error + Kd * errorD
     x += f(x, u) * dt

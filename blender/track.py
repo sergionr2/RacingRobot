@@ -1,4 +1,5 @@
 import math
+import socket
 from collections import namedtuple
 
 import bpy
@@ -6,6 +7,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
 import mathutils
+
+U_MAX_ACC = 25
+ANGLE_OFFSET = 0
+dt = 0.01
+ERROR_MAX = 0.6
+HOST = 'localhost'
+PORT = 50011
 
 class Position(object):
     def __init__(self, x, y, theta=0):
@@ -27,11 +35,6 @@ class Speed(Position):
 class Acceleration(Position):
     def __init__(self, ax, ay):
         super(Acceleration, self).__init__(ax, ay)
-
-U_MAX_ACC = 25
-ANGLE_OFFSET = 0
-dt = 0.01
-ERROR_MAX = 0.6
 
 def convertToDegree(angle):
     return (angle * 180) / np.pi
@@ -100,6 +103,22 @@ def compute_bezier_curve(matrix_world, spline):
             points.extend(_points)
     return points
 
+def send_to_image_processing(path):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((HOST, PORT))
+    s.sendall(bytes(path, 'utf-8'))
+    data = s.recv(1024)
+    path = data.decode("utf-8")
+    s.close()
+    return np.load(path)
+
+def close_socket():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((HOST, PORT))
+    s.sendall(bytes("stop", 'utf-8'))
+    data = s.recv(1024)
+    s.close()
+
 if __name__ == '__main__':
     # Blender objects
     track = bpy.data.objects['track_curve']
@@ -131,15 +150,16 @@ if __name__ == '__main__':
     ref_point_idx = 0
     theta_line = 0
     errors = []
+    a, b = np.array([0,0]), np.array([0,0])
+    turn_percent = 0
 
-    for i in range(900):
-        t = constrain(error/float(ERROR_MAX), 0, 1)
-        v_min = 0.5
-        v_max = 0.8
-        v = t * v_min + (1 - t) * v_max
-        # Constant speed
-        car.v = v
-        u_speed = 0
+    for i in range(500):
+        # Write Blender images
+        image_path = 'render/{}.png'.format(i)
+        bpy.context.scene.render.filepath = image_path
+        bpy.ops.render.render(write_still=True)  # render
+        # Not in headless mode
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=0)  # hack to draw ui
 
         p0 = points[ref_point_idx]
         p1 = points[(ref_point_idx + 1) % (len(points) - 1)]
@@ -149,12 +169,33 @@ if __name__ == '__main__':
         ref_point_idx %= (len(points) - 1)
         ref_point = points[ref_point_idx]
 
-        a, b = points[ref_point_idx][:2], points[(ref_point_idx + 1) % len(points)][:2]
-        a,b = np.array(a), np.array(b)
+        # Reference
+        # a, b = points[ref_point_idx][:2], points[(ref_point_idx + 1) % len(points)][:2]
+        # a, b = np.array(a), np.array(b)
+
+        mat = send_to_image_processing(image_path)
+        old_b, old_a, old_turn_percent = a, b, turn_percent
+        a, b, infos = mat
+        turn_percent, error = infos
+
+        # if error:
+        #     a, b, turn_percent = old_a, old_b, old_turn_percent
+
+        h = constrain(turn_percent/100.0, 0, 1)
+        v_max = h * 0.2 + (1 - h) * 0.5
+
+        t = constrain(error/float(ERROR_MAX), 0, 1)
+        v_min = 0.2
+        v = t * v_min + (1 - t) * v_max
+        # Constant speed
+        car.v = v
+        u_speed = 0
+
+
         vec = b - a
-        # Dirty fix for good ref angle
-        if abs(vec[0]) < 1e-4:
-            vec[0] = 1e-4
+        # # Dirty fix for good ref angle
+        # if abs(vec[0]) < 1e-4:
+        #     vec[0] = 1e-4
 
         # Angle Control
         theta_line = np.arctan2(vec[1], vec[0])
@@ -162,15 +203,18 @@ if __name__ == '__main__':
         dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
         theta_target = theta_line - np.arctan(dist_to_line)
 
-        last_error = error
         # errors.append(error)
         # Error between [-pi, pi]
         error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
         if i > 0:
             errorD = error - last_error
 
-        # PD Control
-        u_angle = 0.5 * error + 0.6 * errorD + 0. * errorI
+        last_error = error
+
+        # PID Control
+        u_angle = 0.1 * error + 0.5 * errorD + 0. * errorI
+        # u_angle = np.clip(u_angle, -0.005, 0.005)
+
         # u_angle = 1 * error
         errorI += error
 
@@ -186,10 +230,6 @@ if __name__ == '__main__':
         traj[0].append(car.pos.x)
         traj[1].append(car.pos.y)
         traj[2].append(convertToDegree(car.pos.theta))
-        # Write Blender images
-        image_path = 'render/{}.png'.format(i)
-        bpy.context.scene.render.filepath = image_path
-        bpy.ops.render.render(write_still=True)  # render
 
     # print(np.max(errors), np.std(errors), np.mean(errors))
     plt.plot(traj[0], traj[1])
@@ -201,4 +241,5 @@ if __name__ == '__main__':
             x,y = traj[0][idx], traj[1][idx]
             ax.arrow(x,y, v*np.cos(convertToRad(a)), v*np.sin(convertToRad(a)), head_width=0.1)
 
+    close_socket()
     plt.show()
