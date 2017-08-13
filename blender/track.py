@@ -153,7 +153,7 @@ if __name__ == '__main__':
     a, b = np.array([0,0]), np.array([0,0])
     turn_percent = 0
 
-    for i in range(500):
+    for i in range(2000):
         # Write Blender images
         image_path = 'render/{}.png'.format(i)
         bpy.context.scene.render.filepath = image_path
@@ -175,14 +175,14 @@ if __name__ == '__main__':
 
         mat = send_to_image_processing(image_path)
         old_b, old_a, old_turn_percent = a, b, turn_percent
-        a, b, infos = mat
-        turn_percent, error = infos
+        a, b, infos, error_mat = mat
+        turn_percent, has_error = infos
 
-        # if error:
+        # if has_error:
         #     a, b, turn_percent = old_a, old_b, old_turn_percent
 
         h = constrain(turn_percent/100.0, 0, 1)
-        v_max = h * 0.2 + (1 - h) * 0.5
+        v_max = h * 0.2 + (1 - h) * 1
 
         t = constrain(error/float(ERROR_MAX), 0, 1)
         v_min = 0.2
@@ -198,21 +198,23 @@ if __name__ == '__main__':
         #     vec[0] = 1e-4
 
         # Angle Control
-        theta_line = np.arctan2(vec[1], vec[0])
-        m = np.array([car.pos.x, car.pos.y])
-        dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
-        theta_target = theta_line - np.arctan(dist_to_line)
+        # theta_line = np.arctan2(vec[1], vec[0])
+        # m = np.array([car.pos.x, car.pos.y])
+        # dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
+        # theta_target = theta_line - np.arctan(dist_to_line)
 
         # errors.append(error)
         # Error between [-pi, pi]
-        error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
+        # error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
+        error = error_mat[0]
+        print(error)
         if i > 0:
             errorD = error - last_error
 
         last_error = error
 
         # PID Control
-        u_angle = 0.1 * error + 0.5 * errorD + 0. * errorI
+        u_angle = 0.2 * error + 0.1 * errorD + 0. * errorI
         # u_angle = np.clip(u_angle, -0.005, 0.005)
 
         # u_angle = 1 * error
