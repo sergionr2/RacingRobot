@@ -20,7 +20,7 @@ is_connected_lock = threading.Lock()
 is_connected = False
 n_received_semaphore = threading.Semaphore(1)
 serial_lock = threading.Lock()
-command_queue = queue.Queue(1)
+command_queue = queue.Queue(2)
 rate = 1/90 # 90 fps
 
 class Order(Enum):
