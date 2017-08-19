@@ -10,6 +10,6 @@
 #define THETA_MAX 130
 #define SPEED_MAX 100
 
-#define DEBUG true
+#define DEBUG false
 
 #endif
