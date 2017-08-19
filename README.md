@@ -64,6 +64,22 @@ pip install enum34
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
+ZeroMQ (Message Passing with sockets)
+```
+sudo apt-get install libzmq3-dev
+pip install pyzmq
+```
+or
+```
+git clone https://github.com/zeromq/libzmq/
+./autogen.sh
+./configure
+make
+sudo make install
+sudo ldconfig
+pip install pyzmq
+```
+
 ### Orange Object Following
 
 ```

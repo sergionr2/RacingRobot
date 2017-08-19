@@ -121,8 +121,21 @@ def main(stdscr):
 
         # Smooth control
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
-        # force 30 fps
-        time.sleep(1/30)
+        # force fps
+        time.sleep(1/common.rate)
+
+def addToCommandQueue(control_speed, control_turn):
+    """
+    :param control_speed: (float)
+    :param control_turn: (float)
+    :return: (int)
+    """
+    # Send Orders
+    common.command_queue.put((Order.MOTOR, control_speed))
+    t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
+    angle_order = int(THETA_MIN  * t + THETA_MAX * (1 - t))
+    common.command_queue.put((Order.SERVO, angle_order))
+    return angle_order
 
 def pygameMain():
     # Pygame require a window
@@ -169,10 +182,7 @@ def pygameMain():
 
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
         # Send Orders
-        common.command_queue.put((Order.MOTOR, control_speed))
-        t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
-        angle_order = int(THETA_MIN  * t + THETA_MAX * (1 - t))
-        common.command_queue.put((Order.SERVO, angle_order))
+        angle_order = addToCommandQueue(control_speed, control_turn)
 
         updateScreen(window, control_speed, angle_order)
 
@@ -185,11 +195,10 @@ def pygameMain():
 
 if __name__=="__main__":
     # Does not handle multiple key pressed
-    # try:
-    #     curses.wrapper(main)
-    # except KeyboardInterrupt:
-    #     exit()
-    # pygameMain()
+    try:
+        curses.wrapper(main)
+    except KeyboardInterrupt:
+        exit()
     try:
         serial_port = get_serial_ports()[0]
         serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
