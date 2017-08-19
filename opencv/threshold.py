@@ -15,9 +15,6 @@ def nothing(x):
 # Creating a window for later use
 cv2.namedWindow('result')
 
-# Starting with 100's to prevent error while masking
-h,s,v = 100,100,100
-
 # Creating track bar
 cv2.createTrackbar('h_min', 'result',0,179,nothing)
 cv2.createTrackbar('s_min', 'result',0,255,nothing)

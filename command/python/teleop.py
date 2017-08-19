@@ -194,11 +194,11 @@ def pygameMain():
         pygame.time.Clock().tick(1/common.rate)
 
 if __name__=="__main__":
-    # Does not handle multiple key pressed
-    try:
-        curses.wrapper(main)
-    except KeyboardInterrupt:
-        exit()
+    # # Does not handle multiple key pressed
+    # try:
+    #     curses.wrapper(main)
+    # except KeyboardInterrupt:
+    #     exit()
     try:
         serial_port = get_serial_ports()[0]
         serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)

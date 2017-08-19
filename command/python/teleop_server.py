@@ -9,12 +9,11 @@ port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
 socket.bind("tcp://*:{}".format(port))
+socket.send(b'1')
 
 while True:
-    socket.send_string("Server message to client3")
-    msg = socket.recv_string()
-    print(msg)
-    if msg == "stop":
+    msg = socket.recv_json()
+    if msg[0] == -999:
         socket.close()
         break
-    time.sleep(1)
+    print(msg)
