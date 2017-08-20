@@ -32,8 +32,9 @@ def processImage(image, debug=False, regions=None):
 
         hsv = cv2.cvtColor(imCrop, cv2.COLOR_RGB2HSV)
         # define range of blue color in HSV
-        lower_white = np.array([0, 0, 212])
-        upper_white = np.array([131, 255, 255])
+        lower_white = np.array([0, 0, 0])
+        #upper_white = np.array([131, 255, 255])
+        upper_white = np.array([85, 255, 255])
 
         lower_black = np.array([0, 0, 0])
         upper_black = np.array([16, 16, 26])

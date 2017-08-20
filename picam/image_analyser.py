@@ -17,6 +17,8 @@ import numpy as np
 from opencv.image_processing import processImage
 from opencv.moments import processImage as oldProcessImage
 
+exp_time = int(time.time())
+
 class ImageProcessingThread(threading.Thread):
     """
     Thread used to retrieve image and do the image processing
@@ -74,8 +76,8 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 else:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     if self.frame_num % 20 == 0:
+                        cv2.imwrite("debug/{}_{}.jpg".format(exp_time, self.frame_num),frame)
                         pass
-                        # cv2.imwrite("debug/{}.jpg".format(self.frame_num),frame)
                     try:
                         pts, turn_percent, centroids, errors = processImage(frame)
                         self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
