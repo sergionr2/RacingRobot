@@ -1,6 +1,5 @@
 import math
 import socket
-from collections import namedtuple
 
 import bpy
 import numpy as np

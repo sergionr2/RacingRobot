@@ -14,7 +14,8 @@ import picamera.array
 import cv2
 import numpy as np
 
-from opencv.moments import processImage
+from opencv.image_processing import processImage
+from opencv.moments import processImage as oldProcessImage
 
 class ImageProcessingThread(threading.Thread):
     """
@@ -72,9 +73,12 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                     self.out_queue.put(item=frame, block=False)
                 else:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    cx, cy, error = processImage(frame)
+                    pts, turn_percent, centroids, errors = processImage(frame)
+                    self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
+                    # Code for follow_orange.py
+                    # cx, cy, error = oldProcessImage(frame)
                     # print(cx, cy)
-                    self.out_queue.put(item=(cx, cy, error), block=False)
+                    # self.out_queue.put(item=(cx, cy, error), block=False)
                 self.frame_num += 1
         except:
             pass
