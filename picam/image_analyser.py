@@ -73,8 +73,14 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                     self.out_queue.put(item=frame, block=False)
                 else:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    pts, turn_percent, centroids, errors = processImage(frame)
-                    self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
+                    if self.frame_num % 20 == 0:
+                        pass
+                        # cv2.imwrite("debug/{}.jpg".format(self.frame_num),frame)
+                    try:
+                        pts, turn_percent, centroids, errors = processImage(frame)
+                        self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
+                    except Exception as e:
+                        print(e)
                     # Code for follow_orange.py
                     # cx, cy, error = oldProcessImage(frame)
                     # print(cx, cy)

@@ -54,6 +54,7 @@ while True:
             common.command_queue.put_nowait((Order.SERVO, angle_order))
             common.command_queue.put_nowait((Order.MOTOR, control_speed))
     except Exception as e:
+        print(e)
     	pass
 
     if control_speed == -999:
@@ -61,11 +62,9 @@ while True:
         break
 print("Sending STOP order...")
 # SEND STOP ORDER at the end
-with common.command_queue.mutex:
-    common.command_queue.clear()
-    # Release the command queue
-    n_received_semaphore.release()
-    common.command_queue.put_nowait((Order.STOP, 0))
+common.resetCommandQueue()
+n_received_semaphore.release()
+common.command_queue.put((Order.MOTOR, 0))
 # Make sure STOP order is sent
 time.sleep(0.2)
 

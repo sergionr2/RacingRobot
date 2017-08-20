@@ -16,7 +16,7 @@ def processImage(image, debug=False, regions=None):
     """
     error = False
     # r = [margin_left, margin_top, width, height]
-    max_width = image.shape[0]
+    max_width = image.shape[1]
     if regions is None:
         r0 = [0, 150, max_width, 50]
         r1 = [0, 125, max_width, 25]
@@ -66,8 +66,12 @@ def processImage(image, debug=False, regions=None):
         if len(contours) > 0:
             M = cv2.moments(contours[0])
             # Centroid
-            cx = int(M['m10']/M['m00'])
-            cy = int(M['m01']/M['m00'])
+            try:
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
+            except ZeroDivisionError:
+                cx, cy = 0, 0
+                errors[idx] = True
         else:
             cx, cy = 0, 0
             errors[idx] = True

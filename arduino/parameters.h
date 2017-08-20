@@ -5,9 +5,9 @@
 #define MOTOR_PIN 3
 #define DIRECTION_PIN 12
 #define SERVOMOTOR_PIN 6
-#define INITIAL_THETA 100
+#define INITIAL_THETA 105
 #define THETA_MIN 60
-#define THETA_MAX 130
+#define THETA_MAX 135
 #define SPEED_MAX 100
 
 #define DEBUG false

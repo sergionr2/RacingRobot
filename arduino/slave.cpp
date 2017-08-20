@@ -63,7 +63,6 @@ void cycle()
     digitalWrite(DIRECTION_PIN , HIGH);
   }
   analogWrite(MOTOR_PIN , convertOrderToPWM(float(motorSpeed)));
-
 }
 
 void stop()

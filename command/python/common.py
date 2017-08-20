@@ -23,8 +23,12 @@ is_connected = False
 n_messages_allowed = 3
 n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
-command_queue = queue.Queue(2)
+command_queue = queue.Queue(4)
 rate = 1/90 # 90 fps
+
+def resetCommandQueue():
+    global command_queue
+    command_queue = queue.Queue(2)
 
 class Order(Enum):
     HELLO = 0
@@ -70,7 +74,10 @@ def writeOneByteInt(f, value):
     :param f: file handler or serial file
     :param value: (int8_t)
     """
-    f.write(struct.pack('<b', value))
+    if value >= -128 and value <= 127:
+        f.write(struct.pack('<b', value))
+    else:
+        print("Value error:{}".format(value))
     # f.flush()
 
 # Alias
@@ -163,7 +170,11 @@ class ListenerThread(threading.Thread):
 
     def run(self):
         while not exit_signal:
-            bytes_array = bytearray(self.serial_file.read(1))
+            try:
+                bytes_array = bytearray(self.serial_file.read(1))
+            except serial.SerialException:
+                time.sleep(rate)
+                continue
             if not bytes_array:
                time.sleep(rate)
                continue
