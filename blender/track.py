@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn
 import mathutils
 
-U_MAX_ACC = 25
 ANGLE_OFFSET = 0
 dt = 0.01
 ERROR_MAX = 0.6
@@ -153,13 +152,13 @@ if __name__ == '__main__':
     a, b = np.array([0,0]), np.array([0,0])
     turn_percent = 0
 
-    for i in range(2000):
+    for i in range(1000):
         # Write Blender images
         image_path = 'render/{}.png'.format(i)
         bpy.context.scene.render.filepath = image_path
         bpy.ops.render.render(write_still=True)  # render
         # Not in headless mode
-        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=0)  # hack to draw ui
+        # bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=0)  # hack to draw ui
 
         p0 = points[ref_point_idx]
         p1 = points[(ref_point_idx + 1) % (len(points) - 1)]

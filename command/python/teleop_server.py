@@ -1,13 +1,12 @@
 from __future__ import print_function, with_statement, division
 
 import zmq
-import random
-import sys
 import time
 
 import common
 from common import *
 
+# Listen to port 5556
 port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
@@ -19,9 +18,8 @@ try:
     serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
 except Exception as e:
     raise e
-# serial_file_write = open("test.log", 'ab')
-# serial_file_read = open("test.log", 'rb')
 
+# Wait until we are connected to the arduino
 while not is_connected:
     print("Waiting for arduino...")
     sendOrder(serial_file, Order.HELLO.value)
@@ -45,7 +43,6 @@ print("Connected To Client")
 i = 0
 while True:
     control_speed, angle_order = socket.recv_json()
-    #control_speed, angle_order = int(control_speed), int(angle_order)
     print(control_speed, angle_order)
     try:
         if i%2 == 0:
@@ -62,7 +59,16 @@ while True:
     if control_speed == -999:
         socket.close()
         break
-# TODO: SEND STOP ORDER at the end
+print("Sending STOP order...")
+# SEND STOP ORDER at the end
+with common.command_queue.mutex:
+    common.command_queue.clear()
+    # Release the command queue
+    n_received_semaphore.release()
+    common.command_queue.put_nowait((Order.STOP, 0))
+# Make sure STOP order is sent
+time.sleep(0.2)
+
 common.exit_signal = True
 n_received_semaphore.release()
 print("EXIT")

@@ -5,6 +5,7 @@ import glob
 import os
 import struct
 import threading
+# Python 2/3 compatibility
 try:
     import queue
 except ImportError:
@@ -18,7 +19,9 @@ BAUDRATE = 115200
 exit_signal = False
 is_connected_lock = threading.Lock()
 is_connected = False
-n_received_semaphore = threading.Semaphore(1)
+# Number of messages we can send to the Arduino without receiving a RECEIVED response
+n_messages_allowed = 3
+n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
 command_queue = queue.Queue(2)
 rate = 1/90 # 90 fps
@@ -85,7 +88,7 @@ def decodeOrder(f, byte, debug=False):
     """
     :param f: file handler or serial file
     :param byte: (int8_t)
-    :param debug: (bool)
+    :param debug: (bool) whether to print or not received messages
     """
     order = Order(byte)
     if order == Order.HELLO:
@@ -113,6 +116,12 @@ def decodeOrder(f, byte, debug=False):
         print(msg)
 
 class CommandThread(threading.Thread):
+    """
+    Thread that send orders to the arduino
+    it blocks if there no more send_token left (here it is the n_received_semaphore)
+    :param serial_file: (Serial object)
+    :param command_queue: (Queue)
+    """
     def __init__(self, serial_file, command_queue):
         threading.Thread.__init__(self)
         self.deamon = True
@@ -142,6 +151,11 @@ class CommandThread(threading.Thread):
             time.sleep(rate)
 
 class ListenerThread(threading.Thread):
+    """
+    Thread that listen to the Arduino
+    It is used to add send_tokens to the n_received_semaphore
+    :param serial_file: (Serial object)
+    """
     def __init__(self, serial_file):
         threading.Thread.__init__(self)
         self.deamon = True

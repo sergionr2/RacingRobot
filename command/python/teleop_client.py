@@ -1,8 +1,6 @@
 from __future__ import print_function, with_statement, division
 
 import zmq
-import random
-import sys
 import time
 import common
 

@@ -17,25 +17,38 @@ import numpy as np
 from opencv.moments import processImage
 
 class ImageProcessingThread(threading.Thread):
-    def __init__(self, viewer, condition):
+    """
+    Thread used to retrieve image and do the image processing
+    :param viewer: (Viewer object)
+    :param exit_condition: (Condition object)
+    """
+    def __init__(self, viewer, exit_condition):
         super(ImageProcessingThread, self).__init__()
         self.deamon = True
         self.v = viewer
-        self.condition = condition
+        self.exit_condition = exit_condition
 
     def run(self):
         v = self.v
         start_time = time.time()
         v.start()
 
-        with self.condition:
-            self.condition.wait()
+        # Wait until the thread is notified to exit
+        with self.exit_condition:
+            self.exit_condition.wait()
         v.stop()
 
         print('FPS: {:.2f}'.format(v.analyser.frame_num / (time.time() - start_time)))
 
 
 class RGBAnalyser(picamera.array.PiRGBAnalysis):
+    """
+    Class used to retrieve an image from the picamera
+    and process it
+    :param camera: (PiCamera object)
+    :param out_queue: (Queue) queue used for output of image processing
+    :param debug: (bool) set to true, queue will be filled with raw images
+    """
     def __init__(self, camera, out_queue, debug=False):
         super(RGBAnalyser, self).__init__(camera)
         self.frame_num = 0
@@ -79,6 +92,13 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
 
 
 class Viewer(object):
+    """
+    Class that initialize the camera and start the PiCamera Thread
+    :param out_queue: (Queue)
+    :param resolution: (int, int)
+    :param debug: (bool)
+    :param fps: (int)
+    """
     def __init__(self, out_queue, resolution, debug=False, fps=90):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
@@ -105,14 +125,14 @@ class Viewer(object):
 if __name__ == '__main__':
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
-    condition = threading.Condition(condition_lock)
+    exit_condition = threading.Condition(condition_lock)
     resolution = (640//2, 480//2)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=True), condition)
+    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=True), exit_condition)
     image_thread.start()
     time.sleep(5)
     # End the thread
-    with condition:
-        condition.notify_all()
+    with exit_condition:
+        exit_condition.notify_all()
     image_thread.join()
     i = 0
     while not out_queue.empty():

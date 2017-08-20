@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 # from scipy import stats
 
+from opencv.noise import *
+
 REF_ANGLE = - np.pi / 2
 
 def processImage(image, debug=False):
@@ -145,13 +147,16 @@ if __name__ == '__main__':
                     if input_image == "stop":
                         should_stop = True
                         break
-                    img = cv2.imread(input_image)
-                    pts, turn_percent, centroids, errors = processImage(img)
+                    img = cv2.imread("blender/" + input_image)
+                    noisedImage = rotateImage( img, random.random()*0.02-0.01, random.random()*0.02-0.01, random.random()*0.02-0.01 ) # 5 degrees
+                    cv2.imwrite("blender/" + input_image, noisedImage)
+
+                    pts, turn_percent, centroids, errors = processImage(noisedImage)
                     path = "render/{}".format(i)
                     turn_mat = np.array([turn_percent, any(errors)]).reshape((1, -1))
                     error = (img.shape[0]//2 - centroids[-1,0]) / (img.shape[0]//2)
                     error_mat = np.array([error, turn_percent]).reshape((1, -1))
                     mat = np.vstack((pts, turn_mat, error_mat))
-                    np.save(path, mat)
+                    np.save("blender/"+path, mat)
                     conn.sendall(bytes(path+".npy", 'utf-8'))
                     i += 1
