@@ -31,7 +31,6 @@ MAX_ERROR_SECONDS_BEFORE_STOP = 3
 
 
 def forceStop():
-    common.command_queue.put((Order.MOTOR, int(0)))
     # SEND STOP ORDER at the end
     common.resetCommandQueue()
     n_received_semaphore.release()
@@ -106,7 +105,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         angle_order = theta_init - u_angle
 
         angle_order = np.clip(angle_order, THETA_MIN, THETA_MAX).astype(int)
-        try: 
+        try:
             if i % 2 == 0:
                 i = 1
                 common.command_queue.put_nowait((Order.SERVO, angle_order))

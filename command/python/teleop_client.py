@@ -62,38 +62,6 @@ def pygameMain():
         # force 30 fps
         pygame.time.Clock().tick(1/common.rate)
 
-# stdscr: main window
-def main(stdscr, socket):
-    interface = Interface(stdscr)
-    x, theta, status, count = 0, 0, 0, 0
-    control_speed, control_turn = 0, 0
-    start_time = time.time()
-    counter = 0
-    while True:
-        keycode = interface.readKey()
-        counter += 1
-        info = "{:.2f} fps".format(counter/(time.time()-start_time))
-
-        publish(interface, control_speed, control_turn, info)
-        if keycode in moveBindings.keys():
-            x, theta = moveBindings[keycode]
-            count = 0
-        elif keycode == ord('k') or keycode == KEY_CODE_SPACE:
-                x, theta = 0, 0
-                control_speed, control_turn = 0, 0
-        elif keycode == ord('q'):
-            break
-        else:
-            count += 1
-            if count > 4:
-                x, theta = 0, 0
-
-        # Smooth control
-        control_speed, control_turn = control(x, theta, control_speed, control_turn)
-        sendToServer(socket, control_speed, control_turn)
-        # force 10 fps
-        time.sleep(1/10.0)
-
 def sendToServer(socket, control_speed, control_turn):
     """
     :param control_speed: (float)
@@ -114,7 +82,6 @@ socket.connect("tcp://{}:{}".format(host,port))
 msg = socket.recv()
 print("Connected To Server")
 try:
-    # curses.wrapper(main, socket)
     pygameMain()
 except KeyboardInterrupt as e:
     pass

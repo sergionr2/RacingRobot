@@ -15,6 +15,25 @@ from enum import Enum
 
 import serial
 
+class CustomQueue(queue.Queue):
+    """
+    A custom queue subclass that provides a :meth:`clear` method.
+    """
+    def clear(self):
+        """
+        Clears all items from the queue.
+        """
+
+        with self.mutex:
+          unfinished = self.unfinished_tasks - len(self.queue)
+          if unfinished <= 0:
+            if unfinished < 0:
+              raise ValueError('task_done() called too many times')
+            self.all_tasks_done.notify_all()
+          self.unfinished_tasks = unfinished
+          self.queue.clear()
+          self.not_full.notify_all()
+
 BAUDRATE = 115200
 exit_signal = False
 is_connected_lock = threading.Lock()
@@ -23,12 +42,11 @@ is_connected = False
 n_messages_allowed = 3
 n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
-command_queue = queue.Queue(4)
+command_queue = CustomQueue(4)
 rate = 1/90 # 90 fps
 
 def resetCommandQueue():
-    global command_queue
-    command_queue = queue.Queue(2)
+    command_queue.clear()
 
 class Order(Enum):
     HELLO = 0
