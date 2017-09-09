@@ -7,11 +7,12 @@ import numpy as np
 
 REF_ANGLE = - np.pi / 2
 
-def processImage(image, debug=False, regions=None):
+def processImage(image, debug=False, regions=None, thresholds=None):
     """
     :param image: (rgb image)
     :param debug: (bool)
     :param regions: [[int]]
+    :param thresholds: (dict)
     :return: (int, int)
     """
     error = False
@@ -32,12 +33,16 @@ def processImage(image, debug=False, regions=None):
 
         hsv = cv2.cvtColor(imCrop, cv2.COLOR_RGB2HSV)
         # define range of blue color in HSV
-        lower_white = np.array([0, 0, 0])
-        #upper_white = np.array([131, 255, 255])
-        upper_white = np.array([85, 255, 255])
+        if thresholds is not None:
+            lower_white = thresholds['lower_white']
+            upper_white = thresholds['upper_white']
+        else:
+            lower_white = np.array([0, 0, 0])
+            #upper_white = np.array([131, 255, 255])
+            upper_white = np.array([85, 255, 255])
 
-        lower_black = np.array([0, 0, 0])
-        upper_black = np.array([16, 16, 26])
+            # lower_black = np.array([0, 0, 0])
+            # upper_black = np.array([16, 16, 26])
 
         # Threshold the HSV image
         mask = cv2.inRange(hsv, lower_white, upper_white)
@@ -54,8 +59,14 @@ def processImage(image, debug=False, regions=None):
             cv2.imshow('eroded{}'.format(idx), eroded_mask)
             cv2.imshow('dilated{}'.format(idx), dilated_mask)
 
-        # cv2.RETR_CCOMP  instead of cv2.RETR_TREE
-        im2, contours, hierarchy = cv2.findContours(dilated_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contour_result = cv2.findContours(dilated_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # OpenCV 2.x
+        if cv2.__version__.split('.')[0] == '2':
+            contours, hierarchy = contour_result
+        else:
+            # cv2.RETR_CCOMP  instead of cv2.RETR_TREE
+            im2, contours, hierarchy = contour_result
 
         # Sort by area
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
@@ -101,7 +112,11 @@ def processImage(image, debug=False, regions=None):
         diff_angle = abs(REF_ANGLE) - abs(track_angle)
         max_angle = 2 * np.pi / 3
         turn_percent = (diff_angle / max_angle) * 100
-    a,b = pts
+    if len(centroids) > 2:
+        a,b = pts
+    else:
+        pts = None
+        a,b = (0,0), (0,0)
 
     if debug:
         if all(errors):

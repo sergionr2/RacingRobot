@@ -51,6 +51,7 @@ while(1):
 
     cv2.imshow('result',result)
 
-    k = cv2.waitKey(5) & 0xFF
-    if k == 27:
+    k = cv2.waitKey(0) & 0xFF
+    if k in [27, 113]:
+        cv2.destroyAllWindows()
         break
