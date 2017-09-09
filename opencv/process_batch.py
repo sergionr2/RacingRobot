@@ -28,8 +28,8 @@ parser = argparse.ArgumentParser(description='White Lane Detection for a batch o
 parser.add_argument('-i','--input_image', help='Input Image',  default="", type=str)
 parser.add_argument('-f','--folder', help='Folder',  default="", type=str)
 parser.add_argument('-r','--regions', help='ROI',  default=1, type=int)
-
 args = parser.parse_args()
+
 if args.input_image != "" or args.folder != "":
     imgs = [args.input_image]
     if args.folder != "":
@@ -39,12 +39,11 @@ if args.input_image != "" or args.folder != "":
         img = cv2.imread(imgs[current_idx])
         # r = [margin_left, margin_top, width, height]
         regions = None
-        if args.regions == 1:
+        if args.regions == 0:
             regions = [[0, 0, img.shape[1], img.shape[0]]]
         processImage(img, debug=True, regions=regions, thresholds=thresholds)
 
         key = cv2.waitKey(0) & 0xff
-        print(key)
         if key in EXIT_KEYS:
             cv2.destroyAllWindows()
             exit()
