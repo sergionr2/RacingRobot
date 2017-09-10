@@ -27,6 +27,15 @@ parser.add_argument('-i','--input_video', help='Input Video',  default="debug/ro
 parser.add_argument('-r','--regions', help='ROI',  default=1, type=int)
 args = parser.parse_args()
 
+# OpenCV 3.x.x compatibility
+if not hasattr(cv2, 'cv'):
+    # 0-based index of the frame to be decoded/captured next.
+    image_zero_index = cv2.CAP_PROP_POS_FRAMES
+    frame_count = cv2.CAP_PROP_FRAME_COUNT
+else:
+    image_zero_index = cv2.cv.CV_CAP_PROP_POS_FRAMES
+    frame_count = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+
 video_file = args.input_video
 cap = cv2.VideoCapture(video_file)
 
@@ -66,8 +75,8 @@ def getThresholds():
     }
     return thresholds
 
-current_idx = cap.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)
-n_frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
+current_idx = cap.get(image_zero_index)
+n_frames = int(cap.get(frame_count))
 print("{} frames".format(n_frames))
 while True:
     while True:
@@ -76,7 +85,7 @@ while True:
             break
         else:
             # The next frame is not ready, so we try to read it again
-            cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, current_idx - 1)
+            cap.set(image_zero_index, current_idx - 1)
             cv2.waitKey(1000)
 
     regions = None
@@ -92,4 +101,4 @@ while True:
         current_idx += 1 if key == RIGHT_KEY else -1
         current_idx = np.clip(current_idx, 0, n_frames-1)
     thresholds = getThresholds()
-    cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, current_idx)
+    cap.set(image_zero_index, current_idx)

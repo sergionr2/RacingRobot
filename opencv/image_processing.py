@@ -121,6 +121,7 @@ def processImage(image, debug=False, regions=None, thresholds=None):
     if debug:
         if all(errors):
             print("No centroids found")
+            cv2.imshow('result', image)
         else:
             for cx, cy in centroids:
                 cv2.circle(image, (cx,cy), radius=10, color=(0,0,255),
