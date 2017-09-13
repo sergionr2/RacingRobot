@@ -5,6 +5,9 @@ import argparse
 import cv2
 import numpy as np
 
+from train.train import preprocessImage, buildMlp
+
+
 REF_ANGLE = - np.pi / 2
 
 def processImage(image, debug=False, regions=None, thresholds=None):

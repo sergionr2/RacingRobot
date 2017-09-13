@@ -1,5 +1,6 @@
 from __future__ import print_function, with_statement, division
 
+import os
 import argparse
 
 import cv2
@@ -18,9 +19,11 @@ DOWN_KEY = 84
 RIGHT_KEY = 83
 LEFT_KEY = 81
 ENTER_KEY = 10
+SPACE_KEY = 32
 EXIT_KEYS = [113, 27]  # Escape and q
-M_KEY = 109
-L_KEY = 108
+S_KEY = 115  # Save key
+
+play_video = False
 
 parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
 parser.add_argument('-i','--input_video', help='Input Video',  default="debug/robot_vue.mp4", type=str)
@@ -87,18 +90,26 @@ while True:
             # The next frame is not ready, so we try to read it again
             cap.set(image_zero_index, current_idx - 1)
             cv2.waitKey(1000)
-
+    original_img = img.copy()
     regions = None
     if args.regions == 0:
         regions = [[0, 0, img.shape[1], img.shape[0]]]
     processImage(img, debug=True, regions=regions, thresholds=thresholds)
-
-    key = cv2.waitKey(0) & 0xff
+    if not play_video:
+        key = cv2.waitKey(0) & 0xff
+    else:
+        key = cv2.waitKey(10) & 0xff
     if key in EXIT_KEYS:
         cv2.destroyAllWindows()
         exit()
-    elif key in [LEFT_KEY, RIGHT_KEY]:
-        current_idx += 1 if key == RIGHT_KEY else -1
+    elif key in [LEFT_KEY, RIGHT_KEY] or play_video:
+        current_idx += 1 if key == RIGHT_KEY or play_video else -1
         current_idx = np.clip(current_idx, 0, n_frames-1)
+    elif key == SPACE_KEY:
+        play_video = not play_video
+    elif key == S_KEY:
+        # Save image
+        path = 'train/min_{}_max_{}_{}.jpg'.format(thresholds['lower_white'], thresholds['upper_white'], int(current_idx))
+        cv2.imwrite(path, original_img)
     thresholds = getThresholds()
     cap.set(image_zero_index, current_idx)
