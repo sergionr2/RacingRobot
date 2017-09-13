@@ -43,18 +43,18 @@ def loadDataset(seed=42, folder='cropped', split=True):
     images = [name for name in os.listdir(folder)]
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
     height, width, n_channels = tmp_im.shape
-    X = np.zeros((len(images), (width//FACTOR)*(height//FACTOR)*n_channels), dtype=np.float64)
+    X = np.zeros((len(images), (WIDTH)*(HEIGHT)*n_channels), dtype=np.float64)
     y = np.zeros((len(images),), dtype=np.float64)
 
     print("original_shape=({},{})".format(width, height))
-    print("resized_shape=({},{})".format(width//FACTOR, height//FACTOR))
+    print("resized_shape=({},{})".format(WIDTH, HEIGHT))
 
-    assert width // FACTOR == WIDTH
-    assert height // FACTOR == HEIGHT
+    # assert width // FACTOR == WIDTH
+    factor = width / WIDTH
 
     for idx, name in enumerate(images):
         x_center, y_center = map(int, name.split('_')[0].split('-'))
-        x_center /= FACTOR*width
+        x_center /= factor*width
         y[idx] = x_center
 
         image_path = '{}/{}'.format(folder, images[idx])
@@ -176,4 +176,4 @@ def main(num_epochs=500, batchsize=10):
 
 
 if __name__ == '__main__':
-    main(num_epochs=500, batchsize=1)
+    main(num_epochs=600, batchsize=4)

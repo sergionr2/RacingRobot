@@ -9,7 +9,7 @@ from train.train import preprocessImage, loadNetwork, FACTOR, WIDTH, HEIGHT
 
 
 REF_ANGLE = - np.pi / 2
-use_network = False
+use_network = True
 if use_network:
     network, pred_fn = loadNetwork()
 

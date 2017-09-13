@@ -46,7 +46,7 @@ while True:
     x_center =int(y_test[current_idx][0] * (width * factor))
     x_center = np.clip(x_center, 0, width)
     y_center = height // 2
-    print(name, "error={}".format(abs(x_center - x_true)))
+    print(current_idx, name, "error={}".format(abs(x_center - x_true)))
     # Draw prediction and true center
     cv2.circle(im, (x_center, y_center), radius=10, color=(0,0,255),
                thickness=2, lineType=8, shift=0)
