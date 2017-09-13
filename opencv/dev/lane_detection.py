@@ -31,7 +31,7 @@ if args.roi == 1:
     dst = roi_rectangle(canny, 350,n_rows,100,n_cols-100)
 else:
     dst = canny
-#rho and theta are the distance and angular resolution of the grid in Hough space
+# rho and theta are the distance and angular resolution of the grid in Hough space
 rho = 2
 theta = np.pi/180.0
 #threshold is minimum number of intersections in a grid for candidate line to go to output

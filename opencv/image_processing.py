@@ -5,10 +5,13 @@ import argparse
 import cv2
 import numpy as np
 
-from train.train import preprocessImage, buildMlp
+from train.train import preprocessImage, loadNetwork, FACTOR, WIDTH, HEIGHT
 
 
 REF_ANGLE = - np.pi / 2
+use_network = False
+if use_network:
+    network, pred_fn = loadNetwork()
 
 def processImage(image, debug=False, regions=None, thresholds=None):
     """
@@ -25,16 +28,31 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         r0 = [0, 150, max_width, 50]
         r1 = [0, 125, max_width, 25]
         r2 = [0, 100, max_width, 25]
+        # r1 = [0, 125, max_width, 50]
+        # r2 = [0, 100, max_width, 50]
         regions = [r0, r1, r2]
     centroids = np.zeros((len(regions), 2), dtype=int)
     errors = [False for _ in regions]
     for idx, r in enumerate(regions):
         margin_left, margin_top, _, _ = r
-        imCrop = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
-        if debug:
-            cv2.imshow('crop{}'.format(idx), imCrop)
+        im_cropped = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
-        hsv = cv2.cvtColor(imCrop, cv2.COLOR_RGB2HSV)
+        if use_network:
+            im_cropped_tmp = im_cropped.copy()
+            im_width = im_cropped_tmp.shape[1]
+            factor = im_width / WIDTH
+            pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT)
+            x_center = int(pred_fn([pred_img])[0] * factor * im_width)
+            y_center = im_cropped_tmp.shape[0] // 2
+            # Draw prediction and true center
+            cv2.circle(im_cropped_tmp, (x_center, y_center), radius=10, color=(0,0,255),
+            thickness=2, lineType=8, shift=0)
+            cv2.imshow('crop_pred{}'.format(idx), im_cropped_tmp)
+
+        if debug:
+            cv2.imshow('crop{}'.format(idx), im_cropped)
+
+        hsv = cv2.cvtColor(im_cropped, cv2.COLOR_RGB2HSV)
         # define range of blue color in HSV
         if thresholds is not None:
             lower_white = thresholds['lower_white']
@@ -73,10 +91,10 @@ def processImage(image, debug=False, regions=None, thresholds=None):
 
         # Sort by area
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
-        if debug:
+        if debug and not use_network:
             # Draw biggest
-            # cv2.drawContours(imCrop, contours, 0, (0,255,0), 3)
-            cv2.drawContours(imCrop, contours, -1, (0,255,0), 3)
+            # cv2.drawContours(im_cropped, contours, 0, (0,255,0), 3)
+            cv2.drawContours(im_cropped, contours, -1, (0,255,0), 3)
 
         if len(contours) > 0:
             M = cv2.moments(contours[0])
@@ -90,6 +108,9 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         else:
             cx, cy = 0, 0
             errors[idx] = True
+
+        if use_network:
+            cx, cy = x_center, y_center
 
         centroids[idx] = np.array([cx + margin_left, cy + margin_top])
     if False:

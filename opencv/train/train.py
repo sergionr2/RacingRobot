@@ -19,6 +19,20 @@ seed = 42
 np.random.seed(seed)
 evaluate_print = 100
 FACTOR = 4
+WIDTH, HEIGHT = 80, 12
+
+def loadNetwork():
+    input_var = T.matrix('inputs')
+    input_dim = WIDTH * HEIGHT * 3
+    network = buildMlp(input_var, input_dim)
+
+    with np.load('model.npz') as f:
+        param_values = [f['arr_%d' % i] for i in range(len(f.files))]
+    lasagne.layers.set_all_param_values(network, param_values)
+
+    test_prediction = lasagne.layers.get_output(network, deterministic=True)
+    pred_fn = theano.function([input_var], test_prediction)
+    return network, pred_fn
 
 def preprocessImage(image, width, height):
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
@@ -34,6 +48,10 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
     print("original_shape=({},{})".format(width, height))
     print("resized_shape=({},{})".format(width//FACTOR, height//FACTOR))
+
+    assert width // FACTOR == WIDTH
+    assert height // FACTOR == HEIGHT
+
     for idx, name in enumerate(images):
         x_center, y_center = map(int, name.split('_')[0].split('-'))
         x_center /= FACTOR*width
@@ -41,7 +59,7 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
         image_path = '{}/{}'.format(folder, images[idx])
         im = cv2.imread(image_path)
-        X[idx, :] = preprocessImage(im, width//FACTOR, height//FACTOR)
+        X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
 
     print(X.shape)
 
