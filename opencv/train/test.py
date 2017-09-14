@@ -9,7 +9,7 @@ from train import loadDataset, loadNetwork
 
 seed = 42
 np.random.seed(seed)
-folder = 'cropped'
+folder = 'augmented_dataset'
 # Arrow keys
 UP_KEY = 82
 DOWN_KEY = 84
@@ -17,7 +17,7 @@ RIGHT_KEY = 83
 LEFT_KEY = 81
 EXIT_KEYS = [113, 27]  # Escape and q
 
-X, y_true, images, factor = loadDataset(seed=seed, split=False)
+X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False)
 indices = np.arange(len(X))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
 idx_val, idx_test  = train_test_split(idx_test, test_size=0.5, random_state=seed)

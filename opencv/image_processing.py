@@ -30,7 +30,7 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         r2 = [0, 100, max_width, 25]
         # r1 = [0, 125, max_width, 50]
         # r2 = [0, 100, max_width, 50]
-        regions = [r0, r1, r2]
+        regions = [r0, r1]
     centroids = np.zeros((len(regions), 2), dtype=int)
     errors = [False for _ in regions]
     for idx, r in enumerate(regions):
@@ -124,8 +124,8 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         turn_percent = 0
     else:
         # FIXME: take only centroids with no error
-        x = np.array([x[0], x[2]])
-        y = np.array([y[0], y[2]])
+        x = np.array([x[0], x[-1]])
+        y = np.array([y[0], y[-1]])
         A = np.vstack([x, np.ones(len(x))]).T
         m, b = np.linalg.lstsq(A, y)[0]
         # y = m*x + b

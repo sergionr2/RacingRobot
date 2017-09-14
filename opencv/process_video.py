@@ -90,6 +90,8 @@ while True:
             # The next frame is not ready, so we try to read it again
             cap.set(image_zero_index, current_idx - 1)
             cv2.waitKey(1000)
+            continue
+
     original_img = img.copy()
     regions = None
     if args.regions == 0:

@@ -35,12 +35,33 @@ def loadNetwork():
     return network, pred_fn
 
 def preprocessImage(image, width, height):
+    # Equalize v channel
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
+    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     # Normalize
-    return (image.flatten() / 255) - 0.5
+    x = image.flatten() / 255.
+    x -= 0.5
+    x *= 2
+    return x
+
+def augmentData(in_folder='cropped', out_folder='augmented_dataset'):
+    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2']]
+    for idx, name in enumerate(images):
+        r = name.split('.jpg')[0][-2:]
+        cx, cy = map(int, name.split('_')[0].split('-'))
+        image_path = '{}/{}'.format(in_folder, images[idx])
+        image = cv2.imread(image_path)
+        height, width, n_channels = image.shape
+        vertical_flip = cv2.flip(image, 0)
+        horizontal_flip = cv2.flip(image, 1)
+        cv2.imwrite('{}/{}-{}_{}-{}.jpg'.format(out_folder, cx, cy, idx, r), image)
+        cv2.imwrite('{}/{}-{}_vert_{}-{}.jpg'.format(out_folder, cx, height - cy, idx, r), vertical_flip)
+        cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
 def loadDataset(seed=42, folder='cropped', split=True):
-    images = [name for name in os.listdir(folder)]
+    images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2']]
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
     height, width, n_channels = tmp_im.shape
     X = np.zeros((len(images), (WIDTH)*(HEIGHT)*n_channels), dtype=np.float64)
@@ -78,7 +99,6 @@ def buildMlp(input_var, input_dim):
     linear = lasagne.nonlinearities.linear
     # l_in_drop = lasagne.layers.DropoutLayer(l_in, p=0.1)
     l_hid1 = lasagne.layers.DenseLayer(l_in, num_units=8, nonlinearity=relu)
-    # l_hid1_drop = lasagne.layers.DropoutLayer(l_hid1, p=0.1)
     l_hid2 = lasagne.layers.DenseLayer(l_hid1, num_units=4, nonlinearity=relu)
 
     l_out = lasagne.layers.DenseLayer(l_hid2, num_units=1, nonlinearity=linear)
@@ -97,10 +117,10 @@ def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
         yield inputs[excerpt], targets[excerpt]
 
 
-def main(num_epochs=500, batchsize=10):
+def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001):
     # Load the dataset
     print("Loading data...")
-    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset()
+    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder)
 
     input_var = T.matrix('inputs')
     target_var = T.vector('targets')
@@ -115,7 +135,7 @@ def main(num_epochs=500, batchsize=10):
 
     params = lasagne.layers.get_all_params(network, trainable=True)
     # updates = nesterov_momentum(loss, params, learning_rate=0.0001, momentum=0.8)
-    updates = adam(loss, params, learning_rate=0.0001)
+    updates = adam(loss, params, learning_rate=learning_rate)
 
     test_prediction = lasagne.layers.get_output(network, deterministic=True)
     test_loss = lasagne.objectives.squared_error(test_prediction, target_var)
@@ -176,4 +196,4 @@ def main(num_epochs=500, batchsize=10):
 
 
 if __name__ == '__main__':
-    main(num_epochs=600, batchsize=4)
+    main(folder='augmented_dataset', num_epochs=500, batchsize=16, learning_rate=0.0001)

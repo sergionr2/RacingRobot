@@ -45,7 +45,7 @@ for idx, im in enumerate(images):
         if not all(errors):
             x, y = centroids.flatten()
             cx, cy = x - margin_left, y - margin_top
-            cv2.imwrite('{}/{}-{}_{}-r{}.jpg'.format(output_folder, cx,cy,idx,i), im_cropped)
+            cv2.imwrite('{}/{}-{}_{}-r{}.jpg'.format(output_folder, cx, cy, idx, i), im_cropped)
     key = cv2.waitKey(0) & 0xff
     if key in EXIT_KEYS:
         break
