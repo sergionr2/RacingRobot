@@ -62,8 +62,8 @@ def preprocessImage(image, width, height, cnn=False):
     x *= 2
     return x
 
-def augmentData(in_folder='cropped', out_folder='augmented_dataset'):
-    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2']]
+def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
+    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1']]
     for idx, name in enumerate(images):
         r = name.split('.jpg')[0][-2:]
         cx, cy = map(int, name.split('_')[0].split('-'))
@@ -131,9 +131,10 @@ def buildMlp(input_var, input_dim):
     linear = lasagne.nonlinearities.linear
     net = lasagne.layers.InputLayer(shape=(None, input_dim),
                                      input_var=input_var)
-    net = lasagne.layers.DropoutLayer(net, p=0.3)
+    net = lasagne.layers.DropoutLayer(net, p=0.1)
     net = DenseLayer(net, num_units=8, nonlinearity=relu)
     # net = lasagne.layers.DropoutLayer(net, p=0.1)
+    net = DenseLayer(net, num_units=4, nonlinearity=relu)
     net = DenseLayer(net, num_units=4, nonlinearity=relu)
 
     l_out = DenseLayer(net, num_units=1, nonlinearity=relu)
@@ -172,7 +173,7 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, cnn=False, 
     prediction = lasagne.layers.get_output(network)
     loss = lasagne.objectives.squared_error(prediction, target_var)
     loss = loss.mean()
-    # loss += 1e-4 * regularize_network_params(network, l2)
+    loss += 1e-4 * regularize_network_params(network, l2)
 
     params = lasagne.layers.get_all_params(network, trainable=True)
     # updates = nesterov_momentum(loss, params, learning_rate=0.0001, momentum=0.8)

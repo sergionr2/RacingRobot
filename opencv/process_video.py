@@ -45,6 +45,9 @@ cap = cv2.VideoCapture(video_file)
 # Creating a window for later use
 cv2.namedWindow('result')
 
+def formatMask(mask):
+    return "{}|{}|{}".format(mask[0], mask[1], mask[2])
+
 def nothing(x):
     pass
 
@@ -111,7 +114,7 @@ while True:
         play_video = not play_video
     elif key == S_KEY:
         # Save image
-        path = 'train/min_{}_max_{}_{}.jpg'.format(thresholds['lower_white'], thresholds['upper_white'], int(current_idx))
+        path = 'train/dataset/min_{}_max_{}_{}.jpg'.format(formatMask(thresholds['lower_white']), formatMask(thresholds['upper_white']), int(current_idx))
         cv2.imwrite(path, original_img)
     thresholds = getThresholds()
     cap.set(image_zero_index, current_idx)

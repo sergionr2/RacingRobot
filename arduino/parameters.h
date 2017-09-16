@@ -3,7 +3,7 @@
 
 #define SERIAL_BAUD 115200
 #define MOTOR_PIN 3
-#define DIRECTION_PIN 12
+#define DIRECTION_PIN 4
 #define SERVOMOTOR_PIN 6
 #define INITIAL_THETA 105
 #define THETA_MIN 60

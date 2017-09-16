@@ -9,7 +9,7 @@ from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT, WIDTH_CNN
 
 
 REF_ANGLE = - np.pi / 2
-use_network = False
+use_network = True
 if use_network:
     cnn = False
     network, pred_fn = loadNetwork(cnn=cnn)
@@ -65,9 +65,6 @@ def processImage(image, debug=False, regions=None, thresholds=None):
             lower_white = np.array([0, 0, 0])
             #upper_white = np.array([131, 255, 255])
             upper_white = np.array([85, 255, 255])
-
-            # lower_black = np.array([0, 0, 0])
-            # upper_black = np.array([16, 16, 26])
 
         # Threshold the HSV image
         mask = cv2.inRange(hsv, lower_white, upper_white)
@@ -140,7 +137,7 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         diff_angle = abs(REF_ANGLE) - abs(track_angle)
         max_angle = 2 * np.pi / 3
         turn_percent = (diff_angle / max_angle) * 100
-    if len(centroids) > 2:
+    if len(centroids) > 1:
         a,b = pts
     else:
         pts = None

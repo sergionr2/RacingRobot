@@ -18,6 +18,7 @@ if __name__ == '__main__':
         # Automatically find the right port (ex: '/dev/ttyACM0')
         try:
             serial_port = get_serial_ports()[0]
+            print("Connecting to {}".format(serial_port))
             serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
         except Exception as e:
             raise e
@@ -33,4 +34,4 @@ if __name__ == '__main__':
             order = Order(byte)
         except ValueError as e:
             continue
-        decodeOrder(serial_file, byte)
+        decodeOrder(serial_file, byte, debug=True)

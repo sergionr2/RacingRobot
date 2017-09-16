@@ -7,34 +7,27 @@ from image_processing import processImage
 
 EXIT_KEYS = [113, 27]  # Escape and q
 
-input_folder = 'train/before_crop'
+input_folder = 'train/dataset'
 output_folder = 'train/cropped'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
-for idx, im in enumerate(images):
-    img = cv2.imread('{}/{}'.format(input_folder, im))
+for idx, name in enumerate(images):
+    img = cv2.imread('{}/{}'.format(input_folder, name))
     # Get thresholds
-    _min, _max = im.split('_max_')
-    _max = _max.split(']')[0]
+    thresholds = {}
+    _min, _max = name.split('_max_')
+    _min = _min.split('min_')[1]
+    _max = _max.split('_')[0]
+    for key, values in zip(['lower_white', 'upper_white'], [_min, _max]):
+        thresholds[key] = np.array(list(map(int, values.split('|'))))
+    print(name)
+    print(thresholds)
 
-    # Remove Extra spaces
-    _min = _min.replace('  ', ' ')
-    _max = _max.replace('  ', ' ')
-    try:
-        h_min, s_min, v_min = map(int, _min[5:-1].split(' '))
-    except ValueError:
-        _min = [elem for elem in _min[6:-1].split(' ') if elem != '']
-        h_min, s_min, v_min = map(int, _min)
-    h_max, s_max, v_max = map(int, _max[2:].split(' '))
-    thresholds = {
-        'lower_white': np.array([h_min, s_min, v_min]),
-        'upper_white': np.array([h_max, s_max, v_max])
-    }
     max_width = img.shape[1]
     r0 = [0, 150, max_width, 50]
     r1 = [0, 125, max_width, 25]
     r2 = [0, 100, max_width, 25]
-    regions = [r0, r1, r2]
+    regions = [r0, r1]
     original_img = img.copy()
     for i, r in enumerate(regions):
         img = original_img.copy()
