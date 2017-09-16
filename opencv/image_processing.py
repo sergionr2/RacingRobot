@@ -5,13 +5,14 @@ import argparse
 import cv2
 import numpy as np
 
-from train.train import preprocessImage, loadNetwork, FACTOR, WIDTH, HEIGHT
+from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT, WIDTH_CNN
 
 
 REF_ANGLE = - np.pi / 2
 use_network = True
 if use_network:
-    network, pred_fn = loadNetwork()
+    cnn = False
+    network, pred_fn = loadNetwork(cnn=cnn)
 
 def processImage(image, debug=False, regions=None, thresholds=None):
     """
@@ -40,8 +41,11 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         if use_network:
             im_cropped_tmp = im_cropped.copy()
             im_width = im_cropped_tmp.shape[1]
+            if cnn:
+                global WIDTH
+                WIDTH = WIDTH_CNN
             factor = im_width / WIDTH
-            pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT)
+            pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT, cnn=cnn)
             x_center = int(pred_fn([pred_img])[0] * factor * im_width)
             y_center = im_cropped_tmp.shape[0] // 2
             # Draw prediction and true center

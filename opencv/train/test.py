@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 import theano
 import cv2
@@ -5,11 +7,18 @@ import lasagne
 import theano.tensor as T
 from sklearn.model_selection import train_test_split
 
-from train import loadDataset, loadNetwork
+from train import loadDataset, loadNetwork, WIDTH_CNN, WIDTH
+
+parser = argparse.ArgumentParser(description='Test a line detector')
+parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
+parser.add_argument('-m','--model', help='Model Type',  default="mlp", type=str)
+args = parser.parse_args()
+
+cnn = args.model == "cnn"
 
 seed = 42
 np.random.seed(seed)
-folder = 'augmented_dataset'
+folder = args.folder
 # Arrow keys
 UP_KEY = 82
 DOWN_KEY = 84
@@ -17,12 +26,12 @@ RIGHT_KEY = 83
 LEFT_KEY = 81
 EXIT_KEYS = [113, 27]  # Escape and q
 
-X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False)
+X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False, cnn=cnn)
 indices = np.arange(len(X))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
 idx_val, idx_test  = train_test_split(idx_test, test_size=0.5, random_state=seed)
 
-network, pred_fn = loadNetwork()
+network, pred_fn = loadNetwork(cnn=cnn)
 
 y_test = pred_fn(X)
 current_idx = 0
@@ -30,6 +39,8 @@ current_idx = 0
 while True:
     name = images[current_idx]
     im = cv2.imread('{}/{}'.format(folder, images[current_idx]))
+    # if cnn:
+    #     im = cv2.resize(im, (WIDTH_CNN, WIDTH_CNN), interpolation=cv2.INTER_LINEAR)
     height, width, n_channels = im.shape
     # resized_image = cv2.resize(im, (width//2, height//2), interpolation=cv2.INTER_LINEAR)
     # cv2.imshow('Resized', resized_image)
@@ -43,7 +54,7 @@ while True:
 
     # x_center, y_center = map(int, name.split('_')[0].split('-'))
     x_true = int(y_true[current_idx] * width * factor)
-    x_center =int(y_test[current_idx][0] * (width * factor))
+    x_center = int(y_test[current_idx][0] * (width * factor))
     x_center = np.clip(x_center, 0, width)
     y_center = height // 2
     print(current_idx, name, "error={}".format(abs(x_center - x_true)))
