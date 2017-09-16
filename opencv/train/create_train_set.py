@@ -11,7 +11,6 @@ input_folder = 'train/before_crop'
 output_folder = 'train/cropped'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
-
 for idx, im in enumerate(images):
     img = cv2.imread('{}/{}'.format(input_folder, im))
     # Get thresholds

@@ -152,10 +152,10 @@ def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
         yield inputs[excerpt], targets[excerpt]
 
 
-def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, cnn=False):
+def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, cnn=False, seed=42):
     # Load the dataset
     print("Loading data...")
-    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, cnn=cnn)
+    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, cnn=cnn, seed=seed)
 
     target_var = T.vector('targets')
 
@@ -240,10 +240,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
     parser.add_argument('--num_epochs', help='Number of epoch',  default=500, type=int)
     parser.add_argument('-bs','--batchsize', help='Batch size',  default=32, type=int)
+    parser.add_argument('--seed', help='Random Seed',  default=42, type=int)
     parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
     parser.add_argument('-m','--model', help='Model Type',  default="cnn", type=str)
     parser.add_argument('-lr','--learning_rate', help='Learning rate',  default=1e-5, type=float)
     args = parser.parse_args()
 
+    seed = args.seed
     cnn = args.model == "cnn"
     main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize, learning_rate=args.learning_rate, cnn=cnn)
