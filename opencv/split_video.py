@@ -17,7 +17,7 @@ SPACE_KEY = 32
 EXIT_KEYS = [113, 27]  # Escape and q
 S_KEY = 115  # Save key
 
-output_folder = "dataset/track4"
+output_folder = "dataset/night"
 
 parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
 parser.add_argument('-i','--input_video', help='Input Video',  default="debug/robot_vue.mp4", type=str)

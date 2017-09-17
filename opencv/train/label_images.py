@@ -7,9 +7,14 @@ from image_processing import processImage
 
 EXIT_KEYS = [113, 27]  # Escape and q
 
-input_folder = 'train/dataset/track4/'
-output_folder = 'train/cropped/track4/'
+input_folder = 'train/dataset/night/'
+output_folder = 'train/cropped/night/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
+
+idx_images = [(int(im.split('.jpg')[0]), im) for im in images]
+idx_images = sorted(idx_images, key=lambda x: x[0])
+images = [im for _,im in idx_images]
+
 print(len(images))
 
 for idx, name in enumerate(images):
