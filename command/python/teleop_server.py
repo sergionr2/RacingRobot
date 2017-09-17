@@ -1,7 +1,10 @@
 from __future__ import print_function, with_statement, division
 
-import zmq
+import argsparse
 import time
+
+import zmq
+import picamera
 
 import common
 from common import *
@@ -11,6 +14,14 @@ port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
 socket.bind("tcp://*:{}".format(port))
+
+parser = argparse.ArgumentParser(description='Teleoperation server')
+parser.add_argument('-v','--video_file', help='Video filename',  default="", type=str)
+args = parser.parse_args()
+
+record_video = args.video_file != ""
+if record_video:
+    print("Recording a video to {}".format(args.video_file))
 
 
 try:
@@ -41,25 +52,34 @@ print("Connected to Arduino, waiting for client...")
 socket.send(b'1')
 print("Connected To Client")
 i = 0
-while True:
-    control_speed, angle_order = socket.recv_json()
-    print(control_speed, angle_order)
-    try:
-        if i%2 == 0:
-            i = 1
-            common.command_queue.put_nowait((Order.MOTOR, control_speed))
-            common.command_queue.put_nowait((Order.SERVO, angle_order))
-        else:
-            i = 2
-            common.command_queue.put_nowait((Order.SERVO, angle_order))
-            common.command_queue.put_nowait((Order.MOTOR, control_speed))
-    except Exception as e:
-        print(e)
-    	pass
 
-    if control_speed == -999:
-        socket.close()
-        break
+with picamera.PiCamera() as camera:
+    camera.resolution = (640//2, 480//2)
+    if record_video:
+        camera.start_recording(args.video_file)
+
+    while True:
+        control_speed, angle_order = socket.recv_json()
+        print(control_speed, angle_order)
+        try:
+            if i%2 == 0:
+                i = 1
+                common.command_queue.put_nowait((Order.MOTOR, control_speed))
+                common.command_queue.put_nowait((Order.SERVO, angle_order))
+            else:
+                i = 2
+                common.command_queue.put_nowait((Order.SERVO, angle_order))
+                common.command_queue.put_nowait((Order.MOTOR, control_speed))
+        except Exception as e:
+            print(e)
+        	pass
+
+        if control_speed == -999:
+            socket.close()
+            break
+    if record_video:
+        camera.stop_recording()
+
 print("Sending STOP order...")
 # SEND STOP ORDER at the end
 common.resetCommandQueue()
