@@ -13,3 +13,4 @@ render/
 *.log
 *.npz
 *.zip
+*.h264
