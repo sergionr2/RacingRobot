@@ -20,9 +20,9 @@ from picam.image_analyser import *
 THETA_MIN = 60
 THETA_MAX = 150
 ERROR_MAX = 1.0 # TODO: calibrate max error
-MAX_SPEED_STRAIGHT_LINE = 100
-MAX_SPEED_SHARP_TURN = 70
-MIN_SPEED = 60
+MAX_SPEED_STRAIGHT_LINE = 40
+MAX_SPEED_SHARP_TURN = 10
+MIN_SPEED = 10
 # PID Control
 Kp = 100
 Kd = 10
@@ -146,8 +146,8 @@ if __name__ == '__main__':
     max_width = resolution[0]
     # Regions of interest
     r0 = [0, 150, max_width, 50]
-    r1 = [0, 125, max_width, 25]
-    r2 = [0, 100, max_width, 25]
+    r1 = [0, 125, max_width, 50]
+    r2 = [0, 100, max_width, 50]
     regions = [r0, r1, r2]
     # image processing queue, output centroids
     out_queue = queue.Queue()

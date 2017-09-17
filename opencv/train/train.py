@@ -243,7 +243,7 @@ if __name__ == '__main__':
     parser.add_argument('-bs','--batchsize', help='Batch size',  default=32, type=int)
     parser.add_argument('--seed', help='Random Seed',  default=42, type=int)
     parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
-    parser.add_argument('-m','--model', help='Model Type',  default="cnn", type=str)
+    parser.add_argument('-m','--model', help='Model Type',  default="mlp", type=str)
     parser.add_argument('-lr','--learning_rate', help='Learning rate',  default=1e-5, type=float)
     args = parser.parse_args()
 

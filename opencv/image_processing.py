@@ -5,16 +5,44 @@ import argparse
 import cv2
 import numpy as np
 
-from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT, WIDTH_CNN
+def loadVanillaNet(weights_npy='mlp_model.npz'):
+    with np.load(weights_npy) as f:
+        print("Exporting pre-trained params")
+        param_values = [f['arr_%d' % i] for i in range(len(f.files))]
 
+    W1, b1, W2, b2, W3, b3, W4, b4 = param_values
+
+    def relu(x):
+        y = x.copy()
+        y[y<0] = 0
+        return y
+
+    def forward(X):
+        Z1 = np.dot(X, W1) + b1
+        A1 = relu(Z1)
+        Z2 = np.dot(A1, W2) + b2
+        A2 = relu(Z2)
+        Z3 = np.dot(A2, W3) + b3
+        A3 = relu(Z3)
+        Z4 = np.dot(A3, W4) + b4
+        A4 = relu(Z4)
+        return A4
+    return forward
 
 REF_ANGLE = - np.pi / 2
 use_network = True
 if use_network:
+    from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT, WIDTH_CNN
     cnn = False
-    network, pred_fn = loadNetwork(cnn=cnn)
+    # network, pred_fn = loadNetwork(cnn=cnn)
+    pred_fn = loadVanillaNet()
 
-def processImage(image, debug=False, regions=None, thresholds=None):
+def mouseCallback(event, x, y, flags, centers):
+    global has_clicked
+    if event == cv2.EVENT_LBUTTONDOWN:
+        centers[0] = (x,y)
+
+def processImage(image, debug=False, regions=None, thresholds=None, interactive=False):
     """
     :param image: (rgb image)
     :param debug: (bool)
@@ -27,14 +55,13 @@ def processImage(image, debug=False, regions=None, thresholds=None):
     max_width = image.shape[1]
     if regions is None:
         r0 = [0, 150, max_width, 50]
-        r1 = [0, 125, max_width, 25]
-        r2 = [0, 100, max_width, 25]
-        # r1 = [0, 125, max_width, 50]
-        # r2 = [0, 100, max_width, 50]
-        regions = [r0, r1]
+        r1 = [0, 125, max_width, 50]
+        r2 = [0, 100, max_width, 50]
+        regions = [r0, r1, r2]
     centroids = np.zeros((len(regions), 2), dtype=int)
     errors = [False for _ in regions]
     for idx, r in enumerate(regions):
+        center = {}
         margin_left, margin_top, _, _ = r
         im_cropped = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
@@ -55,6 +82,9 @@ def processImage(image, debug=False, regions=None, thresholds=None):
 
         if debug:
             cv2.imshow('crop{}'.format(idx), im_cropped)
+            if interactive:
+                cv2.setMouseCallback('crop{}'.format(idx), mouseCallback, center)
+                key = cv2.waitKey(0) & 0xff
 
         hsv = cv2.cvtColor(im_cropped, cv2.COLOR_RGB2HSV)
         # define range of blue color in HSV
@@ -76,7 +106,7 @@ def processImage(image, debug=False, regions=None, thresholds=None):
         kernel_dilate = np.ones((4,4),np.uint8)
         dilated_mask = cv2.dilate(eroded_mask, kernel_dilate, iterations=1)
 
-        if debug:
+        if debug and False:
             cv2.imshow('mask{}'.format(idx), mask)
             cv2.imshow('eroded{}'.format(idx), eroded_mask)
             cv2.imshow('dilated{}'.format(idx), dilated_mask)
@@ -92,30 +122,34 @@ def processImage(image, debug=False, regions=None, thresholds=None):
 
         # Sort by area
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
-        if debug and not use_network:
+        if debug and not (use_network or interactive):
             # Draw biggest
             # cv2.drawContours(im_cropped, contours, 0, (0,255,0), 3)
             cv2.drawContours(im_cropped, contours, -1, (0,255,0), 3)
 
-        if len(contours) > 0:
-            M = cv2.moments(contours[0])
-            # Centroid
-            try:
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
-            except ZeroDivisionError:
+        if interactive:
+            if center.get(0):
+                cx, cy = center[0]
+            else:
                 cx, cy = 0, 0
                 errors[idx] = True
-        else:
-            cx, cy = 0, 0
-            errors[idx] = True
-
-        if use_network:
+        elif use_network:
             cx, cy = x_center, y_center
+        else:
+            if len(contours) > 0:
+                M = cv2.moments(contours[0])
+                # Centroid
+                try:
+                    cx = int(M['m10']/M['m00'])
+                    cy = int(M['m01']/M['m00'])
+                except ZeroDivisionError:
+                    cx, cy = 0, 0
+                    errors[idx] = True
+            else:
+                cx, cy = 0, 0
+                errors[idx] = True
 
         centroids[idx] = np.array([cx + margin_left, cy + margin_top])
-    if False:
-        pass
     # Linear Regression to fit a line
     x = centroids[:,0]
     y = centroids[:, 1]
@@ -145,7 +179,7 @@ def processImage(image, debug=False, regions=None, thresholds=None):
 
     if debug:
         if all(errors):
-            print("No centroids found")
+            # print("No centroids found")
             cv2.imshow('result', image)
         else:
             for cx, cy in centroids:
