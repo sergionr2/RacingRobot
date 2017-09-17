@@ -115,28 +115,32 @@ def decodeOrder(f, byte, debug=False):
     :param byte: (int8_t)
     :param debug: (bool) whether to print or not received messages
     """
-    order = Order(byte)
-    if order == Order.HELLO:
-        msg = "HELLO"
-    elif order == Order.SERVO:
-        angle = readTwoBytesInt(f)
-        # Bit representation
-        # print('{0:016b}'.format(angle))
-        msg = "SERVO {}".format(angle)
-    elif order == Order.MOTOR:
-        speed = readOneByteInt(f)
-        msg = "motor {}".format(speed)
-    elif order == Order.ALREADY_CONNECTED:
-        msg = "ALREADY_CONNECTED"
-    elif order == Order.ERROR:
-        code_error = readTwoBytesInt(f)
-        msg = "Error {}".format(code_error)
-    elif order == Order.RECEIVED:
-        msg  = "RECEIVED"
-    elif order == Order.STOP:
-        msg = "STOP"
-    else:
-        print("Unknown Order", byte)
+    try:
+        order = Order(byte)
+        if order == Order.HELLO:
+            msg = "HELLO"
+        elif order == Order.SERVO:
+            angle = readTwoBytesInt(f)
+            # Bit representation
+            # print('{0:016b}'.format(angle))
+            msg = "SERVO {}".format(angle)
+        elif order == Order.MOTOR:
+                speed = readOneByteInt(f)
+            msg = "motor {}".format(speed)
+        elif order == Order.ALREADY_CONNECTED:
+            msg = "ALREADY_CONNECTED"
+        elif order == Order.ERROR:
+            code_error = readTwoBytesInt(f)
+            msg = "Error {}".format(code_error)
+        elif order == Order.RECEIVED:
+            msg  = "RECEIVED"
+        elif order == Order.STOP:
+            msg = "STOP"
+        else:
+            print("Unknown Order", byte)
+    except Exception as e:
+        print("Error decoding order: {}".format(e))
+
     if debug:
         print(msg)
 
