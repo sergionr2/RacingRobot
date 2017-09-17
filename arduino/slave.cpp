@@ -28,6 +28,9 @@ void setup()
   // Order between 0 and 180
   servomotor.write(INITIAL_THETA);
 
+  // Init button
+  pinMode(START_PIN , INPUT_PULLUP);
+
   // Wait until the arduino is connected to master
   while(!isConnected)
   {
@@ -35,6 +38,15 @@ void setup()
     waitForBytes(1, 1000);
     getMessageFromSerial();
   }
+
+  // Wait for start button to be pressed
+  int start_button_value = digitalRead(START_PIN);
+  while(start_button_value == 0)
+  {
+    start_button_value = digitalRead(START_PIN);
+    getMessageFromSerial();
+  }
+
   lastMillis = millis();
 }
 

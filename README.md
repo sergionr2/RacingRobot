@@ -25,11 +25,6 @@ OpenCV
 - [Guide](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
 - [PreCompiled](https://github.com/jabelone/OpenCV-for-Pi)
 
-Python binding
-```
-sudo apt-get install python-opencv
-```
-
 Libserial
 - [LibSerial](https://github.com/crayzeewulf/libserial)
 - [Boost](http://www.boost.org/)
