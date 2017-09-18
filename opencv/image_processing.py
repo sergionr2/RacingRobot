@@ -75,10 +75,11 @@ def processImage(image, debug=False, regions=None, thresholds=None, interactive=
             pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT, cnn=cnn)
             x_center = int(pred_fn([pred_img])[0] * factor * im_width)
             y_center = im_cropped_tmp.shape[0] // 2
-            # Draw prediction and true center
-            cv2.circle(im_cropped_tmp, (x_center, y_center), radius=10, color=(0,0,255),
-            thickness=2, lineType=8, shift=0)
-            cv2.imshow('crop_pred{}'.format(idx), im_cropped_tmp)
+            if debug:
+                # Draw prediction and true center
+                cv2.circle(im_cropped_tmp, (x_center, y_center), radius=10, color=(0,0,255),
+                thickness=2, lineType=8, shift=0)
+                cv2.imshow('crop_pred{}'.format(idx), im_cropped_tmp)
 
         if debug:
             cv2.imshow('crop{}'.format(idx), im_cropped)

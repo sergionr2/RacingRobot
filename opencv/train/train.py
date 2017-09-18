@@ -134,7 +134,7 @@ def buildMlp(input_var, input_dim):
     net = lasagne.layers.DropoutLayer(net, p=0.1)
     net = DenseLayer(net, num_units=8, nonlinearity=relu)
     # # net = lasagne.layers.DropoutLayer(net, p=0.1)
-    # net = DenseLayer(net, num_units=4, nonlinearity=relu)
+    net = DenseLayer(net, num_units=4, nonlinearity=relu)
     # net = DenseLayer(net, num_units=4, nonlinearity=relu)
 
     l_out = DenseLayer(net, num_units=1, nonlinearity=relu)
