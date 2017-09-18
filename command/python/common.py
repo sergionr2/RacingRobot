@@ -125,7 +125,7 @@ def decodeOrder(f, byte, debug=False):
             # print('{0:016b}'.format(angle))
             msg = "SERVO {}".format(angle)
         elif order == Order.MOTOR:
-                speed = readOneByteInt(f)
+            speed = readOneByteInt(f)
             msg = "motor {}".format(speed)
         elif order == Order.ALREADY_CONNECTED:
             msg = "ALREADY_CONNECTED"
