@@ -18,7 +18,7 @@ from opencv.image_processing import processImage
 from opencv.moments import processImage as oldProcessImage
 
 exp_time = int(time.time())
-SAVE_EVERY = 5  # Save every two frame to debug folder
+SAVE_EVERY = 1000  # Save every two frame to debug folder
 
 class ImageProcessingThread(threading.Thread):
     """

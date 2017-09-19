@@ -24,8 +24,8 @@ MAX_SPEED_STRAIGHT_LINE = 40
 MAX_SPEED_SHARP_TURN = 10
 MIN_SPEED = 10
 # PID Control
-Kp = 100
-Kd = 10
+Kp = 150
+Kd = 20
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=40), exit_condition)
+    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=90), exit_condition)
 
     threads = [CommandThread(serial_file, command_queue),
                ListenerThread(serial_file), image_thread]

@@ -43,19 +43,14 @@ def loadNetwork(cnn=False):
     pred_fn = theano.function([input_var], test_prediction)
     return network, pred_fn
 
-def preprocessImage(image, width, height, cnn=False):
+def preprocessImage(image, width, height):
     # Equalize v channel
-    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-    hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
-    image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
+    #hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    #hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
+    #image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
-    if cnn:
-        image = cv2.resize(image, (WIDTH_CNN, WIDTH_CNN), interpolation=cv2.INTER_LINEAR)
-        x = np.transpose(image, (2, 0, 1))
-        assert x.shape[0] == 3
-    else:
-        x = image.flatten()
-        # x = image.copy()
+    x = image.flatten()
+    # x = image.copy()
     # Normalize
     x = x / 255.
     x -= 0.5
