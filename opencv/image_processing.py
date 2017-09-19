@@ -32,7 +32,7 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
 REF_ANGLE = - np.pi / 2
 use_network = True
 if use_network:
-	from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT, WIDTH_CNN
+	from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
 	# network, pred_fn = loadNetwork()
 	pred_fn = loadVanillaNet()
 

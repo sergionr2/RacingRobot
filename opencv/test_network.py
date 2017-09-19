@@ -2,8 +2,7 @@ import numpy as np
 
 from train.train import loadNetwork
 
-
-network, pred_fn = loadNetwork(cnn=False)
+network, pred_fn = loadNetwork()
 
 weights_npy = 'mlp_model.npz'
 
