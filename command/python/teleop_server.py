@@ -9,6 +9,15 @@ import picamera
 import common
 from common import *
 
+try:
+    import queue
+
+except ImportError:
+    import Queue as queue
+
+emptyException = queue.Empty
+fullException = queue.Full
+
 # Listen to port 5556
 port = "5556"
 context = zmq.Context()
@@ -70,9 +79,8 @@ with picamera.PiCamera() as camera:
 				i = 2
 				common.command_queue.put_nowait((Order.SERVO, angle_order))
 				common.command_queue.put_nowait((Order.MOTOR, control_speed))
-		except Exception as e:
-			print(e)
-			pass
+		except fullException:
+			print("Queue full")
 
 		if control_speed == -999:
 			socket.close()

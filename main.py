@@ -9,6 +9,7 @@ except ImportError:
     import Queue as queue
 
 emptyException = queue.Empty
+fullException = queue.Full
 
 
 import numpy as np
@@ -112,9 +113,8 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
             else:
                 i = 2
                 common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
-        except Exception as e:
-            print(e)
-            pass
+        except fullException:
+            print("Exception putting in queue")
         # print("angle order = {}".format(angle_order))
 
     # SEND STOP ORDER at the end
@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     time.sleep(1)
 
-    main_control(out_queue, resolution=resolution, n_seconds=20, regions=regions)
+    main_control(out_queue, resolution=resolution, n_seconds=5, regions=regions)
 
     common.exit_signal = True
     n_received_semaphore.release()
