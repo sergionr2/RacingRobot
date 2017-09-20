@@ -37,7 +37,6 @@ if use_network:
 	pred_fn = loadVanillaNet()
 
 def mouseCallback(event, x, y, flags, centers):
-	global has_clicked
 	if event == cv2.EVENT_LBUTTONDOWN:
 		centers[0] = (x,y)
 
@@ -65,6 +64,7 @@ def processImage(image, debug=False, regions=None, thresholds=None, interactive=
 		im_cropped = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
 
 		if use_network:
+			# TODO: batch prediction
 			im_cropped_tmp = im_cropped.copy()
 			im_width = im_cropped_tmp.shape[1]
 			factor = im_width / WIDTH
