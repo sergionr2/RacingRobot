@@ -103,7 +103,7 @@ def processImage(image, debug=False, regions=None, thresholds=None, interactive=
 			kernel_dilate = np.ones((4,4),np.uint8)
 			dilated_mask = cv2.dilate(eroded_mask, kernel_dilate, iterations=1)
 
-			if debug and False:
+			if debug and not use_network:
 				cv2.imshow('mask{}'.format(idx), mask)
 				cv2.imshow('eroded{}'.format(idx), eroded_mask)
 				cv2.imshow('dilated{}'.format(idx), dilated_mask)
