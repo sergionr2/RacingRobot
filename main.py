@@ -32,7 +32,8 @@ Kd = 10
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 120
+N_SECONDS = 80
+alpha = 0.8
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -49,6 +50,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     :param n_seconds: (int) number of seconds to keep this script alive
     :param regions: [[int]] Regions Of Interest
     """
+    mean_h = 0
     start_time = time.time()
     u_angle = 0.
     error, errorD, errorI = 0, 0, 0
@@ -87,6 +89,11 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         has_error = any(errors)
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
+        # Moving mean
+        mean_h += alpha * (h - mean_h)
+
+        print("mean_h={}".format(mean_h))
+        h = mean_h
         v_max = h * MAX_SPEED_SHARP_TURN + (1 - h) * MAX_SPEED_STRAIGHT_LINE
 
         Kp = h * Kp_turn + (1 - h) * Kp_line
@@ -120,7 +127,8 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
                 i = 2
                 common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
         except fullException:
-            print("Exception putting in queue")
+        	pass
+            # print("Exception putting in queue")
         # print("angle order = {}".format(angle_order))
 
     # SEND STOP ORDER at the end
