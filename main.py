@@ -22,7 +22,7 @@ THETA_MIN = 75
 THETA_MAX = 135
 ERROR_MAX = 1.0 # TODO: calibrate max error
 MAX_SPEED_STRAIGHT_LINE = 50
-MAX_SPEED_SHARP_TURN = 10
+MAX_SPEED_SHARP_TURN = 20
 MIN_SPEED = 10
 # PID Control
 Kp_turn = 40
@@ -32,7 +32,7 @@ Kd = 10
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 20
+N_SECONDS = 120
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -106,7 +106,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         u_angle = Kp * error + Kd * errorD + Ki * errorI
         # Update integral error
         errorI += error
-        print("error={}".format(error))
+        # print("error={}".format(error))
         # print("u_angle={}".format(u_angle))
 
         angle_order = theta_init - u_angle
