@@ -21,15 +21,16 @@ from picam.image_analyser import *
 THETA_MIN = 60
 THETA_MAX = 150
 ERROR_MAX = 1.0 # TODO: calibrate max error
-MAX_SPEED_STRAIGHT_LINE = 40
-MAX_SPEED_SHARP_TURN = 10
+MAX_SPEED_STRAIGHT_LINE = 50
+MAX_SPEED_SHARP_TURN = 20
 MIN_SPEED = 10
 # PID Control
-Kp = 150
+Kp = 40
 Kd = 20
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
-
+FPS = 60
+N_SECONDS = 80
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -76,7 +77,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         stop_timer = 0
 
         # Compute the error to the center of the line
-        error = (resolution[0]//2 - centroids[1,0]) / (resolution[0]//2)
+        error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
 
 
         # Retrieve a and b that define the line
@@ -153,7 +154,7 @@ if __name__ == '__main__':
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=90), exit_condition)
+    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
 
     threads = [CommandThread(serial_file, command_queue),
                ListenerThread(serial_file), image_thread]
@@ -162,7 +163,7 @@ if __name__ == '__main__':
 
     time.sleep(1)
 
-    main_control(out_queue, resolution=resolution, n_seconds=5, regions=regions)
+    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS, regions=regions)
 
     common.exit_signal = True
     n_received_semaphore.release()
