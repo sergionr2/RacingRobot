@@ -22,15 +22,17 @@ THETA_MIN = 75
 THETA_MAX = 135
 ERROR_MAX = 1.0 # TODO: calibrate max error
 MAX_SPEED_STRAIGHT_LINE = 50
-MAX_SPEED_SHARP_TURN = 20
+MAX_SPEED_SHARP_TURN = 10
 MIN_SPEED = 10
 # PID Control
-Kp = 50
-Kd = 20
+Kp_turn = 100
+Kp_line = 40
+Kp = 40
+Kd = 10
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 80
+N_SECONDS = 20
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -86,6 +88,9 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
         v_max = h * MAX_SPEED_SHARP_TURN + (1 - h) * MAX_SPEED_STRAIGHT_LINE
+        
+        Kp = h * Kp_turn + (1 - h) * Kp_line
+
         # Reduce speed if we have a high error
         t = np.clip(error / float(ERROR_MAX), 0, 1)
         speed_order = t * MIN_SPEED + (1 - t) * v_max
