@@ -66,7 +66,7 @@ def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
         cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
 def loadDataset(seed=42, folder='cropped', split=True):
-    images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2']]
+    images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:]]
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
     height, width, n_channels = tmp_im.shape
 

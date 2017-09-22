@@ -149,7 +149,9 @@ if __name__ == '__main__':
     r0 = [0, 150, max_width, 50]
     r1 = [0, 125, max_width, 50]
     r2 = [0, 100, max_width, 50]
-    regions = [r0, r1, r2]
+    r3 = [0, 75, max_width, 50]
+    r4 = [0, 50, max_width, 50]
+    regions = [r2, r3, r4]
     # image processing queue, output centroids
     out_queue = queue.Queue()
     condition_lock = threading.Lock()

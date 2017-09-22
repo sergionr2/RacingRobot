@@ -96,7 +96,15 @@ while True:
             continue
 
     original_img = img.copy()
-    regions = None
+    resolution = (640//2, 480//2)
+    max_width = resolution[0]
+    # Regions of interest
+    r0 = [0, 150, max_width, 50]
+    r1 = [0, 125, max_width, 50]
+    r2 = [0, 100, max_width, 50]
+    r3 = [0, 75, max_width, 50]
+    r4 = [0, 50, max_width, 50]
+    regions = [r2, r3, r4]
     if args.regions == 0:
         regions = [[0, 0, img.shape[1], img.shape[0]]]
     processImage(img, debug=True, regions=regions, thresholds=thresholds)
