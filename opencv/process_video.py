@@ -104,7 +104,7 @@ while True:
     r2 = [0, 100, max_width, 50]
     r3 = [0, 75, max_width, 50]
     r4 = [0, 50, max_width, 50]
-    regions = [r2, r3, r4]
+    regions = [r1, r2, r3]
     if args.regions == 0:
         regions = [[0, 0, img.shape[1], img.shape[0]]]
     processImage(img, debug=True, regions=regions, thresholds=thresholds)

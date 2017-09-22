@@ -20,8 +20,8 @@ from sklearn.model_selection import train_test_split
 
 seed = 42
 np.random.seed(seed)
-evaluate_print = 100
-WIDTH, HEIGHT = 80, 12
+evaluate_print = 1
+WIDTH, HEIGHT = 80, 20
 
 def loadNetwork():
     input_var = T.matrix('inputs')
@@ -52,17 +52,17 @@ def preprocessImage(image, width, height):
     return x
 
 def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
-    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1']]
+    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:]]
     for idx, name in enumerate(images):
         r = name.split('.jpg')[0][-2:]
         cx, cy = map(int, name.split('_')[0].split('-'))
         image_path = '{}/{}'.format(in_folder, images[idx])
         image = cv2.imread(image_path)
         height, width, n_channels = image.shape
-        vertical_flip = cv2.flip(image, 0)
+        # vertical_flip = cv2.flip(image, 0)
         horizontal_flip = cv2.flip(image, 1)
         cv2.imwrite('{}/{}-{}_{}-{}.jpg'.format(out_folder, cx, cy, idx, r), image)
-        cv2.imwrite('{}/{}-{}_vert_{}-{}.jpg'.format(out_folder, cx, height - cy, idx, r), vertical_flip)
+        # cv2.imwrite('{}/{}-{}_vert_{}-{}.jpg'.format(out_folder, cx, height - cy, idx, r), vertical_flip)
         cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
 def loadDataset(seed=42, folder='cropped', split=True):
