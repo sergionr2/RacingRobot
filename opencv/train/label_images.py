@@ -7,8 +7,8 @@ from image_processing import processImage
 
 EXIT_KEYS = [113, 27]  # Escape and q
 
-input_folder = 'train/dataset/night/'
-output_folder = 'train/cropped/night/'
+input_folder = 'train/dataset/video1/'
+output_folder = 'train/cropped/video1/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
 idx_images = [(int(im.split('.jpg')[0]), im) for im in images]

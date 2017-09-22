@@ -75,6 +75,13 @@ sudo ldconfig
 pip install pyzmq
 ```
 
+Additional python dev-dependencies:
+```
+pip install --upgrade https://github.com/Theano/Theano/archive/rel-0.10.0beta2.zip
+pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
+pip install sklearn
+```
+
 ### Orange Object Following
 
 ```
