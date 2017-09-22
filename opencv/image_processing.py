@@ -5,6 +5,10 @@ import argparse
 import cv2
 import numpy as np
 
+REF_ANGLE = - np.pi / 2
+use_network = True
+MAX_ANGLE = np.pi / 4 # 2 * np.pi / 3
+
 def loadVanillaNet(weights_npy='mlp_model.npz'):
      W, b = {}, {}
      with np.load(weights_npy) as f:
@@ -29,8 +33,8 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
           return a
      return forward
 
-REF_ANGLE = - np.pi / 2
-use_network = True
+
+
 if use_network:
      from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
      # network, pred_fn = loadNetwork()
@@ -167,8 +171,8 @@ def processImage(image, debug=False, regions=None, thresholds=None, interactive=
           pts = pts.astype(int)
           track_angle = np.arctan(m)
           diff_angle = abs(REF_ANGLE) - abs(track_angle)
-          max_angle = 2 * np.pi / 3
-          turn_percent = (diff_angle / max_angle) * 100
+
+          turn_percent = (diff_angle / MAX_ANGLE) * 100
      if len(centroids) > 1:
           a,b = pts
      else:

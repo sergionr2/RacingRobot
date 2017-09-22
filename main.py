@@ -25,7 +25,7 @@ MAX_SPEED_STRAIGHT_LINE = 50
 MAX_SPEED_SHARP_TURN = 10
 MIN_SPEED = 10
 # PID Control
-Kp_turn = 100
+Kp_turn = 40
 Kp_line = 40
 Kp = 40
 Kd = 10
@@ -88,7 +88,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
         v_max = h * MAX_SPEED_SHARP_TURN + (1 - h) * MAX_SPEED_STRAIGHT_LINE
-        
+
         Kp = h * Kp_turn + (1 - h) * Kp_line
 
         # Reduce speed if we have a high error
