@@ -7,8 +7,8 @@
 #define SERVOMOTOR_PIN 6
 #define START_PIN 12
 #define INITIAL_THETA 105
-#define THETA_MIN 75
-#define THETA_MAX 135
+#define THETA_MIN 60
+#define THETA_MAX 150
 #define SPEED_MAX 100
 
 #define DEBUG false
