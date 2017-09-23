@@ -33,7 +33,7 @@ Kd = 20
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 80
+N_SECONDS = 160
 alpha = 0.8
 
 def forceStop():
@@ -64,14 +64,16 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     errors = [False]
     stop_timer = 0
     i = 1
-    should_exit = False
+    # Use mutable to be modified by signal handler
+    should_exit = [False]
 
     # Stop the robot
     def ctrl_c(signum, frame):
-        should_exit = True
+        print("STOP")
+        should_exit[0] = True
     signal.signal(signal.SIGINT, ctrl_c)
 
-    while time.time() - start_time < n_seconds or should_exit:
+    while time.time() - start_time < n_seconds and not should_exit[0]:
         old_turn_percent = turn_percent
         # Output of image processing
         pts, turn_percent, centroids, errors = out_queue.get()
@@ -91,7 +93,6 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         # Compute the error to the center of the line
         error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
 
-
         # Retrieve a and b that define the line
         # a, b = pts
         has_error = any(errors)
@@ -100,7 +101,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         # Moving mean
         mean_h += alpha * (h - mean_h)
 
-        print("mean_h={}".format(mean_h))
+        # print("mean_h={}".format(mean_h))
         h = mean_h
         v_max = h * MAX_SPEED_SHARP_TURN + (1 - h) * MAX_SPEED_STRAIGHT_LINE
 
