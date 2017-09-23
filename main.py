@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 
+import signal
 import time
 import threading
 try:
@@ -63,7 +64,14 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     errors = [False]
     stop_timer = 0
     i = 1
-    while time.time() - start_time < n_seconds:
+    should_exit = False
+
+    # Stop the robot
+    def ctrl_c(signum, frame):
+        should_exit = True
+    signal.signal(signal.SIGINT, ctrl_c)
+
+    while time.time() - start_time < n_seconds or should_exit:
         old_turn_percent = turn_percent
         # Output of image processing
         pts, turn_percent, centroids, errors = out_queue.get()
