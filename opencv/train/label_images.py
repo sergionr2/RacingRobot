@@ -8,8 +8,8 @@ from image_processing import processImage
 EXIT_KEYS = [113, 27]  # Escape and q
 
 id_video = "23sept"
-input_folder = 'train/dataset/video1/'
-output_folder = 'train/cropped/video1/'
+input_folder = 'train/dataset/video_sun/debug/'
+output_folder = 'train/cropped/video_sun/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
 idx_images = [(int(im.split('.jpg')[0]), im) for im in images]
