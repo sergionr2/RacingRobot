@@ -32,7 +32,7 @@ Kd = 30
 Ki = 0.0
 MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 300
+N_SECONDS = 77
 alpha = 0.8
 
 def forceStop():
