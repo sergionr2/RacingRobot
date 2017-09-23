@@ -12,7 +12,8 @@ input_folder = 'train/dataset/video_sun/debug/'
 output_folder = 'train/cropped/video_sun/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
-idx_images = [(int(im.split('.jpg')[0]), im) for im in images]
+# idx_images = [(int(im.split('.jpg')[0]), im) for im in images]
+idx_images = [(int(im.split('.jpg')[0].split('_')[1]), im) for im in images]
 idx_images = sorted(idx_images, key=lambda x: x[0])
 images = [im for _,im in idx_images]
 
