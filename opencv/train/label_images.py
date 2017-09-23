@@ -7,6 +7,7 @@ from image_processing import processImage
 
 EXIT_KEYS = [113, 27]  # Escape and q
 
+id_video = "23sept"
 input_folder = 'train/dataset/video1/'
 output_folder = 'train/cropped/video1/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
@@ -39,7 +40,7 @@ for idx, name in enumerate(images):
         if not all(errors):
             x, y = centroids.flatten()
             cx, cy = x - margin_left, y - margin_top
-            cv2.imwrite('{}/{}-{}_{}-{}r{}.jpg'.format(output_folder, cx, cy, idx, original_idx, i), im_cropped)
+            cv2.imwrite('{}/{}-{}_{}-{}{}r{}.jpg'.format(output_folder, cx, cy, idx, id_video original_idx, i), im_cropped)
 
     # key = cv2.waitKey(0) & 0xff
     # if key in EXIT_KEYS:
