@@ -19,11 +19,11 @@ import command.python.common as common
 from command.python.common import *
 from picam.image_analyser import *
 
-THETA_MIN = 60
+THETA_MIN = 70
 THETA_MAX = 150
 ERROR_MAX = 1.0 # TODO: calibrate max error
 MAX_SPEED_STRAIGHT_LINE = 60
-MAX_SPEED_SHARP_TURN = 20
+MAX_SPEED_SHARP_TURN = 15
 MIN_SPEED = 10
 # PID Control
 Kp_turn = 40
