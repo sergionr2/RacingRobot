@@ -22,7 +22,7 @@ from picam.image_analyser import *
 THETA_MIN = 70
 THETA_MAX = 150
 ERROR_MAX = 1.0 # TODO: calibrate max error
-MAX_SPEED_STRAIGHT_LINE = 60
+MAX_SPEED_STRAIGHT_LINE = 50
 MAX_SPEED_SHARP_TURN = 15
 MIN_SPEED = 10
 # PID Control
