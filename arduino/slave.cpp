@@ -40,12 +40,12 @@ void setup()
   }
 
   // Wait for start button to be pressed
-  int start_button_value = digitalRead(START_PIN);
-  while(start_button_value == 0)
-  {
-    start_button_value = digitalRead(START_PIN);
-    getMessageFromSerial();
-  }
+  // int start_button_value = digitalRead(START_PIN);
+  // while(start_button_value == 0)
+  // {
+  //   start_button_value = digitalRead(START_PIN);
+  //   getMessageFromSerial();
+  // }
 
   lastMillis = millis();
 }
@@ -93,13 +93,12 @@ void getMessageFromSerial()
 {
   while(Serial.available() > 0)
   {
-    //The first byte received is the instruction
+    // The first byte received is the instruction
     Order orderReceived = readOrder();
 
-    //Commands for initConnection begin
     if(orderReceived == HELLO)
     {
-      //If the cards haven't say hello, check the connection
+      // If the cards haven't say hello, check the connection
       if (!isConnected)
       {
         isConnected = true;
@@ -107,7 +106,7 @@ void getMessageFromSerial()
       }
       else
       {
-        //If we are already connected do not send "hello" to avoid infinite loop
+        // If we are already connected do not send "hello" to avoid infinite loop
         sendOrder(ALREADY_CONNECTED);
       }
     }
@@ -115,8 +114,7 @@ void getMessageFromSerial()
     {
       isConnected = true;
     }
-    //Commands for initConnection end
-    else // Commands after initConnection
+    else
     {
       switch(orderReceived)
       {

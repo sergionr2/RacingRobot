@@ -2,6 +2,10 @@ from __future__ import print_function, with_statement, division
 
 import argparse
 import time
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 import zmq
 import picamera
@@ -9,11 +13,6 @@ import picamera
 import common
 from common import *
 
-try:
-    import queue
-
-except ImportError:
-    import Queue as queue
 
 emptyException = queue.Empty
 fullException = queue.Full
@@ -71,6 +70,7 @@ with picamera.PiCamera() as camera:
 		control_speed, angle_order = socket.recv_json()
 		print(control_speed, angle_order)
 		try:
+            # FIXME: remove the dirty fix to send both motor and servo order
 			if i%2 == 0:
 				i = 1
 				common.command_queue.put_nowait((Order.MOTOR, control_speed))

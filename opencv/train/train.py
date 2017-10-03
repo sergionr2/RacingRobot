@@ -38,13 +38,8 @@ def loadNetwork():
     return network, pred_fn
 
 def preprocessImage(image, width, height):
-    # Equalize v channel
-    #hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
-    #hsv[:, :, 2] = cv2.equalizeHist(hsv[:, :, 2])
-    #image = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
-    # x = image.copy()
     # Normalize
     x = x / 255.
     x -= 0.5
@@ -59,10 +54,8 @@ def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
         image_path = '{}/{}'.format(in_folder, images[idx])
         image = cv2.imread(image_path)
         height, width, n_channels = image.shape
-        # vertical_flip = cv2.flip(image, 0)
         horizontal_flip = cv2.flip(image, 1)
         cv2.imwrite('{}/{}-{}_{}-{}.jpg'.format(out_folder, cx, cy, idx, r), image)
-        # cv2.imwrite('{}/{}-{}_vert_{}-{}.jpg'.format(out_folder, cx, height - cy, idx, r), vertical_flip)
         cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
 def loadDataset(seed=42, folder='cropped', split=True):
@@ -203,8 +196,8 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
-    parser.add_argument('--num_epochs', help='Number of epoch',  default=500, type=int)
-    parser.add_argument('-bs','--batchsize', help='Batch size',  default=32, type=int)
+    parser.add_argument('--num_epochs', help='Number of epoch',  default=3000, type=int)
+    parser.add_argument('-bs','--batchsize', help='Batch size',  default=1, type=int)
     parser.add_argument('--seed', help='Random Seed',  default=42, type=int)
     parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
     parser.add_argument('-lr','--learning_rate', help='Learning rate',  default=1e-5, type=float)

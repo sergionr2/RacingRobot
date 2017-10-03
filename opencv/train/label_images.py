@@ -37,7 +37,7 @@ for idx, name in enumerate(images):
         img = original_img.copy()
         margin_left, margin_top, _, _ = r
         im_cropped = original_img[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
-        pts, turn_percent, centroids, errors = processImage(img, debug=True, regions=[r], interactive=True)
+        centroids, errors = processImage(img, debug=True, regions=[r], interactive=True)
         if not all(errors):
             x, y = centroids.flatten()
             cx, cy = x - margin_left, y - margin_top

@@ -8,11 +8,6 @@ import numpy as np
 
 from image_processing import processImage
 
-thresholds = {
-    'lower_white': np.array([0, 0, 0]),
-    'upper_white': np.array([90, 213, 249])
-}
-
 # Arrow keys
 UP_KEY = 82
 DOWN_KEY = 84
@@ -41,18 +36,12 @@ if args.input_image != "" or args.folder != "":
         regions = None
         if args.regions == 0:
             regions = [[0, 0, img.shape[1], img.shape[0]]]
-        processImage(img, debug=True, regions=regions, thresholds=thresholds)
+        processImage(img, debug=True, regions=regions)
 
         key = cv2.waitKey(0) & 0xff
         if key in EXIT_KEYS:
             cv2.destroyAllWindows()
             exit()
-        elif key in [UP_KEY, DOWN_KEY]:
-            thresholds['upper_white'][1] += 1 if key == UP_KEY else -1
-            print(thresholds)
-        elif key in [L_KEY, M_KEY]:
-            thresholds['upper_white'][0] += 1 if key == M_KEY else -1
-            print(thresholds)
         elif key in [LEFT_KEY, RIGHT_KEY]:
             current_idx += 1 if key == RIGHT_KEY else -1
             current_idx = np.clip(current_idx, 0, len(imgs)-1)
