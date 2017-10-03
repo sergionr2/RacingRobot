@@ -5,7 +5,7 @@ import argparse
 import cv2
 import numpy as np
 
-def processImage(image, debug=False):
+def processImageWithColorMask(image, debug=False):
     """
     :param image: (rgb image)
     :param debug: (bool)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     img = cv2.imread(args.input_image)
-    cx, cy, error = processImage(img, debug=True)
+    cx, cy, error = processImageWithColorMask(img, debug=True)
 
     if not error:
         cv2.circle(img, (cx,cy), radius=10, color=(0,0,255),

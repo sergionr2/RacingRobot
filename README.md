@@ -38,16 +38,13 @@ sudo apt-get install libboost-all-dev
 sudo ldconfig
 ```
 
-Raspicam
-- [Userland](https://github.com/raspberrypi/userland)
-- [Raspicam](https://www.uco.es/investiga/grupos/ava/node/40)
-
 PySerial
 ```
 sudo apt-get install python-serial
 ```
 
 [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
+For teleoperation
 ```
 pip install pygame
 ```
@@ -75,7 +72,7 @@ sudo ldconfig
 pip install pyzmq
 ```
 
-Additional python dev-dependencies:
+Additional python dev-dependencies for training the neural network:
 ```
 pip install --upgrade https://github.com/Theano/Theano/archive/rel-0.10.0beta2.zip
 pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip

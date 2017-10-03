@@ -3,9 +3,10 @@ from __future__ import division, print_function
 import signal
 import time
 import threading
+
+# Python 2/3 support
 try:
     import queue
-
 except ImportError:
     import Queue as queue
 
@@ -19,10 +20,10 @@ import command.python.common as common
 from command.python.common import *
 from picam.image_analyser import *
 
-THETA_MIN = 70
+THETA_MIN = 70 # value in [0, 255] sent to the servo
 THETA_MAX = 150
-ERROR_MAX = 1.0 # TODO: calibrate max error
-MAX_SPEED_STRAIGHT_LINE = 50
+ERROR_MAX = 1.0
+MAX_SPEED_STRAIGHT_LINE = 50 # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 15
 MIN_SPEED = 10
 # PID Control
@@ -30,10 +31,9 @@ Kp_turn = 40
 Kp_line = 35
 Kd = 30
 Ki = 0.0
-MAX_ERROR_SECONDS_BEFORE_STOP = 3
 FPS = 60
-N_SECONDS = 77
-alpha = 0.8
+N_SECONDS = 77  # number of seconds before exiting the program
+alpha = 0.8  # alpha of the moving mean for the turn coefficient
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -66,7 +66,7 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     # Use mutable to be modified by signal handler
     should_exit = [False]
 
-    # Stop the robot
+    # Stop the robot on ctrl+c and exit the script
     def ctrl_c(signum, frame):
         print("STOP")
         should_exit[0] = True
@@ -75,26 +75,12 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     while time.time() - start_time < n_seconds and not should_exit[0]:
         old_turn_percent = turn_percent
         # Output of image processing
-        pts, turn_percent, centroids, errors = out_queue.get()
-
-        # print(centroids)
-        # print(errors)
-
-        # Use previous control if we see no line
-        if all(errors):
-            stop_timer = stop_timer if stop_timer != 0 else time.time()
-            if time.time() - stop_timer > MAX_ERROR_SECONDS_BEFORE_STOP:
-                forceStop()
-            time.sleep(common.rate)
-            continue
-        stop_timer = 0
+        turn_percent, centroids = out_queue.get()
 
         # Compute the error to the center of the line
+        # Here we use the farthest centroids
         error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
 
-        # Retrieve a and b that define the line
-        # a, b = pts
-        has_error = any(errors)
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
         # Moving mean
@@ -167,6 +153,7 @@ if __name__ == '__main__':
     resolution = (640//2, 480//2)
     max_width = resolution[0]
     # Regions of interest
+    # r = [margin_left, margin_top, width, height]
     r0 = [0, 150, max_width, 50]
     r1 = [0, 125, max_width, 50]
     r2 = [0, 100, max_width, 50]
@@ -179,6 +166,7 @@ if __name__ == '__main__':
     exit_condition = threading.Condition(condition_lock)
     image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
 
+    # Threads for arduino communication
     threads = [CommandThread(serial_file, command_queue),
                ListenerThread(serial_file), image_thread]
     for t in threads:

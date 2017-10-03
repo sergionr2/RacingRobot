@@ -7,6 +7,9 @@ try:
 except ImportError:
     import Queue as queue
 
+emptyException = queue.Empty
+fullException = queue.Full
+
 # NOTE: with multiprocessing picamera does not seem to work
 # import multiprocessing
 
@@ -15,10 +18,9 @@ import cv2
 import numpy as np
 
 from opencv.image_processing import processImage
-from opencv.moments import processImage as oldProcessImage
 
-exp_time = int(time.time())
-SAVE_EVERY = 1000  # Save every two frame to debug folder
+experiment_time = int(time.time())
+SAVE_EVERY = 1000  # Save every 1000 frame to debug folder
 
 class ImageProcessingThread(threading.Thread):
     """
@@ -77,20 +79,16 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 else:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     if self.frame_num % SAVE_EVERY == 0:
-                        cv2.imwrite("debug/{}_{}.jpg".format(exp_time, self.frame_num),frame)
+                        cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num),frame)
                         pass
                     try:
-                        pts, turn_percent, centroids, errors = processImage(frame)
-                        self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
+                        turn_percent, centroids = processImage(frame)
+                        self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:
-                        print(e)
-                    # Code for follow_orange.py
-                    # cx, cy, error = oldProcessImage(frame)
-                    # print(cx, cy)
-                    # self.out_queue.put(item=(cx, cy, error), block=False)
+                        print("Exception in image RBGAnalyser: {}".format(e))
                 self.frame_num += 1
-        except:
-            pass
+        except Exception as e:
+            print("Exception in image RBGAnalyser after loop: {}".format(e))
 
     def start(self):
         t = threading.Thread(target=self.extractInfo)
