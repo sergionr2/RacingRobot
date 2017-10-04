@@ -68,17 +68,10 @@ with picamera.PiCamera() as camera:
 
 	while True:
 		control_speed, angle_order = socket.recv_json()
-		print(control_speed, angle_order)
+		print("({}, {})".format(control_speed, angle_order))
 		try:
-            # FIXME: remove the dirty fix to send both motor and servo order
-			if i%2 == 0:
-				i = 1
-				common.command_queue.put_nowait((Order.MOTOR, control_speed))
-				common.command_queue.put_nowait((Order.SERVO, angle_order))
-			else:
-				i = 2
-				common.command_queue.put_nowait((Order.SERVO, angle_order))
-				common.command_queue.put_nowait((Order.MOTOR, control_speed))
+			common.command_queue.put_nowait((Order.MOTOR, control_speed))
+			common.command_queue.put_nowait((Order.SERVO, angle_order))
 		except fullException:
 			print("Queue full")
 
