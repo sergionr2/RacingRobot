@@ -20,9 +20,6 @@ class CustomQueue(queue.Queue):
     A custom queue subclass that provides a :meth:`clear` method.
     """
 
-    def __init__(self, max_size):
-        super(CustomQueue, self).__init__(max_size)
-
     def clear(self):
         """
         Clears all items from the queue.
