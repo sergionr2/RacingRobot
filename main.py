@@ -10,20 +10,21 @@ try:
 except ImportError:
     import Queue as queue
 
-emptyException = queue.Empty
-fullException = queue.Full
-
-
+import serial
 import numpy as np
 
 import command.python.common as common
-from command.python.common import *
-from picam.image_analyser import *
+from command.python.common import is_connected, n_received_semaphore, command_queue,\
+                                  CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
+from picam.image_analyser import ImageProcessingThread, Viewer
 
-THETA_MIN = 70 # value in [0, 255] sent to the servo
+emptyException = queue.Empty
+fullException = queue.Full
+
+THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
-MAX_SPEED_STRAIGHT_LINE = 50 # order between 0 and 100
+MAX_SPEED_STRAIGHT_LINE = 50  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 15
 MIN_SPEED = 10
 # PID Control
@@ -35,34 +36,29 @@ FPS = 60
 N_SECONDS = 77  # number of seconds before exiting the program
 alpha = 0.8  # alpha of the moving mean for the turn coefficient
 
+
 def forceStop():
     # SEND STOP ORDER at the end
     common.resetCommandQueue()
     n_received_semaphore.release()
     n_received_semaphore.release()
     common.command_queue.put((Order.MOTOR, 0))
-    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX)/2)))
+    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
 
-def main_control(out_queue, resolution, n_seconds=5, regions=None):
+
+def main_control(out_queue, resolution, n_seconds=5):
     """
     :param out_queue: (Queue)
     :param resolution: (int, int)
     :param n_seconds: (int) number of seconds to keep this script alive
-    :param regions: [[int]] Regions Of Interest
     """
     mean_h = 0
     start_time = time.time()
-    u_angle = 0.
     error, errorD, errorI = 0, 0, 0
     last_error = 0
-    turn_percent = 0
     initialized = False
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
-    angle_order = theta_init
-    errors = [False]
-    stop_timer = 0
-    i = 1
     # Use mutable to be modified by signal handler
     should_exit = [False]
 
@@ -70,17 +66,17 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
     def ctrl_c(signum, frame):
         print("STOP")
         should_exit[0] = True
+
     signal.signal(signal.SIGINT, ctrl_c)
     last_time = time.time()
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
-        old_turn_percent = turn_percent
         # Output of image processing
         turn_percent, centroids = out_queue.get()
         # print(centroids)
         # Compute the error to the center of the line
         # Here we use the farthest centroids
-        error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
+        error = (resolution[0] // 2 - centroids[-1, 0]) / (resolution[0] // 2)
 
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
@@ -115,19 +111,19 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         # print("u_angle={}".format(u_angle))
 
         angle_order = theta_init - u_angle
-
         angle_order = np.clip(angle_order, THETA_MIN, THETA_MAX).astype(int)
+
         try:
             common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
             common.command_queue.put_nowait((Order.SERVO, angle_order))
         except fullException:
-        	print("Queue is full")
-        # print("angle order = {}".format(angle_order))
+            print("Queue is full")
 
     # SEND STOP ORDER at the end
     forceStop()
     # Make sure STOP order is sent
     time.sleep(0.2)
+
 
 if __name__ == '__main__':
     try:
@@ -149,16 +145,9 @@ if __name__ == '__main__':
         time.sleep(1)
 
     print("Connected to Arduino")
-    resolution = (640//2, 480//2)
+    resolution = (640 // 2, 480 // 2)
     max_width = resolution[0]
-    # Regions of interest
-    # r = [margin_left, margin_top, width, height]
-    r0 = [0, 150, max_width, 50]
-    r1 = [0, 125, max_width, 50]
-    r2 = [0, 100, max_width, 50]
-    r3 = [0, 75, max_width, 50]
-    r4 = [0, 50, max_width, 50]
-    regions = [r1, r2, r3]
+
     # image processing queue, output centroids
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
@@ -173,7 +162,7 @@ if __name__ == '__main__':
 
     time.sleep(1)
 
-    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS, regions=regions)
+    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
 
     common.exit_signal = True
     n_received_semaphore.release()
