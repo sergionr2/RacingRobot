@@ -71,12 +71,13 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         print("STOP")
         should_exit[0] = True
     signal.signal(signal.SIGINT, ctrl_c)
+    last_time = time.time()
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
         old_turn_percent = turn_percent
         # Output of image processing
         turn_percent, centroids = out_queue.get()
-
+        # print(centroids)
         # Compute the error to the center of the line
         # Here we use the farthest centroids
         error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
@@ -104,9 +105,12 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         last_error = error
 
         # PID Control
+        # TODO: add dt in the equation
+        dt = time.time() - last_time
         u_angle = Kp * error + Kd * errorD + Ki * errorI
         # Update integral error
         errorI += error
+        last_time = time.time()
         # print("error={}".format(error))
         # print("u_angle={}".format(u_angle))
 

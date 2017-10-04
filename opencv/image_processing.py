@@ -17,45 +17,45 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
 	:param weights_npy: (str) path to the numpy archive
 	:return: (function) the neural net forward function
 	"""
-	 W, b = {}, {}
-	 with np.load(weights_npy) as f:
-		  print("Loading network")
-		  n_layers = len(f.files) // 2
-		  for i in range(len(f.files)):
-			   if i % 2 == 1:
-					b[i//2] = f['arr_%d' % i]
-			   else:
-					W[i//2] = f['arr_%d' % i]
+	W, b = {}, {}
+	with np.load(weights_npy) as f:
+		print("Loading network")
+		n_layers = len(f.files) // 2
+		for i in range(len(f.files)):
+			if i % 2 == 1:
+				b[i//2] = f['arr_%d' % i]
+			else:
+				W[i//2] = f['arr_%d' % i]
 
-	 def relu(x):
-		 """
-		 Rectify activation function: f(x) = max(0, x)
-		 :param x: (numpy array)
-		 :return: (numpy array)
-		 """
-		  y = x.copy()
-		  y[y < 0] = 0
-		  return y
+	def relu(x):
+		"""
+		Rectify activation function: f(x) = max(0, x)
+		:param x: (numpy array)
+		:return: (numpy array)
+		"""
+		y = x.copy()
+		y[y < 0] = 0
+		return y
 
-	 def forward(X):
-		 """
-		 Forward pass of a fully-connected neural net
-		 with rectifier activation function
-		 :param X: (numpy tensor)
-		 :return: (numpy array)
-		 """
-		  a = X
-		  for i in range(n_layers):
-			   z = np.dot(a, W[i]) + b[i]
-			   a = relu(z)
-		  return a
-	 return forward
+	def forward(X):
+		"""
+		Forward pass of a fully-connected neural net
+		with rectifier activation function
+		:param X: (numpy tensor)
+		:return: (numpy array)
+		"""
+		a = X
+		for i in range(n_layers):
+			z = np.dot(a, W[i]) + b[i]
+			a = relu(z)
+		return a
+	return forward
 
 
- from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
- # Either load network with theano or with numpy
- # network, pred_fn = loadNetwork()
- pred_fn = loadVanillaNet()
+from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
+# Either load network with theano or with numpy
+# network, pred_fn = loadNetwork()
+pred_fn = loadVanillaNet()
 
 def mouseCallback(event, x, y, flags, centers):
 	"""
@@ -66,26 +66,26 @@ def mouseCallback(event, x, y, flags, centers):
 		centers[0] = (x,y)
 
 def processImage(image, debug=False, regions=None, interactive=False):
-	 """
+	"""
 
-	 :param image: (rgb image)
-	 :param debug: (bool)
-	 :param regions: [[int]]
-	 :param interactive: (bool)
-	 :return:(float, numpy array)
-	 """
-	 # r = [margin_left, margin_top, width, height]
-	 max_width = image.shape[1]
-	 if regions is None:
-		  r0 = [0, 150, max_width, 50]
-		  r1 = [0, 125, max_width, 50]
-		  r2 = [0, 100, max_width, 50]
-		  regions = [r0, r1, r2]
+	:param image: (rgb image)
+	:param debug: (bool)
+	:param regions: [[int]]
+	:param interactive: (bool)
+	:return:(float, numpy array)
+	"""
+	# r = [margin_left, margin_top, width, height]
+	max_width = image.shape[1]
+	if regions is None:
+		r0 = [0, 150, max_width, 50]
+		r1 = [0, 125, max_width, 50]
+		r2 = [0, 100, max_width, 50]
+		regions = [r0, r1, r2]
 
-	 centroids = np.zeros((len(regions), 2), dtype=int)
-	 errors = [False for _ in regions]
+	centroids = np.zeros((len(regions), 2), dtype=int)
+	errors = [False for _ in regions]
 
-	 for idx, r in enumerate(regions):
+	for idx, r in enumerate(regions):
 		center = {}
 		margin_left, margin_top, _, _ = r
 		im_cropped = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
@@ -111,58 +111,58 @@ def processImage(image, debug=False, regions=None, interactive=False):
 			cv2.line(im_cropped, (0, h), (1000, h), (0,0,255), 2)
 			cv2.imshow('crop{}'.format(idx), im_cropped)
 			if interactive:
-				 cv2.setMouseCallback('crop{}'.format(idx), mouseCallback, center)
-				 key = cv2.waitKey(0) & 0xff
+				cv2.setMouseCallback('crop{}'.format(idx), mouseCallback, center)
+				key = cv2.waitKey(0) & 0xff
 
-		  if interactive:
-			   if center.get(0):
-					cx, cy = center[0]
-			   else:
-					cx, cy = 0, 0
-					errors[idx] = True
-		  else:
-			   cx, cy = x_center, y_center
+		if debug and interactive:
+			if center.get(0):
+				cx, cy = center[0]
+			else:
+				cx, cy = 0, 0
+				errors[idx] = True
+		else:
+			cx, cy = x_center, y_center
 
-		  centroids[idx] = np.array([cx + margin_left, cy + margin_top])
-	 # Linear Regression to fit a line
-	 x = centroids[:, 0]
-	 y = centroids[:, 1]
-	 # Case x = cst
-	 if len(np.unique(x)) == 1:
-		  pts = centroids[:2, :]
-		  turn_percent = 0
-	 else:
-		  x = np.array([x[0], x[-1]])
-		  y = np.array([y[0], y[-1]])
-		  A = np.vstack([x, np.ones(len(x))]).T
-		  # TODO: use all the centroids to compute the line
-		  m, b = np.linalg.lstsq(A, y)[0]
-		  # y = m*x + b
-		  x = np.array([0, image.shape[1]], dtype=int)
-		  pts = np.vstack([x, m * x + b]).T
-		  pts = pts.astype(int)
-		  track_angle = np.arctan(m)
-		  diff_angle = abs(REF_ANGLE) - abs(track_angle)
+			centroids[idx] = np.array([cx + margin_left, cy + margin_top])
+	# Linear Regression to fit a line
+	x = centroids[:, 0]
+	y = centroids[:, 1]
+	# Case x = cst
+	if len(np.unique(x)) == 1:
+		pts = centroids[:2, :]
+		turn_percent = 0
+	else:
+		x = np.array([x[0], x[-1]])
+		y = np.array([y[0], y[-1]])
+		A = np.vstack([x, np.ones(len(x))]).T
+		# TODO: use all the centroids to compute the line
+		m, b = np.linalg.lstsq(A, y)[0]
+		# y = m*x + b
+		x = np.array([0, image.shape[1]], dtype=int)
+		pts = np.vstack([x, m * x + b]).T
+		pts = pts.astype(int)
+		track_angle = np.arctan(m)
+		diff_angle = abs(REF_ANGLE) - abs(track_angle)
 
-		  turn_percent = (diff_angle / MAX_ANGLE) * 100
+		turn_percent = (diff_angle / MAX_ANGLE) * 100
 
-	 if len(centroids) > 1:
-		  a,b = pts
-	 else:
-		  pts = None
-		  a,b = (0,0), (0,0)
+	if len(centroids) > 1:
+		a,b = pts
+	else:
+		pts = None
+		a,b = (0,0), (0,0)
 
-	 if debug:
-		  if all(errors):
-			   # print("No centroids found")
-			   cv2.imshow('result', image)
-		  else:
-			   for cx, cy in centroids:
-					cv2.circle(image, (cx,cy), radius=10, color=(0,0,255), thickness=1, lineType=8, shift=0)
-
-			   cv2.line(image, tuple(a), tuple(b), color=(100,100,0), thickness=2, lineType=8)
-			   cv2.line(image, (image.shape[1]//2, 0), (image.shape[1]//2, image.shape[0]), color=(100,0,0),thickness=2, lineType=8)
-			   cv2.imshow('result', image)
+	if debug:
+		if all(errors):
+			 # print("No centroids found")
+			 cv2.imshow('result', image)
+		else:
+			for cx, cy in centroids:
+				cv2.circle(image, (cx,cy), radius=10, color=(0,0,255), thickness=1, lineType=8, shift=0)
+				cv2.line(image, tuple(a), tuple(b), color=(100,100,0), thickness=2, lineType=8)
+			cv2.line(image, (image.shape[1]//2, 0), (image.shape[1]//2, image.shape[0]), color=(100,0,0),thickness=2, lineType=8)
+			cv2.imshow('result', image)
+			
 	if interactive:
 		return centroids, errors
 	return turn_percent, centroids
@@ -174,12 +174,12 @@ if __name__ == '__main__':
 
 	 args = parser.parse_args()
 	 if args.input_image != "":
-		  img = cv2.imread(args.input_image)
-		  turn_percent, centroids = processImage(img, debug=True)
-		  # turn_mat = np.array([turn_percent, any(errors)]).reshape((1, -1))
-		  # error = (img.shape[0]//2 - centroids[-1,0]) / (img.shape[0]//2)
-		  # error_mat = np.array([error, turn_percent]).reshape((1, -1))
-		  # mat = np.vstack((pts, turn_mat, error_mat))
-		  if cv2.waitKey(0) & 0xff == 27:
-			   cv2.destroyAllWindows()
-			   exit()
+			img = cv2.imread(args.input_image)
+			turn_percent, centroids = processImage(img, debug=True)
+			# turn_mat = np.array([turn_percent, any(errors)]).reshape((1, -1))
+			# error = (img.shape[0]//2 - centroids[-1,0]) / (img.shape[0]//2)
+			# error_mat = np.array([error, turn_percent]).reshape((1, -1))
+			# mat = np.vstack((pts, turn_mat, error_mat))
+			if cv2.waitKey(0) & 0xff == 27:
+				 cv2.destroyAllWindows()
+				 exit()
