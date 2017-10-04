@@ -42,8 +42,8 @@ is_connected = False
 n_messages_allowed = 3
 n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
-command_queue = CustomQueue(4)
-rate = 1/90 # 90 fps
+command_queue = CustomQueue(2)  # Must be >= 2 (motor + servo order)
+rate = 1/1000 # 1000 fps (limit the rate of communication with the arduino)
 
 def resetCommandQueue():
     command_queue.clear()
@@ -96,7 +96,6 @@ def writeOneByteInt(f, value):
         f.write(struct.pack('<b', value))
     else:
         print("Value error:{}".format(value))
-    # f.flush()
 
 # Alias
 sendOrder = writeOneByteInt
@@ -107,7 +106,7 @@ def writeTwoBytesInt(f, value):
     :param value: (int16_t)
     """
     f.write(struct.pack('<h', value))
-    # f.flush()
+
 
 def decodeOrder(f, byte, debug=False):
     """
@@ -139,7 +138,8 @@ def decodeOrder(f, byte, debug=False):
         else:
             print("Unknown Order", byte)
     except Exception as e:
-        print("Error decoding order: {}".format(e))
+        print("Error decoding order {}: {}".format(order, e))
+        print('byte={0:08b}'.format(byte))
 
     if debug:
         print(msg)

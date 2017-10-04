@@ -118,15 +118,10 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
 
         angle_order = np.clip(angle_order, THETA_MIN, THETA_MAX).astype(int)
         try:
-            if i % 2 == 0:
-                i = 1
-                common.command_queue.put_nowait((Order.SERVO, angle_order))
-            else:
-                i = 2
-                common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
+            common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
+            common.command_queue.put_nowait((Order.SERVO, angle_order))
         except fullException:
-        	pass
-            # print("Exception putting in queue")
+        	print("Queue is full")
         # print("angle order = {}".format(angle_order))
 
     # SEND STOP ORDER at the end
