@@ -5,7 +5,7 @@ from common import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Serial Listener')
-    parser.add_argument('-o','--output_file', help='Output File',  default="", type=str)
+    parser.add_argument('-o', '--output_file', help='Output File', default="", type=str)
 
     args = parser.parse_args()
 

@@ -1,14 +1,12 @@
 from __future__ import print_function, with_statement, division
 
 import curses
-import time
 
 import pygame
 from pygame.locals import *
 
 import common
 from common import *
-from listener import decodeOrder
 
 UP = (1,0)
 LEFT = (0,1)
