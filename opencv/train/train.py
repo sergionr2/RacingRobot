@@ -1,27 +1,25 @@
 #!/usr/bin/env python
 from __future__ import print_function, division
 
-import sys
+import argparse
 import os
 import time
-import argparse
-
-import numpy as np
-import theano
-import theano.tensor as T
 
 import cv2
 import lasagne
-from lasagne.regularization import regularize_network_params, l2, l1
-from lasagne.updates import nesterov_momentum, adam
-from lasagne.layers import Pool2DLayer, InputLayer, Conv2DLayer, DenseLayer
-
+import numpy as np
+import theano
+import theano.tensor as T
+from lasagne.layers import DenseLayer
+from lasagne.regularization import regularize_network_params, l2
+from lasagne.updates import adam
 from sklearn.model_selection import train_test_split
 
 seed = 42
 np.random.seed(seed)
 evaluate_print = 1
 WIDTH, HEIGHT = 80, 20
+
 
 def loadNetwork():
     input_var = T.matrix('inputs')
@@ -37,6 +35,7 @@ def loadNetwork():
     pred_fn = theano.function([input_var], test_prediction)
     return network, pred_fn
 
+
 def preprocessImage(image, width, height):
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
@@ -45,6 +44,7 @@ def preprocessImage(image, width, height):
     x -= 0.5
     x *= 2
     return x
+
 
 def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
     images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:]]
@@ -58,12 +58,14 @@ def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
         cv2.imwrite('{}/{}-{}_{}-{}.jpg'.format(out_folder, cx, cy, idx, r), image)
         cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
-        images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2', 'r3']]
+
 def loadDataset(seed=42, folder='cropped', split=True):
+    images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2', 'r3']]
+
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
     height, width, n_channels = tmp_im.shape
 
-    X = np.zeros((len(images), WIDTH*HEIGHT*n_channels), dtype=np.float64)
+    X = np.zeros((len(images), WIDTH * HEIGHT * n_channels), dtype=np.float64)
     y = np.zeros((len(images),), dtype=np.float64)
 
     print("original_shape=({},{})".format(width, height))
@@ -72,7 +74,7 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
     for idx, name in enumerate(images):
         x_center, y_center = map(int, name.split('_')[0].split('-'))
-        x_center /= factor*width
+        x_center /= factor * width
         y[idx] = x_center
 
         image_path = '{}/{}'.format(folder, images[idx])
@@ -89,11 +91,11 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
+
 def buildMlp(input_var, input_dim):
     relu = lasagne.nonlinearities.rectify
     linear = lasagne.nonlinearities.linear
-    net = lasagne.layers.InputLayer(shape=(None, input_dim),
-                                     input_var=input_var)
+    net = lasagne.layers.InputLayer(shape=(None, input_dim), input_var=input_var)
     net = lasagne.layers.DropoutLayer(net, p=0.1)
     net = DenseLayer(net, num_units=8, nonlinearity=relu)
     # # net = lasagne.layers.DropoutLayer(net, p=0.1)
@@ -102,6 +104,7 @@ def buildMlp(input_var, input_dim):
 
     l_out = DenseLayer(net, num_units=1, nonlinearity=relu)
     return l_out
+
 
 def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
     assert len(inputs) == len(targets)
@@ -196,11 +199,11 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
-    parser.add_argument('--num_epochs', help='Number of epoch',  default=3000, type=int)
-    parser.add_argument('-bs','--batchsize', help='Batch size',  default=1, type=int)
-    parser.add_argument('--seed', help='Random Seed',  default=42, type=int)
-    parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
-    parser.add_argument('-lr','--learning_rate', help='Learning rate',  default=1e-5, type=float)
+    parser.add_argument('--num_epochs', help='Number of epoch', default=3000, type=int)
+    parser.add_argument('-bs', '--batchsize', help='Batch size', default=1, type=int)
+    parser.add_argument('--seed', help='Random Seed', default=42, type=int)
+    parser.add_argument('-f', '--folder', help='Training folder', default="augmented_dataset", type=str)
+    parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-5, type=float)
     args = parser.parse_args()
 
     seed = args.seed
