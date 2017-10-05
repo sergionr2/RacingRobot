@@ -79,12 +79,18 @@ def get_serial_ports():
     return results
 
 
-def readOneByteInt(f):
+def readOneByteInt(f, verbose=False):
     """
     :param f: file handler or serial file
+    :param verbose: (bool) Whether to print error messages or not
     :return: (int8_t)
     """
-    return struct.unpack('<b', bytearray(f.read(1)))[0]
+    byte = f.read(1)
+    if not byte:
+        if verbose:
+            print("No byte found in readOneByteInt")
+        return 0
+    return struct.unpack('<b', bytearray(byte))[0]
 
 
 def readTwoBytesInt(f):
@@ -139,8 +145,8 @@ def decodeOrder(f, byte, debug=False):
         elif order == Order.ALREADY_CONNECTED:
             msg = "ALREADY_CONNECTED"
         elif order == Order.ERROR:
-            code_error = readTwoBytesInt(f)
-            msg = "Error {}".format(code_error)
+            error_code = readTwoBytesInt(f)
+            msg = "Error {}".format(error_code)
         elif order == Order.RECEIVED:
             msg = "RECEIVED"
         elif order == Order.STOP:
