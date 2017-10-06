@@ -142,7 +142,7 @@ void getMessageFromSerial()
         {
           // between -100 and 100
           motorSpeed = readOneByteIntFromSerial();
-          if (MOTOR)
+          if (DEBUG)
           {
             sendOrder(MOTOR);
             sendOneByteInt(motorSpeed);
