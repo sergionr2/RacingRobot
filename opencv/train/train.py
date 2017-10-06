@@ -17,15 +17,20 @@ from sklearn.model_selection import train_test_split
 
 seed = 42
 np.random.seed(seed)
-evaluate_print = 1
-WIDTH, HEIGHT = 80, 20
+evaluate_print = 1  # Print info every 1 epoch
+WIDTH, HEIGHT = 80, 20  # Shape of the resized input image fed to our model
 
 
-def loadNetwork():
+def loadNetwork(model_name="mlp_model"):
+    """
+    Load a trained network and return
+    prediction function along with the network object
+    :param model_name: (str)
+    :return: (lasagne network object, theano function)
+    """
     input_var = T.matrix('inputs')
     input_dim = WIDTH * HEIGHT * 3
     network = buildMlp(input_var, input_dim)
-    model_name = "mlp_model"
 
     with np.load('{}.npz'.format(model_name)) as f:
         param_values = [f['arr_%d' % i] for i in range(len(f.files))]
@@ -37,6 +42,13 @@ def loadNetwork():
 
 
 def preprocessImage(image, width, height):
+    """
+    Preprocessing script to convert image into neural net input array
+    :param image: (cv2 image)
+    :param width: (int)
+    :param height: (int)
+    :return: (numpy array)
+    """
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
     # Normalize
@@ -47,9 +59,14 @@ def preprocessImage(image, width, height):
 
 
 def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
-    images = [name for name in os.listdir(in_folder) if name.split('.jpg')[0][-2:]]
+    """
+    Data augmentation (horizontal mirror)
+    :param in_folder: (str)
+    :param out_folder: (str)
+    """
+    images = [name for name in os.listdir(in_folder)]
     for idx, name in enumerate(images):
-        r = name.split('.jpg')[0][-2:]
+        r = name.split('.jpg')[0][-2:]  # Retrieve the ROI name
         cx, cy = map(int, name.split('_')[0].split('-'))
         image_path = '{}/{}'.format(in_folder, images[idx])
         image = cv2.imread(image_path)
@@ -60,6 +77,13 @@ def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
 
 
 def loadDataset(seed=42, folder='cropped', split=True):
+    """
+    Load the training images and preprocess them
+    :param seed: (int) seed for pseudo-random generator
+    :param folder: (str) input folder
+    :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
+    :return:
+    """
     images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2', 'r3']]
 
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
@@ -74,6 +98,7 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
     for idx, name in enumerate(images):
         x_center, y_center = map(int, name.split('_')[0].split('-'))
+        # TODO: check the formula below (if this changes, it must be changed in image_processing.py too)
         x_center /= factor * width
         y[idx] = x_center
 
@@ -93,20 +118,30 @@ def loadDataset(seed=42, folder='cropped', split=True):
 
 
 def buildMlp(input_var, input_dim):
+    """
+    Create the feedfoward neural net
+    :param input_var: (Theano tensor)
+    :param input_dim: (int)
+    :return: (lasagne network object)
+    """
     relu = lasagne.nonlinearities.rectify
-    linear = lasagne.nonlinearities.linear
+    # linear = lasagne.nonlinearities.linear
     net = lasagne.layers.InputLayer(shape=(None, input_dim), input_var=input_var)
     net = lasagne.layers.DropoutLayer(net, p=0.1)
     net = DenseLayer(net, num_units=8, nonlinearity=relu)
-    # # net = lasagne.layers.DropoutLayer(net, p=0.1)
     net = DenseLayer(net, num_units=4, nonlinearity=relu)
-    # net = DenseLayer(net, num_units=4, nonlinearity=relu)
-
     l_out = DenseLayer(net, num_units=1, nonlinearity=relu)
     return l_out
 
 
 def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
+    """
+    Iterator that creates minibatches
+    :param inputs: (numpy tensor)
+    :param targets: (numpy array)
+    :param batchsize: (int)
+    :param shuffle: (bool)
+    """
     assert len(inputs) == len(targets)
     if shuffle:
         indices = np.arange(len(inputs))
@@ -119,7 +154,14 @@ def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
         yield inputs[excerpt], targets[excerpt]
 
 
-def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
+def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42):
+    """
+    :param folder: (str)
+    :param num_epochs: (int)
+    :param batchsize: (int)
+    :param learning_rate: (float)
+    :param seed: (int)
+    """
     # Load the dataset
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, seed=seed)
@@ -129,22 +171,22 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
     input_dim = X_train.shape[1]
     network = buildMlp(input_var, input_dim)
     model_name = "mlp_model"
-
+    # Create prediction function
     prediction = lasagne.layers.get_output(network)
     loss = lasagne.objectives.squared_error(prediction, target_var)
     loss = loss.mean()
+    # Add L2 penalty
     loss += 1e-4 * regularize_network_params(network, l2)
 
     params = lasagne.layers.get_all_params(network, trainable=True)
     # updates = nesterov_momentum(loss, params, learning_rate=0.0001, momentum=0.8)
     updates = adam(loss, params, learning_rate=learning_rate)
-
+    # Deterministic prediction function
     test_prediction = lasagne.layers.get_output(network, deterministic=True)
     test_loss = lasagne.objectives.squared_error(test_prediction, target_var)
     test_loss = test_loss.mean()
 
     train_fn = theano.function([input_var, target_var], loss, updates=updates)
-
     val_fn = theano.function([input_var, target_var], test_loss)
     best_params, best_error = None, np.inf
 
@@ -155,11 +197,14 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
         train_err = 0
         train_batches = 0
         start_time = time.time()
+        # Full pass on training data
+        # Update the model after each minibatch
         for batch in iterateMinibatches(X_train, y_train, batchsize, shuffle=True):
             inputs, targets = batch
             train_err += train_fn(inputs, targets)
             train_batches += 1
 
+        # Do a full pass on validation data
         val_err = 0
         val_batches = 0
         for batch in iterateMinibatches(X_val, y_val, batchsize, shuffle=False):
@@ -168,6 +213,7 @@ def main(folder, num_epochs=500, batchsize=10, learning_rate=0.0001, seed=42):
             val_err += err
             val_batches += 1
         val_error = val_err / val_batches
+        # Save the new best model
         if val_error < best_error:
             best_error = val_error
             best_params = lasagne.layers.get_all_param_values(network)

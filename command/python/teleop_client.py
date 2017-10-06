@@ -59,7 +59,10 @@ def pygameMain():
                 end = True
         pygame.display.flip()
         # force 30 fps
-        pygame.time.Clock().tick(1 / common.rate)
+        pygame.time.Clock().tick(1 / 30)
+        # do NOT use the same rate as the communication threads
+        # or it will fill the queue
+        # pygame.time.Clock().tick(1 / common.rate)
 
 
 def sendToServer(socket, control_speed, control_turn):
