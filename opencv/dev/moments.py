@@ -13,8 +13,8 @@ def processImageWithColorMask(image, debug=False):
     """
     error = False
     # r = [margin_left, margin_top, width, height]
-    r = [50, 150, 200, 50]
-    #r = [0,0, image.shape[0], image.shape[1]]
+    #r = [50, 150, 200, 50]
+    r = [0,0, image.shape[1], image.shape[0]]
     margin_left, margin_top, _, _ = r
 
     imCrop = image[int(r[1]):int(r[1]+r[3]), int(r[0]):int(r[0]+r[2])]
@@ -88,6 +88,7 @@ if __name__ == '__main__':
     if not error:
         cv2.circle(img, (cx,cy), radius=10, color=(0,0,255),
                    thickness=1, lineType=8, shift=0)
+        cv2.imwrite("result.png", img)
         cv2.imshow('result', img)
 
     if cv2.waitKey(0) & 0xff == 27:

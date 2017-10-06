@@ -178,7 +178,6 @@ class CommandThread(threading.Thread):
     def run(self):
         while not exit_signal:
             n_received_semaphore.acquire()
-            # Wait until connected
             if exit_signal:
                 break
             try:
