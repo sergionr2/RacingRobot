@@ -142,7 +142,6 @@ if __name__ == '__main__':
         byte = bytes_array[0]
         if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
             is_connected = True
-        time.sleep(1)
 
     print("Connected to Arduino")
     resolution = (640 // 2, 480 // 2)
@@ -152,22 +151,26 @@ if __name__ == '__main__':
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
 
+    print("Starting Image Processing Thread")
+    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
+    # Wait for camera warmup
+    time.sleep(1)
+
+    print("Starting Communication Threads")
     # Threads for arduino communication
     threads = [CommandThread(serial_file, command_queue),
                ListenerThread(serial_file), image_thread]
     for t in threads:
         t.start()
 
-    time.sleep(1)
-
+    print("Starting Control Thread")
     main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
 
     common.exit_signal = True
     n_received_semaphore.release()
 
-    print("EXIT")
+    print("Exiting...")
     # End the thread
     with exit_condition:
         exit_condition.notify_all()
