@@ -58,11 +58,8 @@ def pygameMain():
             if event.type == QUIT or event.type == KEYDOWN and event.key in [K_ESCAPE, K_q]:
                 end = True
         pygame.display.flip()
-        # force 30 fps
-        pygame.time.Clock().tick(1 / 30)
-        # do NOT use the same rate as the communication threads
-        # or it will fill the queue
-        # pygame.time.Clock().tick(1 / common.rate)
+        # Limit FPS
+        pygame.time.Clock().tick(1 / TELEOP_RATE)
 
 
 def sendToServer(socket, control_speed, control_turn):

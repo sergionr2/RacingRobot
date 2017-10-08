@@ -79,18 +79,12 @@ def get_serial_ports():
     return results
 
 
-def readOneByteInt(f, verbose=False):
+def readOneByteInt(f):
     """
     :param f: file handler or serial file
-    :param verbose: (bool) Whether to print error messages or not
     :return: (int8_t)
     """
-    byte = f.read(1)
-    if not byte:
-        if verbose:
-            print("No byte found in readOneByteInt")
-        return 0
-    return struct.unpack('<b', bytearray(byte))[0]
+    return struct.unpack('<b', bytearray(f.read(1)))[0]
 
 
 def readTwoBytesInt(f):

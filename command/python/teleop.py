@@ -22,6 +22,8 @@ THETA_MAX = 150
 STEP_SPEED = 10
 STEP_TURN = 30
 
+TELEOP_RATE = 1 / 60 # 60 fps
+
 moveBindings = {
     curses.KEY_UP: UP,
     curses.KEY_LEFT: LEFT,
@@ -123,9 +125,8 @@ def main(stdscr):
 
         # Smooth control
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
-        # force fps
-        # time.sleep(1 / common.rate)
-        time.sleep(1 / 30)
+        # Limit FPS
+        time.sleep(TELEOP_RATE)
 
 
 def addToCommandQueue(control_speed, control_turn):
@@ -195,11 +196,8 @@ def pygameMain():
             if event.type == QUIT or event.type == KEYDOWN and event.key in [K_ESCAPE, K_q]:
                 end = True
         pygame.display.flip()
-        # force 30 fps
-        pygame.time.Clock().tick(1 / 30)
-        # do NOT use the same rate as the communication threads
-        # or it will fill the queue
-        # pygame.time.Clock().tick(1 / common.rate)
+        # Limit FPS
+        pygame.time.Clock().tick(1 / TELEOP_RATE)
 
 
 if __name__ == "__main__":
