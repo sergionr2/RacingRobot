@@ -9,7 +9,6 @@ bool isConnected = false; ///< True if the connection with the master is availab
 int8_t motorSpeed = 0;
 int16_t servoPosition = INITIAL_THETA;
 unsigned long int lastMillis = 0;
-const int cycleDuration = 1; // ms
 Servo servomotor;
 
 void setup()
@@ -53,10 +52,10 @@ void setup()
 void loop()
 {
   getMessageFromSerial();
-  if(millis() - lastMillis > cycleDuration)
+  if(millis() - lastMillis > CYCLE_DURATION)
   {
     lastMillis = millis();
-    cycle(); //run this function after every cycleDuration
+    cycle(); //run this function after every CYCLE_DURATION
   }
 }
 

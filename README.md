@@ -79,12 +79,6 @@ pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
 pip install sklearn
 ```
 
-### Orange Object Following
-
-```
-python -m picam.follow_orange.py
-```
-
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez
 - Antonin Raffin
