@@ -1,6 +1,5 @@
 from __future__ import print_function, with_statement, division
 
-import os
 import argparse
 
 import cv2
@@ -21,8 +20,8 @@ S_KEY = 115  # Save key
 play_video = False
 
 parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
-parser.add_argument('-i','--input_video', help='Input Video',  default="debug/robot_vue.mp4", type=str)
-parser.add_argument('-r','--regions', help='ROI',  default=1, type=int)
+parser.add_argument('-i', '--input_video', help='Input Video', default="debug/robot_vue.mp4", type=str)
+parser.add_argument('-r', '--regions', help='ROI', default=1, type=int)
 args = parser.parse_args()
 
 # OpenCV 3.x.x compatibility
@@ -40,11 +39,9 @@ cap = cv2.VideoCapture(video_file)
 # Creating a window for later use
 cv2.namedWindow('result')
 
-def formatMask(mask):
-    return "{}|{}|{}".format(mask[0], mask[1], mask[2])
-
 def nothing(x):
     pass
+
 
 current_idx = cap.get(image_zero_index)
 n_frames = int(cap.get(frame_count))
@@ -61,7 +58,7 @@ while True:
             continue
 
     original_img = img.copy()
-    resolution = (640//2, 480//2)
+    resolution = (640 // 2, 480 // 2)
     max_width = resolution[0]
     # Regions of interest
     r0 = [0, 150, max_width, 50]
@@ -82,7 +79,7 @@ while True:
         exit()
     elif key in [LEFT_KEY, RIGHT_KEY] or play_video:
         current_idx += 1 if key == RIGHT_KEY or play_video else -1
-        current_idx = np.clip(current_idx, 0, n_frames-1)
+        current_idx = np.clip(current_idx, 0, n_frames - 1)
     elif key == SPACE_KEY:
         play_video = not play_video
 
