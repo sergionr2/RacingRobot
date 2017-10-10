@@ -4,6 +4,7 @@ File containing all the constants used in the different files
 import numpy as np
 
 # Main Constants
+CAMERA_RESOLUTION = (640 // 2, 480 // 2)
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0

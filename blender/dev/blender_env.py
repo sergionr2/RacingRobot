@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn
 
+
 class Position(object):
     def __init__(self, x, y, theta=0):
         super(Position, self).__init__()
@@ -19,23 +20,29 @@ class Position(object):
         self.x = norm * np.cos(theta)
         self.y = norm * np.sin(theta)
 
+
 class Speed(Position):
     def __init__(self, vx, vy):
         super(Speed, self).__init__(vx, vy)
+
 
 class Acceleration(Position):
     def __init__(self, ax, ay):
         super(Acceleration, self).__init__(ax, ay)
 
+
 U_MAX_ACC = 25
 ANGLE_OFFSET = 0
 dt = 0.01
 
+
 def convertToDegree(angle):
     return (angle * 180) / np.pi
 
+
 def convertToRad(angle):
     return (angle * np.pi) / 180
+
 
 def constrain(x, a, b):
     return np.max([a, np.min([x, b])])
@@ -45,11 +52,11 @@ class Car(object):
     def __init__(self, start_pos, mass, friction_coeff=1, dt=0.01):
         super(Car, self).__init__()
         self.pos = start_pos
-        self.speed = Speed(0,0)
-        self.acc = Acceleration(0,0)
+        self.speed = Speed(0, 0)
+        self.acc = Acceleration(0, 0)
         self.mass = mass
         # TODO: add air drag
-        self.friction =  friction_coeff * mass
+        self.friction = friction_coeff * mass
         self.dt = dt
         self.v = 0
         self.acc_norm = 0
@@ -57,7 +64,8 @@ class Car(object):
     def stepSpeed(self, u_speed):
         sign_speed = np.sign(self.v)
         if self.v == 0:
-            self.acc_norm = np.max([0, u_speed - self.friction]) if  u_speed >= 0 else np.min([0, u_speed + self.friction])
+            self.acc_norm = np.max([0, u_speed - self.friction]) if u_speed >= 0 else np.min(
+                [0, u_speed + self.friction])
         else:
             self.acc_norm = u_speed - self.friction if sign_speed >= 0 else u_speed + self.friction
         new_speed = self.v + self.acc_norm * self.dt
@@ -73,6 +81,7 @@ class Car(object):
         car.pos.x += self.v * np.cos(theta)
         car.pos.y += self.v * np.sin(theta)
         car.pos.theta += u_angle
+
 
 class PIDControl(object):
     def __init__(self, Kp, Kd, dt, u_max):
@@ -117,7 +126,7 @@ if __name__ == '__main__':
     theta_line = 0
 
     hist, hist_v, hist_a, hist_u = [], [], [], []
-    traj = [[],[], []]
+    traj = [[], [], []]
     u_angle = 0.
     error, errorD = 0, 0
     last_error = 0
@@ -139,7 +148,7 @@ if __name__ == '__main__':
 
         last_error = error
         # Error between [-pi, pi]
-        error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
+        error = np.arctan(np.tan((theta_target - car.pos.theta) / 2))
         if i > 0:
             errorD = error - last_error
 
@@ -181,7 +190,7 @@ if __name__ == '__main__':
     for idx, a in enumerate(traj[2]):
         if idx % 10 == 0:
             v = 0.01
-            x,y = traj[0][idx], traj[1][idx]
-            ax.arrow(x,y, v*np.cos(convertToRad(a)), v*np.sin(convertToRad(a)), head_width=0.05)
+            x, y = traj[0][idx], traj[1][idx]
+            ax.arrow(x, y, v * np.cos(convertToRad(a)), v * np.sin(convertToRad(a)), head_width=0.05)
 
     plt.show()

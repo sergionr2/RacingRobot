@@ -18,7 +18,7 @@ from command.python.common import is_connected, n_received_semaphore, command_qu
                                   CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
 from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE,\
-                      MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA
+                      MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
 emptyException = queue.Empty
 fullException = queue.Full
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
             is_connected = True
 
     print("Connected to Arduino")
-    resolution = (640 // 2, 480 // 2)
+    resolution = CAMERA_RESOLUTION
     max_width = resolution[0]
 
     # image processing queue, output centroids

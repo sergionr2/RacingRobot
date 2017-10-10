@@ -78,7 +78,7 @@ python command/python/teleop_server.py -v my_video
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
 3. Split the video into a sequence of images (please change the paths in the script)
 ```
-python opencv/split_video.py -i video.mp4
+python -m opencv.split_video -i video.mp4
 ```
 You have to press enter to pass to the next frame
 
@@ -115,6 +115,7 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 - [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile)
 - OpenCV 3.1
 - libserial-dev (apt-get)
+- Python 2 or 3
 
 OpenCV
 - [Guide](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
@@ -132,6 +133,9 @@ sudo apt-get install libboost-all-dev
 # After libserial installation:
 sudo ldconfig
 ```
+
+#### Python Packages
+All the required packages can be found in `requirements.txt`
 
 PySerial
 ```
@@ -151,7 +155,7 @@ pip install enum34
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
-ZeroMQ (Message Passing with sockets)
+ZeroMQ (Message Passing with sockets) for remote control mode
 ```
 sudo apt-get install libzmq3-dev
 pip install pyzmq

@@ -50,7 +50,6 @@ while not is_connected:
     byte = bytes_array[0]
     if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
         is_connected = True
-    time.sleep(1)
 
 threads = [CommandThread(serial_file, command_queue),
            ListenerThread(serial_file)]
