@@ -57,8 +57,8 @@ while True:
     if key in EXIT_KEYS:
         cv2.destroyAllWindows()
         exit()
-    elif key in [LEFT_KEY, RIGHT_KEY]:
-        current_idx += 1 if key == RIGHT_KEY else -1
+    elif key in [LEFT_KEY, RIGHT_KEY, ENTER_KEY]:
+        current_idx += 1 if key in [RIGHT_KEY, ENTER_KEY] else -1
         current_idx = np.clip(current_idx, 0, n_frames - 1)
         # Save image
         path = 'train/{}/{}.jpg'.format(output_folder, int(current_idx))
