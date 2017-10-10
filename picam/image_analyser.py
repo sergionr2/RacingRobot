@@ -8,19 +8,16 @@ try:
 except ImportError:
     import Queue as queue
 
-# NOTE: with multiprocessing picamera does not seem to work
-# import multiprocessing
-
 import picamera.array
 import cv2
 
 from opencv.image_processing import processImage
+from constants import SAVE_EVERY
 
 emptyException = queue.Empty
 fullException = queue.Full
 
 experiment_time = int(time.time())
-SAVE_EVERY = 1000  # Save every 1000 frame to debug folder
 
 
 class ImageProcessingThread(threading.Thread):

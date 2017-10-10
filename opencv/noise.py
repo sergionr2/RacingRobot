@@ -13,7 +13,7 @@ def rotateImage(image, phi, theta, psi):
     Rotate an image
     :param image: (cv2 image object)
     :param phi: (float)
-    :parma theta: (float)
+    :param theta: (float)
     :param psi: (float)
     :return: (cv2 image object)
     """

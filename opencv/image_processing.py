@@ -5,12 +5,8 @@ import argparse
 import cv2
 import numpy as np
 
-from train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
-
-# Straight line angle
-REF_ANGLE = - np.pi / 2
-# Max turn angle
-MAX_ANGLE = np.pi / 4  # 2 * np.pi / 3
+from constants import REF_ANGLE, MAX_ANGLE
+from opencv.train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
 
 
 def loadVanillaNet(weights_npy='mlp_model.npz'):

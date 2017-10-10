@@ -17,24 +17,10 @@ import command.python.common as common
 from command.python.common import is_connected, n_received_semaphore, command_queue,\
                                   CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
-
+from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE,\
+                      MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA
 emptyException = queue.Empty
 fullException = queue.Full
-
-THETA_MIN = 70  # value in [0, 255] sent to the servo
-THETA_MAX = 150
-ERROR_MAX = 1.0
-MAX_SPEED_STRAIGHT_LINE = 50  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 15
-MIN_SPEED = 10
-# PID Control
-Kp_turn = 40
-Kp_line = 35
-Kd = 30
-Ki = 0.0
-FPS = 60
-N_SECONDS = 77  # number of seconds before exiting the program
-alpha = 0.8  # alpha of the moving mean for the turn coefficient
 
 
 def forceStop():
@@ -81,7 +67,7 @@ def main_control(out_queue, resolution, n_seconds=5):
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
         # Moving mean
-        mean_h += alpha * (h - mean_h)
+        mean_h += ALPHA * (h - mean_h)
 
         # print("mean_h={}".format(mean_h))
         h = mean_h

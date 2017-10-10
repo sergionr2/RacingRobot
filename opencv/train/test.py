@@ -1,18 +1,14 @@
 import argparse
 
-import numpy as np
-import theano
 import cv2
-import lasagne
-import theano.tensor as T
+import numpy as np
 from sklearn.model_selection import train_test_split
 
-from train import loadDataset, loadNetwork, WIDTH
+from train import loadDataset, loadNetwork
 
 parser = argparse.ArgumentParser(description='Test a line detector')
-parser.add_argument('-f','--folder', help='Training folder',  default="augmented_dataset", type=str)
+parser.add_argument('-f', '--folder', help='Training folder', default="augmented_dataset", type=str)
 args = parser.parse_args()
-
 
 seed = 42
 np.random.seed(seed)
@@ -27,7 +23,7 @@ EXIT_KEYS = [113, 27]  # Escape and q
 X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False)
 indices = np.arange(len(X))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
-idx_val, idx_test  = train_test_split(idx_test, test_size=0.5, random_state=seed)
+idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=seed)
 
 network, pred_fn = loadNetwork()
 
@@ -46,7 +42,7 @@ while True:
         text = "val"
     elif current_idx in idx_test:
         text = "test"
-    cv2.putText(im, text, (0,20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255))
+    cv2.putText(im, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
     # x_center, y_center = map(int, name.split('_')[0].split('-'))
     x_true = int(y_true[current_idx] * width * factor)
@@ -55,12 +51,11 @@ while True:
     y_center = height // 2
     print(current_idx, name, "error={}".format(abs(x_center - x_true)))
     # Draw prediction and true center
-    cv2.circle(im, (x_center, y_center), radius=10, color=(0,0,255),
+    cv2.circle(im, (x_center, y_center), radius=10, color=(0, 0, 255),
                thickness=2, lineType=8, shift=0)
-    cv2.circle(im, (x_true, y_center), radius=10, color=(255,0,0),
+    cv2.circle(im, (x_true, y_center), radius=10, color=(255, 0, 0),
                thickness=1, lineType=8, shift=0)
     cv2.imshow('Prediction', im)
-
 
     key = cv2.waitKey(0) & 0xff
     if key in EXIT_KEYS:
@@ -68,4 +63,4 @@ while True:
         break
     elif key in [LEFT_KEY, RIGHT_KEY]:
         current_idx += 1 if key == RIGHT_KEY else -1
-        current_idx = np.clip(current_idx, 0, len(images)-1)
+        current_idx = np.clip(current_idx, 0, len(images) - 1)

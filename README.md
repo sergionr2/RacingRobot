@@ -42,7 +42,15 @@ For installation, see section **Installation**.
 
 ## Autonomous mode
 
-Main script, it will try to follow a black&white line.
+0. Compile and upload the code on the arduino
+```
+cd arduino/
+make
+make upload
+```
+
+1. Launch the main script on the Raspberry Pi, it will try to follow a black&white line.
+All useful constants can be found in `constants.py`.
 ```
 python main.py
 ```
@@ -77,7 +85,7 @@ You have to press enter to pass to the next frame
 4. Label the data using the labeling tool (again please change the paths in the script)
 ```
 cd opencv/ (enter opencv folder)
-python -m train.label_images
+python -m opencv.train.label_images
 ```
 To label an image, you have to click on the center of line in the displayed image.
 If the image do not contain any line, or if you want to pass to the next frame, press any key.

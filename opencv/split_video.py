@@ -8,17 +8,9 @@ import argparse
 import cv2
 import numpy as np
 
-# Arrow keys
-UP_KEY = 82
-DOWN_KEY = 84
-RIGHT_KEY = 83
-LEFT_KEY = 81
-ENTER_KEY = 10
-SPACE_KEY = 32
-EXIT_KEYS = [113, 27]  # Escape and q
-S_KEY = 115  # Save key
+from constants import RIGHT_KEY, LEFT_KEY, ENTER_KEY, EXIT_KEYS
 
-output_folder = "dataset/video1"
+output_folder = "opencv/train/dataset/video1"
 
 parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
 parser.add_argument('-i', '--input_video', help='Input Video', default="debug/robot_vue.mp4", type=str)

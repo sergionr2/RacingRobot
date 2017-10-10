@@ -1,15 +1,14 @@
 import os
 
 import cv2
-import numpy as np
 
-from image_processing import processImage
+from opencv.image_processing import processImage
+from constants import EXIT_KEYS
 
-EXIT_KEYS = [113, 27]  # Escape and q
 
 id_video = "23sept"
-input_folder = 'train/dataset/video_sun/debug/'
-output_folder = 'train/cropped/video_sun/'
+input_folder = 'opencv/train/dataset/video_sun/debug/'
+output_folder = 'opencv/train/cropped/video_sun/'
 images = [im for im in os.listdir(input_folder) if im.endswith('.jpg')]
 
 # idx_images = [(int(im.split('.jpg')[0]), im) for im in images]

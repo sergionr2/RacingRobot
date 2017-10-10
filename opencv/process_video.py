@@ -5,17 +5,8 @@ import argparse
 import cv2
 import numpy as np
 
-from image_processing import processImage
-
-# Arrow keys
-UP_KEY = 82
-DOWN_KEY = 84
-RIGHT_KEY = 83
-LEFT_KEY = 81
-ENTER_KEY = 10
-SPACE_KEY = 32
-EXIT_KEYS = [113, 27]  # Escape and q
-S_KEY = 115  # Save key
+from constants import RIGHT_KEY, LEFT_KEY, SPACE_KEY, EXIT_KEYS
+from opencv.image_processing import processImage
 
 play_video = False
 
@@ -38,6 +29,7 @@ cap = cv2.VideoCapture(video_file)
 
 # Creating a window for later use
 cv2.namedWindow('result')
+
 
 def nothing(x):
     pass

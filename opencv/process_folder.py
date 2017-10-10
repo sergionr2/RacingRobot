@@ -3,23 +3,15 @@ Process a folder of images
 """
 from __future__ import print_function, with_statement, division
 
-import os
 import argparse
 
 import cv2
 import numpy as np
+import os
 
-from image_processing import processImage
+from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS
+from opencv.image_processing import processImage
 
-# Arrow keys
-UP_KEY = 82
-DOWN_KEY = 84
-RIGHT_KEY = 83
-LEFT_KEY = 81
-ENTER_KEY = 10
-EXIT_KEYS = [113, 27]  # Escape and q
-M_KEY = 109
-L_KEY = 108
 images = ['jpg', 'jpeg', 'png', 'gif']
 
 parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
