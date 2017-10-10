@@ -1,15 +1,15 @@
-# RacingRobot
+# Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
 Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017.
 
 ![The racing robot](https://cdn-images-1.medium.com/max/2000/1*UsmiJ4IzXi6U9svKjB22zw.jpeg)
 
-## Detailed presentation
+## Detailed Presentation
 
 We wrote an article on medium that detailed our approach. You can read it [here](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
-## 3D models and training data
+## 3D Models and Training Data
 
-### 3D models
+### 3D Models
 
 3D models (we used onshape.com):
 - [Battery Holder](https://cad.onshape.com/documents/a94876919eca38f49abb5ed6/w/b7e86a4005e4b951f0e3d31a/e/5d33c78dde85b96e033f5c9b)
@@ -17,7 +17,7 @@ We wrote an article on medium that detailed our approach. You can read it [here]
 - [Additional Camera Piece](https://cad.onshape.com/documents/1c4a51d839f2a5989e78ef1f/w/1af5b4b508310461911ecd97/e/a35856fc588eb371f0bac58b)
 - [Raspberry Pi Holder](https://cad.onshape.com/documents/621b6943711d60790ddc2b9f/w/c29ba5f453ce625afc8128f6/e/1aa39940e0bdabd3303d76c4)
 
-### Training data
+### Training Data
 
 The training data can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
@@ -25,20 +25,20 @@ There are two folders:
 - input_images/ (raw images from remote control)
 - label_regions/ (labeled regions of the input images)
 
-The name of the labeled images is as follow: *"x_center"-"y_center"\_"id".jpg*
+The name of the labeled images is as follow: **"x_center"-"y_center"\_"id".jpg**
 
 For example:
 - `0-28_452-453r0.jpg`
 => center = (0, 28)
-=> id = "452-453r0"
+| id = "452-453r0"
 
 - `6-22_691-23sept1506162644_2073r2.jpg`
 => center = (6, 22)
-=> id = "691-23sept1506162644_2073r2"
+| id = "691-23sept1506162644_2073r2"
 
 ## How to run everything ?
 
-For installation, see section *Installation*.
+For installation, see section **Installation**.
 
 ## Autonomous mode
 
