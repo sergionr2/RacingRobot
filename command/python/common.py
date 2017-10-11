@@ -1,10 +1,9 @@
 from __future__ import print_function, with_statement, division, unicode_literals
 
-import sys
 import glob
-import os
 import struct
 import threading
+
 # Python 2/3 compatibility
 try:
     import queue
@@ -15,24 +14,27 @@ from enum import Enum
 
 import serial
 
+
 class CustomQueue(queue.Queue):
     """
     A custom queue subclass that provides a :meth:`clear` method.
     """
+
     def clear(self):
         """
         Clears all items from the queue.
         """
 
         with self.mutex:
-          unfinished = self.unfinished_tasks - len(self.queue)
-          if unfinished <= 0:
-            if unfinished < 0:
-              raise ValueError('task_done() called too many times')
-            self.all_tasks_done.notify_all()
-          self.unfinished_tasks = unfinished
-          self.queue.clear()
-          self.not_full.notify_all()
+            unfinished = self.unfinished_tasks - len(self.queue)
+            if unfinished <= 0:
+                if unfinished < 0:
+                    raise ValueError('task_done() called too many times')
+                self.all_tasks_done.notify_all()
+            self.unfinished_tasks = unfinished
+            self.queue.clear()
+            self.not_full.notify_all()
+
 
 BAUDRATE = 115200
 exit_signal = False
@@ -42,11 +44,13 @@ is_connected = False
 n_messages_allowed = 3
 n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
-command_queue = CustomQueue(4)
-rate = 1/90 # 90 fps
+command_queue = CustomQueue(2)  # Must be >= 2 (motor + servo order)
+rate = 1 / 1000  # 1000 fps (limit the rate of communication with the arduino)
+
 
 def resetCommandQueue():
     command_queue.clear()
+
 
 class Order(Enum):
     HELLO = 0
@@ -56,6 +60,7 @@ class Order(Enum):
     ERROR = 4
     RECEIVED = 5
     STOP = 6
+
 
 def get_serial_ports():
     """
@@ -73,12 +78,14 @@ def get_serial_ports():
             pass
     return results
 
+
 def readOneByteInt(f):
     """
     :param f: file handler or serial file
     :return: (int8_t)
     """
     return struct.unpack('<b', bytearray(f.read(1)))[0]
+
 
 def readTwoBytesInt(f):
     """
@@ -87,19 +94,21 @@ def readTwoBytesInt(f):
     """
     return struct.unpack('<h', bytearray(f.read(2)))[0]
 
+
 def writeOneByteInt(f, value):
     """
     :param f: file handler or serial file
     :param value: (int8_t)
     """
-    if value >= -128 and value <= 127:
+    if -128 <= value <= 127:
         f.write(struct.pack('<b', value))
     else:
         print("Value error:{}".format(value))
-    # f.flush()
+
 
 # Alias
 sendOrder = writeOneByteInt
+
 
 def writeTwoBytesInt(f, value):
     """
@@ -107,7 +116,7 @@ def writeTwoBytesInt(f, value):
     :param value: (int16_t)
     """
     f.write(struct.pack('<h', value))
-    # f.flush()
+
 
 def decodeOrder(f, byte, debug=False):
     """
@@ -130,19 +139,21 @@ def decodeOrder(f, byte, debug=False):
         elif order == Order.ALREADY_CONNECTED:
             msg = "ALREADY_CONNECTED"
         elif order == Order.ERROR:
-            code_error = readTwoBytesInt(f)
-            msg = "Error {}".format(code_error)
+            error_code = readTwoBytesInt(f)
+            msg = "Error {}".format(error_code)
         elif order == Order.RECEIVED:
-            msg  = "RECEIVED"
+            msg = "RECEIVED"
         elif order == Order.STOP:
             msg = "STOP"
         else:
             print("Unknown Order", byte)
     except Exception as e:
-        print("Error decoding order: {}".format(e))
+        print("Error decoding order {}: {}".format(order, e))
+        print('byte={0:08b}'.format(byte))
 
     if debug:
         print(msg)
+
 
 class CommandThread(threading.Thread):
     """
@@ -151,6 +162,7 @@ class CommandThread(threading.Thread):
     :param serial_file: (Serial object)
     :param command_queue: (Queue)
     """
+
     def __init__(self, serial_file, command_queue):
         threading.Thread.__init__(self)
         self.deamon = True
@@ -160,7 +172,6 @@ class CommandThread(threading.Thread):
     def run(self):
         while not exit_signal:
             n_received_semaphore.acquire()
-            # Wait until connected
             if exit_signal:
                 break
             try:
@@ -179,12 +190,14 @@ class CommandThread(threading.Thread):
                     writeTwoBytesInt(self.serial_file, param)
             time.sleep(rate)
 
+
 class ListenerThread(threading.Thread):
     """
     Thread that listen to the Arduino
     It is used to add send_tokens to the n_received_semaphore
     :param serial_file: (Serial object)
     """
+
     def __init__(self, serial_file):
         threading.Thread.__init__(self)
         self.deamon = True
@@ -198,8 +211,8 @@ class ListenerThread(threading.Thread):
                 time.sleep(rate)
                 continue
             if not bytes_array:
-               time.sleep(rate)
-               continue
+                time.sleep(rate)
+                continue
             byte = bytes_array[0]
             with serial_lock:
                 try:
@@ -207,7 +220,7 @@ class ListenerThread(threading.Thread):
                 except ValueError:
                     continue
                 if order == Order.RECEIVED:
-                   n_received_semaphore.release()
+                    n_received_semaphore.release()
                 decodeOrder(self.serial_file, byte)
             time.sleep(rate)
         print("Listener thread exited")

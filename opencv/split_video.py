@@ -1,26 +1,19 @@
+"""
+Convert a video to a sequence of images
+"""
 from __future__ import print_function, with_statement, division
 
-import os
 import argparse
 
 import cv2
 import numpy as np
 
+from constants import RIGHT_KEY, LEFT_KEY, ENTER_KEY, EXIT_KEYS
 
-# Arrow keys
-UP_KEY = 82
-DOWN_KEY = 84
-RIGHT_KEY = 83
-LEFT_KEY = 81
-ENTER_KEY = 10
-SPACE_KEY = 32
-EXIT_KEYS = [113, 27]  # Escape and q
-S_KEY = 115  # Save key
+output_folder = "opencv/train/dataset/video1"
 
-output_folder = "dataset/video1"
-
-parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
-parser.add_argument('-i','--input_video', help='Input Video',  default="debug/robot_vue.mp4", type=str)
+parser = argparse.ArgumentParser(description='Split a video into a sequence of images')
+parser.add_argument('-i', '--input_video', help='Input Video', default="video.mp4", type=str)
 args = parser.parse_args()
 
 # OpenCV 3.x.x compatibility
@@ -34,8 +27,6 @@ else:
 
 video_file = args.input_video
 cap = cv2.VideoCapture(video_file)
-
-
 
 current_idx = cap.get(image_zero_index)
 n_frames = int(cap.get(frame_count))
@@ -58,9 +49,9 @@ while True:
     if key in EXIT_KEYS:
         cv2.destroyAllWindows()
         exit()
-    elif key in [LEFT_KEY, RIGHT_KEY]:
-        current_idx += 1 if key == RIGHT_KEY else -1
-        current_idx = np.clip(current_idx, 0, n_frames-1)
+    elif key in [LEFT_KEY, RIGHT_KEY, ENTER_KEY]:
+        current_idx += 1 if key in [RIGHT_KEY, ENTER_KEY] else -1
+        current_idx = np.clip(current_idx, 0, n_frames - 1)
         # Save image
         path = 'train/{}/{}.jpg'.format(output_folder, int(current_idx))
         cv2.imwrite(path, original_img)

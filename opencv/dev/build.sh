@@ -1,3 +1,0 @@
-cd build
-cmake ..
-make

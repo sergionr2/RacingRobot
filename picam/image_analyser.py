@@ -1,24 +1,24 @@
 from __future__ import division, print_function
 
-import time
 import threading
+import time
+
 try:
     import queue
 except ImportError:
     import Queue as queue
 
-# NOTE: with multiprocessing picamera does not seem to work
-# import multiprocessing
-
 import picamera.array
 import cv2
-import numpy as np
 
 from opencv.image_processing import processImage
-from opencv.moments import processImage as oldProcessImage
+from constants import SAVE_EVERY
 
-exp_time = int(time.time())
-SAVE_EVERY = 1000  # Save every two frame to debug folder
+emptyException = queue.Empty
+fullException = queue.Full
+
+experiment_time = int(time.time())
+
 
 class ImageProcessingThread(threading.Thread):
     """
@@ -26,6 +26,7 @@ class ImageProcessingThread(threading.Thread):
     :param viewer: (Viewer object)
     :param exit_condition: (Condition object)
     """
+
     def __init__(self, viewer, exit_condition):
         super(ImageProcessingThread, self).__init__()
         self.deamon = True
@@ -53,6 +54,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
     :param out_queue: (Queue) queue used for output of image processing
     :param debug: (bool) set to true, queue will be filled with raw images
     """
+
     def __init__(self, camera, out_queue, debug=False):
         super(RGBAnalyser, self).__init__(camera)
         self.frame_num = 0
@@ -65,7 +67,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.start()
 
     def analyse(self, frame):
-       self.frame_queue.put(item=frame, block=True)
+        self.frame_queue.put(item=frame, block=True)
 
     def extractInfo(self):
         try:
@@ -77,20 +79,16 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 else:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     if self.frame_num % SAVE_EVERY == 0:
-                        cv2.imwrite("debug/{}_{}.jpg".format(exp_time, self.frame_num),frame)
+                        cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
                         pass
                     try:
-                        pts, turn_percent, centroids, errors = processImage(frame)
-                        self.out_queue.put(item=(pts, turn_percent, centroids, errors), block=False)
+                        turn_percent, centroids = processImage(frame)
+                        self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:
-                        print(e)
-                    # Code for follow_orange.py
-                    # cx, cy, error = oldProcessImage(frame)
-                    # print(cx, cy)
-                    # self.out_queue.put(item=(cx, cy, error), block=False)
+                        print("Exception in image RBGAnalyser: {}".format(e))
                 self.frame_num += 1
-        except:
-            pass
+        except Exception as e:
+            print("Exception in image RBGAnalyser after loop: {}".format(e))
 
     def start(self):
         t = threading.Thread(target=self.extractInfo)
@@ -103,7 +101,6 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.stop = True
 
 
-
 class Viewer(object):
     """
     Class that initialize the camera and start the PiCamera Thread
@@ -112,6 +109,7 @@ class Viewer(object):
     :param debug: (bool)
     :param fps: (int)
     """
+
     def __init__(self, out_queue, resolution, debug=False, fps=90):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
@@ -139,7 +137,7 @@ if __name__ == '__main__':
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
-    resolution = (640//2, 480//2)
+    resolution = (640 // 2, 480 // 2)
     image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=True), exit_condition)
     image_thread.start()
     time.sleep(5)

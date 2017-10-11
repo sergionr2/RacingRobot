@@ -1,15 +1,14 @@
 from __future__ import print_function, with_statement, division
 
 import zmq
-import time
-import common
 
 from teleop import *
+
 
 def pygameMain():
     # Pygame require a window
     pygame.init()
-    window = pygame.display.set_mode((800,500), RESIZABLE)
+    window = pygame.display.set_mode((800, 500), RESIZABLE)
     pygame.font.init()
     font = pygame.font.SysFont('Open Sans', 25)
     small_font = pygame.font.SysFont('Open Sans', 20)
@@ -21,14 +20,14 @@ def pygameMain():
         screen.blit(text, (x, y))
 
     def clear():
-        window.fill((0,0,0))
+        window.fill((0, 0, 0))
 
     def updateScreen(window, speed, turn):
         clear()
         writeText(window, 'Linear: {:.2f}, Angular: {:.2f}'.format(speed, turn), 20, 0, font, (255, 255, 255))
-        help_str =  'Use arrow keys to move, q or ESCAPE to exit.'
+        help_str = 'Use arrow keys to move, q or ESCAPE to exit.'
         writeText(window, help_str, 20, 50, small_font)
-        help_2 =  'space key, k : force stop ---  anything else : stop smoothly'
+        help_2 = 'space key, k : force stop ---  anything else : stop smoothly'
         writeText(window, help_2, 20, 100, small_font)
 
     x, theta, status, count = 0, 0, 0, 0
@@ -46,8 +45,8 @@ def pygameMain():
                 theta += th_tmp
 
         if keys[K_k] or keys[K_SPACE]:
-                x, theta = 0, 0
-                control_speed, control_turn = 0, 0
+            x, theta = 0, 0
+            control_speed, control_turn = 0, 0
 
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
         # Send Orders
@@ -59,25 +58,28 @@ def pygameMain():
             if event.type == QUIT or event.type == KEYDOWN and event.key in [K_ESCAPE, K_q]:
                 end = True
         pygame.display.flip()
-        # force 30 fps
-        pygame.time.Clock().tick(1/common.rate)
+        # Limit FPS
+        pygame.time.Clock().tick(1 / TELEOP_RATE)
+
 
 def sendToServer(socket, control_speed, control_turn):
     """
+    :param socket: (zmq socket object)
     :param control_speed: (float)
     :param control_turn: (float)
     """
     # Send Orders
     t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
-    angle_order = int(THETA_MIN  * t + THETA_MAX * (1 - t))
+    angle_order = int(THETA_MIN * t + THETA_MAX * (1 - t))
     socket.send_json((control_speed, angle_order))
     return angle_order
+
 
 host = "192.168.12.252"
 port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
-socket.connect("tcp://{}:{}".format(host,port))
+socket.connect("tcp://{}:{}".format(host, port))
 
 msg = socket.recv()
 print("Connected To Server")

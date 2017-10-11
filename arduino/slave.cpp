@@ -9,7 +9,6 @@ bool isConnected = false; ///< True if the connection with the master is availab
 int8_t motorSpeed = 0;
 int16_t servoPosition = INITIAL_THETA;
 unsigned long int lastMillis = 0;
-const int cycleDuration = 5; // ms
 Servo servomotor;
 
 void setup()
@@ -18,8 +17,8 @@ void setup()
   Serial.begin(SERIAL_BAUD);
 
   // Init Motor
-  pinMode(MOTOR_PIN , OUTPUT);
-  pinMode(DIRECTION_PIN , OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(DIRECTION_PIN, OUTPUT);
   // Stop the car
   stop();
 
@@ -29,7 +28,7 @@ void setup()
   servomotor.write(INITIAL_THETA);
 
   // Init button
-  pinMode(START_PIN , INPUT_PULLUP);
+  pinMode(START_PIN, INPUT_PULLUP);
 
   // Wait until the arduino is connected to master
   while(!isConnected)
@@ -40,12 +39,12 @@ void setup()
   }
 
   // Wait for start button to be pressed
-  int start_button_value = digitalRead(START_PIN);
-  while(start_button_value == 0)
-  {
-    start_button_value = digitalRead(START_PIN);
-    getMessageFromSerial();
-  }
+  // int start_button_value = digitalRead(START_PIN);
+  // while(start_button_value == 0)
+  // {
+  //   start_button_value = digitalRead(START_PIN);
+  //   getMessageFromSerial();
+  // }
 
   lastMillis = millis();
 }
@@ -53,10 +52,10 @@ void setup()
 void loop()
 {
   getMessageFromSerial();
-  if(millis() - lastMillis > cycleDuration)
+  if(millis() - lastMillis > CYCLE_DURATION)
   {
     lastMillis = millis();
-    cycle(); //run this function after every cycleDuration
+    cycle(); //run this function after every CYCLE_DURATION
   }
 }
 
@@ -68,19 +67,19 @@ void cycle()
   // Send motor speed order
   if (motorSpeed > 0)
   {
-    digitalWrite(DIRECTION_PIN , LOW);
+    digitalWrite(DIRECTION_PIN, LOW);
   }
   else
   {
-    digitalWrite(DIRECTION_PIN , HIGH);
+    digitalWrite(DIRECTION_PIN, HIGH);
   }
-  analogWrite(MOTOR_PIN , convertOrderToPWM(float(motorSpeed)));
+  analogWrite(MOTOR_PIN, convertOrderToPWM(float(motorSpeed)));
 }
 
 void stop()
 {
-  analogWrite(MOTOR_PIN , 0);
-  digitalWrite(DIRECTION_PIN , LOW);
+  analogWrite(MOTOR_PIN, 0);
+  digitalWrite(DIRECTION_PIN, LOW);
 }
 
 int convertOrderToPWM(float speedOrder)
@@ -93,21 +92,20 @@ void getMessageFromSerial()
 {
   while(Serial.available() > 0)
   {
-    //The first byte received is the instruction
+    // The first byte received is the instruction
     Order orderReceived = readOrder();
 
-    //Commands for initConnection begin
     if(orderReceived == HELLO)
     {
-      //If the cards haven't say hello, check the connection
-      if (!isConnected)
+      // If the cards haven't say hello, check the connection
+      if(!isConnected)
       {
         isConnected = true;
         sendOrder(HELLO);
       }
       else
       {
-        //If we are already connected do not send "hello" to avoid infinite loop
+        // If we are already connected do not send "hello" to avoid infinite loop
         sendOrder(ALREADY_CONNECTED);
       }
     }
@@ -115,8 +113,7 @@ void getMessageFromSerial()
     {
       isConnected = true;
     }
-    //Commands for initConnection end
-    else // Commands after initConnection
+    else
     {
       switch(orderReceived)
       {
@@ -124,7 +121,7 @@ void getMessageFromSerial()
         {
           motorSpeed = 0;
           stop();
-          if (DEBUG)
+          if(DEBUG)
           {
             sendOrder(STOP);
           }
@@ -133,7 +130,7 @@ void getMessageFromSerial()
         case SERVO:
         {
           servoPosition = readTwoBytesIntFromSerial();
-          if (DEBUG)
+          if(DEBUG)
           {
             sendOrder(SERVO);
             sendTwoBytesInt(servoPosition);
@@ -144,7 +141,7 @@ void getMessageFromSerial()
         {
           // between -100 and 100
           motorSpeed = readOneByteIntFromSerial();
-          if (MOTOR)
+          if(DEBUG)
           {
             sendOrder(MOTOR);
             sendOneByteInt(motorSpeed);

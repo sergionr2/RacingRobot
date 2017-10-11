@@ -1,17 +1,16 @@
-import math
 import socket
 
 import bpy
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn
 import mathutils
+import matplotlib.pyplot as plt
+import numpy as np
 
 ANGLE_OFFSET = 0
 dt = 0.01
 ERROR_MAX = 0.6
 HOST = 'localhost'
 PORT = 50011
+
 
 class Position(object):
     def __init__(self, x, y, theta=0):
@@ -26,34 +25,38 @@ class Position(object):
         self.x = norm * np.cos(theta)
         self.y = norm * np.sin(theta)
 
+
 class Speed(Position):
     def __init__(self, vx, vy):
         super(Speed, self).__init__(vx, vy)
+
 
 class Acceleration(Position):
     def __init__(self, ax, ay):
         super(Acceleration, self).__init__(ax, ay)
 
+
 def convertToDegree(angle):
     return (angle * 180) / np.pi
+
 
 def convertToRad(angle):
     return (angle * np.pi) / 180
 
+
 def constrain(x, a, b):
     return np.max([a, np.min([x, b])])
-
 
 
 class Car(object):
     def __init__(self, start_pos, mass, friction_coeff=1, dt=0.01):
         super(Car, self).__init__()
         self.pos = start_pos
-        self.speed = Speed(0,0)
-        self.acc = Acceleration(0,0)
+        self.speed = Speed(0, 0)
+        self.acc = Acceleration(0, 0)
         self.mass = mass
         # TODO: add air drag
-        self.friction =  friction_coeff * mass
+        self.friction = friction_coeff * mass
         self.dt = dt
         self.v = 0
         self.acc_norm = 0
@@ -61,7 +64,8 @@ class Car(object):
     def stepSpeed(self, u_speed):
         sign_speed = np.sign(self.v)
         if self.v == 0:
-            self.acc_norm = np.max([0, u_speed - self.friction]) if  u_speed >= 0 else np.min([0, u_speed + self.friction])
+            self.acc_norm = np.max([0, u_speed - self.friction]) if u_speed >= 0 else np.min(
+                [0, u_speed + self.friction])
         else:
             self.acc_norm = u_speed - self.friction if sign_speed >= 0 else u_speed + self.friction
         new_speed = self.v + self.acc_norm * self.dt
@@ -77,6 +81,7 @@ class Car(object):
         car.pos.x += self.v * np.cos(theta)
         car.pos.y += self.v * np.sin(theta)
         car.pos.theta += u_angle
+
 
 def compute_bezier_curve(matrix_world, spline):
     # Draw the bezier curve
@@ -101,6 +106,7 @@ def compute_bezier_curve(matrix_world, spline):
             points.extend(_points)
     return points
 
+
 def send_to_image_processing(path):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
@@ -110,12 +116,14 @@ def send_to_image_processing(path):
     s.close()
     return np.load(path)
 
+
 def close_socket():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
     s.sendall(bytes("stop", 'utf-8'))
     data = s.recv(1024)
     s.close()
+
 
 if __name__ == '__main__':
     # Blender objects
@@ -132,7 +140,7 @@ if __name__ == '__main__':
     car = Car(Position(cam.location[0], cam.location[1], 0),
               mass=10, friction_coeff=1, dt=dt)
 
-    traj = [[],[], []]
+    traj = [[], [], []]
 
     spline = track.data.splines[0]
     matrix_world = track.matrix_world
@@ -148,7 +156,7 @@ if __name__ == '__main__':
     ref_point_idx = 0
     theta_line = 0
     errors = []
-    a, b = np.array([0,0]), np.array([0,0])
+    a, b = np.array([0, 0]), np.array([0, 0])
     turn_percent = 0
 
     for i in range(1000):
@@ -162,48 +170,26 @@ if __name__ == '__main__':
         p0 = points[ref_point_idx]
         p1 = points[(ref_point_idx + 1) % (len(points) - 1)]
 
-        dist_to_points = [(car.pos.x - p[0])**2 + (car.pos.y - p[1])**2 for p in [p0, p1]]
+        dist_to_points = [(car.pos.x - p[0]) ** 2 + (car.pos.y - p[1]) ** 2 for p in [p0, p1]]
         ref_point_idx += np.argmin(dist_to_points)
         ref_point_idx %= (len(points) - 1)
         ref_point = points[ref_point_idx]
 
-        # Reference
-        # a, b = points[ref_point_idx][:2], points[(ref_point_idx + 1) % len(points)][:2]
-        # a, b = np.array(a), np.array(b)
-
         mat = send_to_image_processing(image_path)
-        old_b, old_a, old_turn_percent = a, b, turn_percent
         a, b, infos, error_mat = mat
         turn_percent, has_error = infos
 
-        # if has_error:
-        #     a, b, turn_percent = old_a, old_b, old_turn_percent
-
-        h = constrain(turn_percent/100.0, 0, 1)
+        h = constrain(turn_percent / 100.0, 0, 1)
         v_max = h * 0.2 + (1 - h) * 1
 
-        t = constrain(error/float(ERROR_MAX), 0, 1)
+        t = constrain(error / float(ERROR_MAX), 0, 1)
         v_min = 0.2
         v = t * v_min + (1 - t) * v_max
         # Constant speed
         car.v = v
         u_speed = 0
-
-
         vec = b - a
-        # # Dirty fix for good ref angle
-        # if abs(vec[0]) < 1e-4:
-        #     vec[0] = 1e-4
 
-        # Angle Control
-        # theta_line = np.arctan2(vec[1], vec[0])
-        # m = np.array([car.pos.x, car.pos.y])
-        # dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
-        # theta_target = theta_line - np.arctan(dist_to_line)
-
-        # errors.append(error)
-        # Error between [-pi, pi]
-        # error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
         error = error_mat[0]
         print(error)
         if i > 0:
@@ -213,9 +199,7 @@ if __name__ == '__main__':
 
         # PID Control
         u_angle = 0.2 * error + 0.1 * errorD + 0. * errorI
-        # u_angle = np.clip(u_angle, -0.005, 0.005)
 
-        # u_angle = 1 * error
         errorI += error
 
         # Update Car Position
@@ -231,15 +215,14 @@ if __name__ == '__main__':
         traj[1].append(car.pos.y)
         traj[2].append(convertToDegree(car.pos.theta))
 
-    # print(np.max(errors), np.std(errors), np.mean(errors))
     plt.plot(traj[0], traj[1])
     ax = plt.axes()
     for idx, a in enumerate(traj[2]):
         if idx % 1 == 0:
             # v = 1
             v = car.v
-            x,y = traj[0][idx], traj[1][idx]
-            ax.arrow(x,y, v*np.cos(convertToRad(a)), v*np.sin(convertToRad(a)), head_width=0.1)
+            x, y = traj[0][idx], traj[1][idx]
+            ax.arrow(x, y, v * np.cos(convertToRad(a)), v * np.sin(convertToRad(a)), head_width=0.1)
 
     close_socket()
     plt.show()

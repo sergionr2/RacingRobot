@@ -1,39 +1,31 @@
+"""
+Main script for autonomous mode
+It launches all the thread and does the PD control
+"""
 from __future__ import division, print_function
 
 import signal
 import time
 import threading
+
+# Python 2/3 support
 try:
     import queue
-
 except ImportError:
     import Queue as queue
 
-emptyException = queue.Empty
-fullException = queue.Full
-
-
+import serial
 import numpy as np
 
 import command.python.common as common
-from command.python.common import *
-from picam.image_analyser import *
+from command.python.common import is_connected, n_received_semaphore, command_queue,\
+                                  CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
+from picam.image_analyser import ImageProcessingThread, Viewer
+from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE,\
+                      MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
+emptyException = queue.Empty
+fullException = queue.Full
 
-THETA_MIN = 70
-THETA_MAX = 150
-ERROR_MAX = 1.0 # TODO: calibrate max error
-MAX_SPEED_STRAIGHT_LINE = 50
-MAX_SPEED_SHARP_TURN = 15
-MIN_SPEED = 10
-# PID Control
-Kp_turn = 40
-Kp_line = 35
-Kd = 30
-Ki = 0.0
-MAX_ERROR_SECONDS_BEFORE_STOP = 3
-FPS = 60
-N_SECONDS = 77
-alpha = 0.8
 
 def forceStop():
     # SEND STOP ORDER at the end
@@ -41,64 +33,45 @@ def forceStop():
     n_received_semaphore.release()
     n_received_semaphore.release()
     common.command_queue.put((Order.MOTOR, 0))
-    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX)/2)))
+    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
 
-def main_control(out_queue, resolution, n_seconds=5, regions=None):
+
+def main_control(out_queue, resolution, n_seconds=5):
     """
     :param out_queue: (Queue)
     :param resolution: (int, int)
     :param n_seconds: (int) number of seconds to keep this script alive
-    :param regions: [[int]] Regions Of Interest
     """
     mean_h = 0
     start_time = time.time()
-    u_angle = 0.
     error, errorD, errorI = 0, 0, 0
     last_error = 0
-    turn_percent = 0
     initialized = False
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
-    angle_order = theta_init
-    errors = [False]
-    stop_timer = 0
-    i = 1
     # Use mutable to be modified by signal handler
     should_exit = [False]
 
-    # Stop the robot
+    # Stop the robot on ctrl+c and exit the script
     def ctrl_c(signum, frame):
         print("STOP")
         should_exit[0] = True
+
     signal.signal(signal.SIGINT, ctrl_c)
+    last_time = time.time()
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
-        old_turn_percent = turn_percent
         # Output of image processing
-        pts, turn_percent, centroids, errors = out_queue.get()
-
+        turn_percent, centroids = out_queue.get()
         # print(centroids)
-        # print(errors)
-
-        # Use previous control if we see no line
-        if all(errors):
-            stop_timer = stop_timer if stop_timer != 0 else time.time()
-            if time.time() - stop_timer > MAX_ERROR_SECONDS_BEFORE_STOP:
-                forceStop()
-            time.sleep(common.rate)
-            continue
-        stop_timer = 0
-
         # Compute the error to the center of the line
-        error = (resolution[0]//2 - centroids[-1,0]) / (resolution[0]//2)
+        # Here we use the farthest centroids
+        error = (resolution[0] // 2 - centroids[-1, 0]) / (resolution[0] // 2)
 
-        # Retrieve a and b that define the line
-        # a, b = pts
-        has_error = any(errors)
         # Reduce max speed if it is a sharp turn
         h = np.clip(turn_percent / 100.0, 0, 1)
         # Moving mean
-        mean_h += alpha * (h - mean_h)
+        mean_h += ALPHA * (h - mean_h)
 
         # print("mean_h={}".format(mean_h))
         h = mean_h
@@ -118,31 +91,29 @@ def main_control(out_queue, resolution, n_seconds=5, regions=None):
         last_error = error
 
         # PID Control
+        # TODO: add dt in the equation
+        dt = time.time() - last_time
         u_angle = Kp * error + Kd * errorD + Ki * errorI
         # Update integral error
         errorI += error
+        last_time = time.time()
         # print("error={}".format(error))
         # print("u_angle={}".format(u_angle))
 
         angle_order = theta_init - u_angle
-
         angle_order = np.clip(angle_order, THETA_MIN, THETA_MAX).astype(int)
+
         try:
-            if i % 2 == 0:
-                i = 1
-                common.command_queue.put_nowait((Order.SERVO, angle_order))
-            else:
-                i = 2
-                common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
+            common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
+            common.command_queue.put_nowait((Order.SERVO, angle_order))
         except fullException:
-        	pass
-            # print("Exception putting in queue")
-        # print("angle order = {}".format(angle_order))
+            print("Queue is full")
 
     # SEND STOP ORDER at the end
     forceStop()
     # Make sure STOP order is sent
     time.sleep(0.2)
+
 
 if __name__ == '__main__':
     try:
@@ -161,37 +132,35 @@ if __name__ == '__main__':
         byte = bytes_array[0]
         if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
             is_connected = True
-        time.sleep(1)
 
     print("Connected to Arduino")
-    resolution = (640//2, 480//2)
+    resolution = CAMERA_RESOLUTION
     max_width = resolution[0]
-    # Regions of interest
-    r0 = [0, 150, max_width, 50]
-    r1 = [0, 125, max_width, 50]
-    r2 = [0, 100, max_width, 50]
-    r3 = [0, 75, max_width, 50]
-    r4 = [0, 50, max_width, 50]
-    regions = [r1, r2, r3]
+
     # image processing queue, output centroids
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
 
+    print("Starting Image Processing Thread")
+    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
+    # Wait for camera warmup
+    time.sleep(1)
+
+    print("Starting Communication Threads")
+    # Threads for arduino communication
     threads = [CommandThread(serial_file, command_queue),
                ListenerThread(serial_file), image_thread]
     for t in threads:
         t.start()
 
-    time.sleep(1)
-
-    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS, regions=regions)
+    print("Starting Control Thread")
+    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
 
     common.exit_signal = True
     n_received_semaphore.release()
 
-    print("EXIT")
+    print("Exiting...")
     # End the thread
     with exit_condition:
         exit_condition.notify_all()

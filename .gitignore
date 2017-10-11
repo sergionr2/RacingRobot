@@ -1,6 +1,7 @@
 debug/
 bin/
 lib/
+.idea/
 __pycache__/
 *.x
 build/

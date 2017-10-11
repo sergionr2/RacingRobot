@@ -10,6 +10,7 @@
 #define THETA_MIN 60
 #define THETA_MAX 150
 #define SPEED_MAX 100
+#define CYCLE_DURATION 1 // in ms
 
 #define DEBUG false
 
