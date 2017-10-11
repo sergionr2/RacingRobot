@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Train a neural network to detect a black&white line
+"""
 from __future__ import print_function, division
 
 import argparse
@@ -84,7 +87,7 @@ def loadDataset(seed=42, folder='cropped', split=True):
     :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
     :return:
     """
-    images = [name for name in os.listdir(folder) if name.split('.jpg')[0][-2:] in ['r0', 'r1', 'r2', 'r3']]
+    images = [name for name in os.listdir(folder)]
 
     tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
     height, width, n_channels = tmp_im.shape

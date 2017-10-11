@@ -1,3 +1,6 @@
+"""
+Test the trained model on images
+"""
 import argparse
 
 import cv2
@@ -20,11 +23,12 @@ RIGHT_KEY = 83
 LEFT_KEY = 81
 EXIT_KEYS = [113, 27]  # Escape and q
 
+# Load dataset
 X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False)
 indices = np.arange(len(X))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=seed)
-
+# Load trained model
 network, pred_fn = loadNetwork()
 
 y_test = pred_fn(X)
@@ -34,9 +38,8 @@ while True:
     name = images[current_idx]
     im = cv2.imread('{}/{}'.format(folder, images[current_idx]))
     height, width, n_channels = im.shape
-    # resized_image = cv2.resize(im, (width//2, height//2), interpolation=cv2.INTER_LINEAR)
-    # cv2.imshow('Resized', resized_image)
 
+    # Image from train/validation/test set ?
     text = "train"
     if current_idx in idx_val:
         text = "val"
@@ -50,6 +53,7 @@ while True:
     x_center = np.clip(x_center, 0, width)
     y_center = height // 2
     print(current_idx, name, "error={}".format(abs(x_center - x_true)))
+
     # Draw prediction and true center
     cv2.circle(im, (x_center, y_center), radius=10, color=(0, 0, 255),
                thickness=2, lineType=8, shift=0)

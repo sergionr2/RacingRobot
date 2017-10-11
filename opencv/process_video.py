@@ -1,3 +1,6 @@
+"""
+Process a video
+"""
 from __future__ import print_function, with_statement, division
 
 import argparse
@@ -10,8 +13,8 @@ from opencv.image_processing import processImage
 
 play_video = False
 
-parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
-parser.add_argument('-i', '--input_video', help='Input Video', default="debug/robot_vue.mp4", type=str)
+parser = argparse.ArgumentParser(description='Line Detection on a video')
+parser.add_argument('-i', '--input_video', help='Input Video', default="video.mp4", type=str)
 parser.add_argument('-r', '--regions', help='ROI', default=1, type=int)
 args = parser.parse_args()
 
@@ -59,9 +62,12 @@ while True:
     r3 = [0, 75, max_width, 50]
     r4 = [0, 50, max_width, 50]
     regions = [r1, r2, r3]
+    
     if args.regions == 0:
         regions = [[0, 0, img.shape[1], img.shape[0]]]
+
     processImage(img, debug=True, regions=regions)
+
     if not play_video:
         key = cv2.waitKey(0) & 0xff
     else:

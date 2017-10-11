@@ -175,17 +175,9 @@ if __name__ == '__main__':
         ref_point_idx %= (len(points) - 1)
         ref_point = points[ref_point_idx]
 
-        # Reference
-        # a, b = points[ref_point_idx][:2], points[(ref_point_idx + 1) % len(points)][:2]
-        # a, b = np.array(a), np.array(b)
-
         mat = send_to_image_processing(image_path)
-        old_b, old_a, old_turn_percent = a, b, turn_percent
         a, b, infos, error_mat = mat
         turn_percent, has_error = infos
-
-        # if has_error:
-        #     a, b, turn_percent = old_a, old_b, old_turn_percent
 
         h = constrain(turn_percent / 100.0, 0, 1)
         v_max = h * 0.2 + (1 - h) * 1
@@ -196,21 +188,8 @@ if __name__ == '__main__':
         # Constant speed
         car.v = v
         u_speed = 0
-
         vec = b - a
-        # # Dirty fix for good ref angle
-        # if abs(vec[0]) < 1e-4:
-        #     vec[0] = 1e-4
 
-        # Angle Control
-        # theta_line = np.arctan2(vec[1], vec[0])
-        # m = np.array([car.pos.x, car.pos.y])
-        # dist_to_line = np.linalg.det([b-a, m-a]) / np.linalg.norm(b-a)
-        # theta_target = theta_line - np.arctan(dist_to_line)
-
-        # errors.append(error)
-        # Error between [-pi, pi]
-        # error = np.arctan(np.tan((theta_target - car.pos.theta)/2))
         error = error_mat[0]
         print(error)
         if i > 0:
@@ -220,9 +199,7 @@ if __name__ == '__main__':
 
         # PID Control
         u_angle = 0.2 * error + 0.1 * errorD + 0. * errorI
-        # u_angle = np.clip(u_angle, -0.005, 0.005)
 
-        # u_angle = 1 * error
         errorI += error
 
         # Update Car Position
@@ -238,7 +215,6 @@ if __name__ == '__main__':
         traj[1].append(car.pos.y)
         traj[2].append(convertToDegree(car.pos.theta))
 
-    # print(np.max(errors), np.std(errors), np.mean(errors))
     plt.plot(traj[0], traj[1])
     ax = plt.axes()
     for idx, a in enumerate(traj[2]):

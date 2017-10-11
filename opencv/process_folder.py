@@ -14,10 +14,10 @@ from opencv.image_processing import processImage
 
 images = ['jpg', 'jpeg', 'png', 'gif']
 
-parser = argparse.ArgumentParser(description='White Lane Detection for a batch of images')
+parser = argparse.ArgumentParser(description='Line Detection for a folder of images')
 parser.add_argument('-i', '--input_image', help='Input Image', default="", type=str)
 parser.add_argument('-f', '--folder', help='Folder', default="", type=str)
-parser.add_argument('-r', '--regions', help='ROI', default=1, type=int)
+parser.add_argument('-r', '--regions', help='whether to use regions of interests of the whole image', default=1, type=int)
 args = parser.parse_args()
 
 if args.input_image != "" or args.folder != "":
@@ -31,6 +31,7 @@ if args.input_image != "" or args.folder != "":
         regions = None
         if args.regions == 0:
             regions = [[0, 0, img.shape[1], img.shape[0]]]
+        
         processImage(img, debug=True, regions=regions)
 
         key = cv2.waitKey(0) & 0xff

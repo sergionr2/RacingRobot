@@ -17,8 +17,8 @@ void setup()
   Serial.begin(SERIAL_BAUD);
 
   // Init Motor
-  pinMode(MOTOR_PIN , OUTPUT);
-  pinMode(DIRECTION_PIN , OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(DIRECTION_PIN, OUTPUT);
   // Stop the car
   stop();
 
@@ -28,7 +28,7 @@ void setup()
   servomotor.write(INITIAL_THETA);
 
   // Init button
-  pinMode(START_PIN , INPUT_PULLUP);
+  pinMode(START_PIN, INPUT_PULLUP);
 
   // Wait until the arduino is connected to master
   while(!isConnected)
@@ -67,19 +67,19 @@ void cycle()
   // Send motor speed order
   if (motorSpeed > 0)
   {
-    digitalWrite(DIRECTION_PIN , LOW);
+    digitalWrite(DIRECTION_PIN, LOW);
   }
   else
   {
-    digitalWrite(DIRECTION_PIN , HIGH);
+    digitalWrite(DIRECTION_PIN, HIGH);
   }
-  analogWrite(MOTOR_PIN , convertOrderToPWM(float(motorSpeed)));
+  analogWrite(MOTOR_PIN, convertOrderToPWM(float(motorSpeed)));
 }
 
 void stop()
 {
-  analogWrite(MOTOR_PIN , 0);
-  digitalWrite(DIRECTION_PIN , LOW);
+  analogWrite(MOTOR_PIN, 0);
+  digitalWrite(DIRECTION_PIN, LOW);
 }
 
 int convertOrderToPWM(float speedOrder)
@@ -98,7 +98,7 @@ void getMessageFromSerial()
     if(orderReceived == HELLO)
     {
       // If the cards haven't say hello, check the connection
-      if (!isConnected)
+      if(!isConnected)
       {
         isConnected = true;
         sendOrder(HELLO);
@@ -121,7 +121,7 @@ void getMessageFromSerial()
         {
           motorSpeed = 0;
           stop();
-          if (DEBUG)
+          if(DEBUG)
           {
             sendOrder(STOP);
           }
@@ -130,7 +130,7 @@ void getMessageFromSerial()
         case SERVO:
         {
           servoPosition = readTwoBytesIntFromSerial();
-          if (DEBUG)
+          if(DEBUG)
           {
             sendOrder(SERVO);
             sendTwoBytesInt(servoPosition);
@@ -141,7 +141,7 @@ void getMessageFromSerial()
         {
           // between -100 and 100
           motorSpeed = readOneByteIntFromSerial();
-          if (DEBUG)
+          if(DEBUG)
           {
             sendOrder(MOTOR);
             sendOneByteInt(motorSpeed);

@@ -1,3 +1,7 @@
+"""
+Main script for autonomous mode
+It launches all the thread and does the PD control
+"""
 from __future__ import division, print_function
 
 import signal

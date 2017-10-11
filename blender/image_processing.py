@@ -5,7 +5,6 @@ import socket
 
 import cv2
 import numpy as np
-# from scipy import stats
 
 from opencv.noise import *
 
@@ -83,8 +82,6 @@ def processImage(image, debug=False):
     else:
         x = np.array([x[0], x[2]])
         y = np.array([y[0], y[2]])
-        # slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
-        # m, b = slope, intercept
         A = np.vstack([x, np.ones(len(x))]).T
         m, b = np.linalg.lstsq(A, y)[0]
         # y = m*x + b
@@ -96,10 +93,6 @@ def processImage(image, debug=False):
         max_angle = 2 * np.pi / 3
         turn_percent = (diff_angle / max_angle) * 100
     a, b = pts
-    # if track_angle > 0:
-    #     print("LEFT {}".format(turn_percent))
-    # else:
-    #     print("RIGHT {}".format(turn_percent))
 
     if debug:
         if all(errors):
@@ -119,7 +112,7 @@ def processImage(image, debug=False):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='White Lane Detection')
+    parser = argparse.ArgumentParser(description='White Line Detection server')
     parser.add_argument('-i', '--input_image', help='Input Image', default="", type=str)
 
     args = parser.parse_args()

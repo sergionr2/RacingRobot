@@ -1,3 +1,6 @@
+"""
+Tool for labeling images
+"""
 import os
 
 import cv2
@@ -41,6 +44,7 @@ for idx, name in enumerate(images):
         im_cropped = original_img[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
         centroids, errors = processImage(img, debug=True, regions=[r], interactive=True)
         if not all(errors):
+            # Save the labeled image (and store the label in the name)
             x, y = centroids.flatten()
             cx, cy = x - margin_left, y - margin_top
             cv2.imwrite('{}/{}-{}_{}-{}{}r{}.jpg'.format(output_folder, cx, cy, idx,
