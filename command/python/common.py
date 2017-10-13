@@ -37,7 +37,6 @@ class CustomQueue(queue.Queue):
 
 
 BAUDRATE = 115200
-exit_signal = False
 is_connected_lock = threading.Lock()
 is_connected = False
 # Number of messages we can send to the Arduino without receiving a RECEIVED response
@@ -161,18 +160,20 @@ class CommandThread(threading.Thread):
     it blocks if there no more send_token left (here it is the n_received_semaphore)
     :param serial_file: (Serial object)
     :param command_queue: (Queue)
+    :param exit_event: (Threading.Event object)
     """
 
-    def __init__(self, serial_file, command_queue):
+    def __init__(self, serial_file, command_queue, exit_event):
         threading.Thread.__init__(self)
         self.deamon = True
         self.serial_file = serial_file
         self.command_queue = command_queue
+        self.exit_event = exit_event
 
     def run(self):
-        while not exit_signal:
+        while not self.exit_event.is_set():
             n_received_semaphore.acquire()
-            if exit_signal:
+            if self.exit_event.is_set():
                 break
             try:
                 order, param = self.command_queue.get_nowait()
@@ -189,6 +190,7 @@ class CommandThread(threading.Thread):
                 elif order == Order.SERVO:
                     writeTwoBytesInt(self.serial_file, param)
             time.sleep(rate)
+        print("Command Thread Exited")
 
 
 class ListenerThread(threading.Thread):
@@ -196,15 +198,17 @@ class ListenerThread(threading.Thread):
     Thread that listen to the Arduino
     It is used to add send_tokens to the n_received_semaphore
     :param serial_file: (Serial object)
+    :param exit_event: (Threading.Event object)
     """
 
-    def __init__(self, serial_file):
+    def __init__(self, serial_file, exit_event):
         threading.Thread.__init__(self)
         self.deamon = True
         self.serial_file = serial_file
+        self.exit_event = exit_event
 
     def run(self):
-        while not exit_signal:
+        while not self.exit_event.is_set():
             try:
                 bytes_array = bytearray(self.serial_file.read(1))
             except serial.SerialException:
@@ -223,4 +227,4 @@ class ListenerThread(threading.Thread):
                     n_received_semaphore.release()
                 decodeOrder(self.serial_file, byte)
             time.sleep(rate)
-        print("Listener thread exited")
+        print("Listener Thread Exited")

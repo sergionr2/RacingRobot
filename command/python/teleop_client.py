@@ -75,10 +75,12 @@ def sendToServer(socket, control_speed, control_turn):
     return angle_order
 
 
-host = "192.168.12.252"
+host = "192.168.12.252"  # Ip of the Raspberry Pi
+# host = "192.168.12.248"
 port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
+print("Connecting to ... {}".format(host))
 socket.connect("tcp://{}:{}".format(host, port))
 
 msg = socket.recv()

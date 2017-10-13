@@ -19,7 +19,7 @@ We wrote an article on medium that detailed our approach. You can read it [here]
 
 ### Training Data
 
-The training data can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
+The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
 There are two folders:
 - input_images/ (raw images from remote control)
@@ -64,7 +64,7 @@ python main.py
 ```
 python command/python/teleop_server.py
 ```
-4. Launch teleoperation client on your computer
+4. Launch teleoperation client on your computer (you have to edit the raspberry pi Ip in the code)
 ```
 python command/python/teleop_client.py
 ```
@@ -99,6 +99,9 @@ python train.py
 The best model (lowest error on the validation data) will be saved as *mlp_model.npz*.
 
 ### Installation
+
+**We will release soon an image with all the dependencies installed**
+
 Update your pi
 ```
 sudo apt-get update
@@ -118,8 +121,8 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 - Python 2 or 3
 
 OpenCV
+- [PreCompiled](https://github.com/jabelone/OpenCV-for-Pi) This is the **recommended method**
 - [Guide](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
-- [PreCompiled](https://github.com/jabelone/OpenCV-for-Pi)
 
 Libserial (apt-get or compile from source)
 - [LibSerial](https://github.com/crayzeewulf/libserial)
@@ -139,7 +142,10 @@ All the required packages can be found in `requirements.txt`
 
 PySerial
 ```
-sudo apt-get install python-serial
+sudo pip install pyserial
+# Add user to dialout group to have the right to write on the serial port
+sudo usermod -a -G dialout $USER
+# You need to logout/login again for that change to be taken into account
 ```
 
 [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)

@@ -2,6 +2,7 @@ from __future__ import print_function, with_statement, division
 
 import argparse
 import time
+import threading
 
 try:
     import queue
@@ -51,8 +52,10 @@ while not is_connected:
     if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
         is_connected = True
 
-threads = [CommandThread(serial_file, command_queue),
-           ListenerThread(serial_file)]
+exit_event = threading.Event()
+
+threads = [CommandThread(serial_file, command_queue, exit_event),
+           ListenerThread(serial_file, exit_event)]
 for t in threads:
     t.start()
 
@@ -88,8 +91,8 @@ n_received_semaphore.release()
 common.command_queue.put((Order.MOTOR, 0))
 # Make sure STOP order is sent
 time.sleep(0.2)
-
-common.exit_signal = True
+# End the threads
+exit_event.set()
 n_received_semaphore.release()
 print("EXIT")
 

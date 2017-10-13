@@ -147,21 +147,24 @@ if __name__ == '__main__':
     # Wait for camera warmup
     time.sleep(1)
 
+    # Event to notify threads that they should terminate
+    exit_event = threading.Event()
+
     print("Starting Communication Threads")
     # Threads for arduino communication
-    threads = [CommandThread(serial_file, command_queue),
-               ListenerThread(serial_file), image_thread]
+    threads = [CommandThread(serial_file, command_queue, exit_event),
+               ListenerThread(serial_file, exit_event), image_thread]
     for t in threads:
         t.start()
 
     print("Starting Control Thread")
     main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
 
-    common.exit_signal = True
+    # End the threads
+    exit_event.set()
     n_received_semaphore.release()
 
     print("Exiting...")
-    # End the thread
     with exit_condition:
         exit_condition.notify_all()
 

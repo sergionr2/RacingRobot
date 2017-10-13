@@ -22,7 +22,7 @@ THETA_MAX = 150
 STEP_SPEED = 10
 STEP_TURN = 30
 
-TELEOP_RATE = 1 / 60 # 60 fps
+TELEOP_RATE = 1 / 60  # 60 fps
 
 moveBindings = {
     curses.KEY_UP: UP,
@@ -225,14 +225,15 @@ if __name__ == "__main__":
         if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
             is_connected = True
         time.sleep(1)
+    exit_event = threading.Event()
 
-    threads = [CommandThread(serial_file, command_queue),
-               ListenerThread(serial_file)]
+    threads = [CommandThread(serial_file, command_queue, exit_event),
+               ListenerThread(serial_file, exit_event)]
     for t in threads:
         t.start()
 
     pygameMain()
-    common.exit_signal = True
+    exit_event.set()
     n_received_semaphore.release()
     print("EXIT")
 
