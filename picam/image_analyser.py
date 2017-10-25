@@ -60,7 +60,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.frame_num = 0
         self.referenceFrame = None
         self.frame_queue = queue.Queue(maxsize=1)
-        self.stop = False
+        self.exit = False
         self.out_queue = out_queue
         self.data = 0
         self.debug = debug
@@ -71,7 +71,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
 
     def extractInfo(self):
         try:
-            while not self.stop:
+            while not self.exit:
                 frame = self.frame_queue.get(block=True, timeout=2)
                 if self.debug:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -98,7 +98,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
 
     def stop(self):
         self.frame_queue.queue.clear()
-        self.stop = True
+        self.exit = True
 
 
 class Viewer(object):
