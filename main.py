@@ -18,11 +18,12 @@ import serial
 import numpy as np
 
 import command.python.common as common
-from command.python.common import is_connected, n_received_semaphore, command_queue,\
-                                  CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
+from command.python.common import is_connected, n_received_semaphore, command_queue, \
+    CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
-from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE,\
-                      MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
+from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
+    MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
+
 emptyException = queue.Empty
 fullException = queue.Full
 

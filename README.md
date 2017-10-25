@@ -100,7 +100,48 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 
 ### Installation
 
-**We will release soon an image with all the dependencies installed**
+#### Recommended : Use an image with everything installed
+0. You need a micro sd card (warning, all data on that card will be overwritten)
+
+1. Download the image [here](https://drive.google.com/open?id=0Bz4VOC2vLbgPTl9LZzNNcnBCWUU)
+The characteristics of the image:
+OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
+Username: enstar
+Password: enstar
+Installed softwares:
+ - all the dependencies for that project (OpenCV 3.2.0, Theano, ...)
+ - the current project (in the folder RacingRobot/)
+ - ROS Kinetic
+Camera and ssh are enabled.
+
+
+
+2. Identify the name of your sd card using:
+```
+fdisk -l
+```
+For instance, it gives:
+```
+/dev/mmcblk0p1            2048   131071   129024   63M  c W95 FAT32 (LBA)
+/dev/mmcblk0p2          131072 30449663 30318592 14,5G 83 Linux
+```
+In that case, your sd card is named */dev/mmcblk0* (p1 and p2 stand for partition).
+
+3. Write the downloaded image on the sd card.
+```
+gunzip --stdout ubuntu_ros_racing_robot.img.gz | sudo dd bs=4M of=/dev/mmcblk0
+```
+
+4. Enjoy!
+The current project is located in `RacingRobot/`. There is also a ROS version of the remote control in `catkin_ws/src/`.
+
+
+If you want to back up an image of a raspberry pi:
+```
+sudo dd bs=4M if=/dev/mmcblk0 | gzip > ubuntu_ros_racing_robot.img.gz
+```
+
+#### From Scratch
 
 Update your pi
 ```
@@ -181,7 +222,7 @@ Additional python dev-dependencies for training the neural network:
 ```
 pip install --upgrade https://github.com/Theano/Theano/archive/rel-0.10.0beta2.zip
 pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
-pip install sklearn
+pip install sklearn # or sudo apt-get install python-sklearn
 ```
 
 ### Contributors
