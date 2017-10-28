@@ -58,26 +58,31 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
     def __init__(self, camera, out_queue, debug=False):
         super(RGBAnalyser, self).__init__(camera)
         self.frame_num = 0
-        self.referenceFrame = None
         self.frame_queue = queue.Queue(maxsize=1)
         self.exit = False
         self.out_queue = out_queue
-        self.data = 0
         self.debug = debug
         self.start()
 
     def analyse(self, frame):
+        """
+        Override base function
+        :param frame: BGR image
+        """
         self.frame_queue.put(item=frame, block=True)
 
     def extractInfo(self):
         try:
             while not self.exit:
-                frame = self.frame_queue.get(block=True, timeout=2)
+                try:
+                    frame = self.frame_queue.get(block=True, timeout=1)
+                except queue.Empty:
+                    print("Queue empty")
+                    continue
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if self.debug:
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     self.out_queue.put(item=frame, block=False)
                 else:
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     if self.frame_num % SAVE_EVERY == 0:
                         cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
                         pass
@@ -85,10 +90,10 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                         turn_percent, centroids = processImage(frame)
                         self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:
-                        print("Exception in image RBGAnalyser: {}".format(e))
+                        print("Exception in RBGAnalyser processing image: {}".format(e))
                 self.frame_num += 1
         except Exception as e:
-            print("Exception in image RBGAnalyser after loop: {}".format(e))
+            print("Exception in RBGAnalyser after loop: {}".format(e))
 
     def start(self):
         t = threading.Thread(target=self.extractInfo)
@@ -97,8 +102,9 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         t.start()
 
     def stop(self):
-        self.frame_queue.queue.clear()
         self.exit = True
+        self.thread.join()
+        self.frame_queue.queue.clear()
 
 
 class Viewer(object):
@@ -113,6 +119,7 @@ class Viewer(object):
     def __init__(self, out_queue, resolution, debug=False, fps=90):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
+        # TODO: try with mode 6, larger FoV (works only with v2 module)
         self.camera.sensor_mode = 7
         self.camera.resolution = resolution
         print(self.camera.resolution)
@@ -131,6 +138,7 @@ class Viewer(object):
     def stop(self):
         self.camera.wait_recording()
         self.camera.stop_recording()
+        self.analyser.stop()
 
 
 if __name__ == '__main__':
