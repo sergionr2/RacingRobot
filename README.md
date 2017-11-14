@@ -84,7 +84,6 @@ You have to press enter to pass to the next frame
 
 4. Label the data using the labeling tool (again please change the paths in the script)
 ```
-cd opencv/ (enter opencv folder)
 python -m opencv.train.label_images
 ```
 To label an image, you have to click on the center of line in the displayed image.
@@ -107,8 +106,12 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 
 The characteristics of the image:
 OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
+
 **Username**: enstar
+
 **Password**: enstar
+
+
 Installed softwares:
  - all the dependencies for that project (OpenCV 3.2.0, Theano, ...)
  - the current project (in the folder RacingRobot/)
