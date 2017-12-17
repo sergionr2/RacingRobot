@@ -36,7 +36,7 @@ def loadNetwork(model_name="mlp_model"):
     network = buildMlp(input_var, input_dim)
 
     with np.load('{}.npz'.format(model_name)) as f:
-        param_values = [f['arr_%d' % i] for i in range(len(f.files))]
+        param_values = [f['arr_%d' % i].astype(np.float32) for i in range(len(f.files))]
     lasagne.layers.set_all_param_values(network, param_values)
 
     test_prediction = lasagne.layers.get_output(network, deterministic=True)

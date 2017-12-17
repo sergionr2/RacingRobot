@@ -96,7 +96,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
         for idx, r in enumerate(regions):
             im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
             pred_imgs.append(preprocessImage(im_cropped, WIDTH, HEIGHT))
-        centroids[:, 0] = pred_fn(np.array(pred_imgs))[:, 0] * factor * im_width
+        centroids[:, 0] = pred_fn(np.array(pred_imgs, dtype=np.float32))[:, 0] * factor * im_width
         centroids[:, 0] += regions[:, 0]
         centroids[:, 1] = regions[:, 3] // 2 + regions[:, 1]
     else:
