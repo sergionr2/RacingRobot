@@ -1,6 +1,6 @@
 import numpy as np
 
-from opencv.train.train import loadNetwork
+from train.train import loadNetwork
 
 network, pred_fn = loadNetwork()
 

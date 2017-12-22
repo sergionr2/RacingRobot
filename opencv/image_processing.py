@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from constants import REF_ANGLE, MAX_ANGLE
-from opencv.train.train import preprocessImage, loadNetwork, WIDTH, HEIGHT
+from train import preprocessImage, loadNetwork, WIDTH, HEIGHT
 
 
 def loadVanillaNet(weights_npy='mlp_model.npz'):

@@ -86,15 +86,15 @@ You have to press enter to pass to the next frame
 
 4. Label the data using the labeling tool (again please change the paths in the script)
 ```
-python -m opencv.train.label_images
+python -m train.label_images
 ```
 To label an image, you have to click on the center of line in the displayed image.
 If the image do not contain any line, or if you want to pass to the next frame, press any key.
 
-5. (optional) Augment the dataset using the augmentDataset() function in opencv/train/train.py
+5. (optional) Augment the dataset using the augmentDataset() function in train/train.py
 6. Train the neural network (again please change the paths in the script)
 ```
-cd opencv/train/ (enter train folder)
+cd train/ (enter train folder)
 python train.py
 ```
 The best model (lowest error on the validation data) will be saved as *mlp_model.npz*.

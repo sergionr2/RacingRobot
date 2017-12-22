@@ -41,6 +41,7 @@ def nothing(x):
 current_idx = cap.get(image_zero_index)
 n_frames = int(cap.get(frame_count))
 print("{} frames".format(n_frames))
+
 while True:
     while True:
         flag, img = cap.read()
@@ -55,14 +56,14 @@ while True:
     original_img = img.copy()
     resolution = (640 // 2, 480 // 2)
     max_width = resolution[0]
-    # Regions of interest
-    r0 = [0, 150, max_width, 50]
-    r1 = [0, 125, max_width, 50]
-    r2 = [0, 100, max_width, 50]
-    r3 = [0, 75, max_width, 50]
-    r4 = [0, 50, max_width, 50]
-    regions = [r1, r2, r3]
-    
+    # Custom Regions of interest
+    # r0 = [0, 150, max_width, 50]
+    # r1 = [0, 125, max_width, 50]
+    # r2 = [0, 100, max_width, 50]
+    # r3 = [0, 75, max_width, 50]
+    # r4 = [0, 50, max_width, 50]
+    # regions = [r1, r2, r3]
+    regions = None
     if args.regions == 0:
         regions = [[0, 0, img.shape[1], img.shape[0]]]
 
