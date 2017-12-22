@@ -5,51 +5,8 @@ import argparse
 import cv2
 import numpy as np
 
-from constants import REF_ANGLE, MAX_ANGLE
-from train import preprocessImage, loadNetwork, WIDTH, HEIGHT
-
-
-def loadVanillaNet(weights_npy='mlp_model.npz'):
-    """
-    Load a trained network and
-    return the forward function in pure numpy
-    :param weights_npy: (str) path to the numpy archive
-    :return: (function) the neural net forward function
-    """
-    W, b = {}, {}
-    with np.load(weights_npy) as f:
-        print("Loading network")
-        n_layers = len(f.files) // 2
-        for i in range(len(f.files)):
-            if i % 2 == 1:
-                b[i // 2] = f['arr_%d' % i]
-            else:
-                W[i // 2] = f['arr_%d' % i]
-
-    def relu(x):
-        """
-        Rectify activation function: f(x) = max(0, x)
-        :param x: (numpy array)
-        :return: (numpy array)
-        """
-        y = x.copy()
-        y[y < 0] = 0
-        return y
-
-    def forward(X):
-        """
-        Forward pass of a fully-connected neural net
-        with rectifier activation function
-        :param X: (numpy tensor)
-        :return: (numpy array)
-        """
-        a = X
-        for i in range(n_layers):
-            z = np.dot(a, W[i]) + b[i]
-            a = relu(z)
-        return a
-
-    return forward
+from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS
+from train import preprocessImage, loadNetwork, loadVanillaNet, WIDTH, HEIGHT
 
 
 # Either load network with theano or with numpy
@@ -74,20 +31,14 @@ def processImage(image, debug=False, regions=None, interactive=False):
     :param interactive: (bool)
     :return:(float, numpy array)
     """
-    # r = [margin_left, margin_top, width, height]
     im_width = image.shape[1]
     if regions is None:
         # Regions of interest
-        # r = [margin_left, margin_top, width, height]
-        r0 = [0, 150, im_width, 50]
-        r1 = [0, 125, im_width, 50]
-        r2 = [0, 100, im_width, 50]
-        r3 = [0, 75, im_width, 50]
-        r4 = [0, 50, im_width, 50]
-        regions = np.array([r1, r2, r3]) # Before [r0, r1, r2]
+        regions = REGIONS
 
     centroids = np.zeros((len(regions), 2), dtype=int)
     errors = [False for _ in regions]
+    exit = False  # For interactive mode
 
     if not debug:
         # Batch Prediction
@@ -126,8 +77,10 @@ def processImage(image, debug=False, regions=None, interactive=False):
                 cv2.imshow('crop{}'.format(idx), im_cropped)
                 # Labeling mode
                 if interactive:
+                    # Retrieve mouse click position
                     cv2.setMouseCallback('crop{}'.format(idx), mouseCallback, center)
                     key = cv2.waitKey(0) & 0xff
+                    exit = key in EXIT_KEYS
 
             if debug and interactive:
                 if center.get(0):
@@ -177,7 +130,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
             cv2.imshow('result', image)
 
     if interactive:
-        return centroids, errors
+        return centroids, errors, exit
     return turn_percent, centroids
 
 

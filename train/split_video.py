@@ -11,13 +11,12 @@ import numpy as np
 from constants import RIGHT_KEY, LEFT_KEY, ENTER_KEY, EXIT_KEYS
 
 parser = argparse.ArgumentParser(description='Split a video into a sequence of images')
-parser.add_argument('-i', '--input_video', help='Input Video', default="video.mp4", type=str)
-parser.add_argument('-o', '--output_folder', help='Output folder', default="", type=str)
+parser.add_argument('-i', '--input_video', help='Input Video', default="", type=str, required=True)
+parser.add_argument('-o', '--output_folder', help='Output folder', default="", type=str, required=True)
 parser.add_argument('--no-display', action='store_true', default=False, help='Do not display the images')
 
 args = parser.parse_args()
 
-assert args.output_folder != "", "You must specify an output folder"
 output_folder = args.output_folder
 
 # OpenCV 3.x.x compatibility

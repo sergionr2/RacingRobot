@@ -2,11 +2,12 @@
 """
 Train a neural network to detect a black&white line
 """
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
 
 import argparse
 import os
 import time
+import pickle as pkl
 
 import cv2
 import lasagne
@@ -18,10 +19,12 @@ from lasagne.regularization import regularize_network_params, l2
 from lasagne.updates import adam
 from sklearn.model_selection import train_test_split
 
+from constants import WIDTH, HEIGHT
+from .utils import iterateMinibatches, preprocessImage
+
 seed = 42
 np.random.seed(seed)
 evaluate_print = 1  # Print info every 1 epoch
-WIDTH, HEIGHT = 80, 20  # Shape of the resized input image fed to our model
 
 
 def loadNetwork(model_name="mlp_model"):
@@ -31,6 +34,9 @@ def loadNetwork(model_name="mlp_model"):
     :param model_name: (str)
     :return: (lasagne network object, theano function)
     """
+    # Remove npz
+    if '.npz' in model_name:
+        model_name = model_name.split('.npz')[0]
     input_var = T.matrix('inputs')
     input_dim = WIDTH * HEIGHT * 3
     network = buildMlp(input_var, input_dim)
@@ -42,23 +48,6 @@ def loadNetwork(model_name="mlp_model"):
     test_prediction = lasagne.layers.get_output(network, deterministic=True)
     pred_fn = theano.function([input_var], test_prediction)
     return network, pred_fn
-
-
-def preprocessImage(image, width, height):
-    """
-    Preprocessing script to convert image into neural net input array
-    :param image: (cv2 image)
-    :param width: (int)
-    :param height: (int)
-    :return: (numpy array)
-    """
-    image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
-    x = image.flatten()
-    # Normalize
-    x = x / 255.
-    x -= 0.5
-    x *= 2
-    return x
 
 
 def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
@@ -79,7 +68,7 @@ def augmentDataset(in_folder='cropped', out_folder='augmented_dataset'):
         cv2.imwrite('{}/{}-{}_hori_{}-{}.jpg'.format(out_folder, width - cx, cy, idx, r), horizontal_flip)
 
 
-def loadDataset(seed=42, folder='cropped', split=True):
+def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
     """
     Load the training images and preprocess them
     :param seed: (int) seed for pseudo-random generator
@@ -87,32 +76,51 @@ def loadDataset(seed=42, folder='cropped', split=True):
     :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
     :return:
     """
-    images = [name for name in os.listdir(folder)]
+    # images_path = [name for name in os.listdir(folder) if name.endswith('.jpg')]
 
-    tmp_im = cv2.imread('{}/{}'.format(folder, images[0]))
+    with open('{}/infos.pkl'.format(folder), 'rb') as f:
+        infos_dict = pkl.load(f)
+
+    images = list(infos_dict['images'].keys())
+    images.sort()
+    images_path = []
+
+    tmp_im = cv2.imread('{}/{}.jpg'.format(folder, infos_dict['images'][images[0]]['output_name']))
     height, width, n_channels = tmp_im.shape
+    n_images = len(images)
+    if augmented:
+        images_path_augmented = []
+        n_images *= 2
 
-    X = np.zeros((len(images), WIDTH * HEIGHT * n_channels), dtype=np.float64)
-    y = np.zeros((len(images),), dtype=np.float64)
+    X = np.zeros((n_images, WIDTH * HEIGHT * n_channels), dtype=np.float32)
+    y = np.zeros((n_images,), dtype=np.float32)
 
     print("original_shape=({},{})".format(width, height))
     print("resized_shape=({},{})".format(WIDTH, HEIGHT))
     factor = width / WIDTH
 
     for idx, name in enumerate(images):
-        x_center, y_center = map(int, name.split('_')[0].split('-'))
+        x_center, y_center = infos_dict['images'][name]['label']
         # TODO: check the formula below (if this changes, it must be changed in image_processing.py too)
-        x_center /= factor * width
-        y[idx] = x_center
+        y[idx] = x_center / (factor * width)
 
-        image_path = '{}/{}'.format(folder, images[idx])
+        path = infos_dict['images'][name]['output_name']
+        image_path = '{}/{}.jpg'.format(folder, path)
         im = cv2.imread(image_path)
         X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
+        images_path.append(path + '.jpg')
+        if augmented:
+            horizontal_flip = cv2.flip(im, 1)
+            X[len(images) + idx, :] = preprocessImage(horizontal_flip, WIDTH, HEIGHT)
+            images_path_augmented.append(path + '.jpg')
+            y[len(images) + idx] = (width - x_center) / (factor * width)
+
+    if augmented:
+        images_path += images_path_augmented
 
     print(X.shape)
-
     if not split:
-        return X, y, images, factor
+        return X, y, images_path, factor
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=seed)
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=seed)
@@ -137,25 +145,6 @@ def buildMlp(input_var, input_dim):
     return l_out
 
 
-def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
-    """
-    Iterator that creates minibatches
-    :param inputs: (numpy tensor)
-    :param targets: (numpy array)
-    :param batchsize: (int)
-    :param shuffle: (bool)
-    """
-    assert len(inputs) == len(targets)
-    if shuffle:
-        indices = np.arange(len(inputs))
-        np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
-        if shuffle:
-            excerpt = indices[start_idx:start_idx + batchsize]
-        else:
-            excerpt = slice(start_idx, start_idx + batchsize)
-        yield inputs[excerpt], targets[excerpt]
-
 
 def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42):
     """
@@ -173,7 +162,7 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42):
     input_var = T.matrix('inputs')
     input_dim = X_train.shape[1]
     network = buildMlp(input_var, input_dim)
-    model_name = "mlp_model"
+    model_name = "mlp_model_tmp"
     # Create prediction function
     prediction = lasagne.layers.get_output(network)
     loss = lasagne.objectives.squared_error(prediction, target_var)
@@ -256,4 +245,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     seed = args.seed
-    main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize, learning_rate=args.learning_rate)
+    main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize,
+         learning_rate=args.learning_rate)

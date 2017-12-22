@@ -1,35 +1,35 @@
 """
 Test the trained model on images
 """
+from __future__ import print_function, division, absolute_import
+
 import argparse
 
 import cv2
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from train import loadDataset, loadNetwork
+from constants import UP_KEY, DOWN_KEY, RIGHT_KEY, LEFT_KEY, EXIT_KEYS
+from .train import loadDataset, loadNetwork
 
 parser = argparse.ArgumentParser(description='Test a line detector')
-parser.add_argument('-f', '--folder', help='Training folder', default="augmented_dataset", type=str)
+parser.add_argument('-f', '--folder', help='Training folder', default="", type=str, required=True)
+parser.add_argument('-w', '--weights', help='Saved weights', default="", type=str, required=True)
 args = parser.parse_args()
 
 seed = 42
 np.random.seed(seed)
 folder = args.folder
-# Arrow keys
-UP_KEY = 82
-DOWN_KEY = 84
-RIGHT_KEY = 83
-LEFT_KEY = 81
-EXIT_KEYS = [113, 27]  # Escape and q
+augmented = True
+
 
 # Load dataset
-X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False)
+X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False, augmented=augmented)
 indices = np.arange(len(X))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=seed)
 # Load trained model
-network, pred_fn = loadNetwork()
+network, pred_fn = loadNetwork(args.weights)
 
 y_test = pred_fn(X)
 current_idx = 0
@@ -37,6 +37,9 @@ current_idx = 0
 while True:
     name = images[current_idx]
     im = cv2.imread('{}/{}'.format(folder, images[current_idx]))
+    # By convention, mirrored images are at the end
+    if augmented and current_idx >= len(images) // 2:
+        im = cv2.flip(im, 1)
     height, width, n_channels = im.shape
 
     # Image from train/validation/test set ?
