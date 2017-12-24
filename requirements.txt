@@ -9,4 +9,6 @@ scipy==0.19.1
 six==1.11.0
 sklearn==0.0
 Theano==0.10.0b2
+torch==0.3.0.post4
+torchvision==0.2.0
 zmq==0.0.0

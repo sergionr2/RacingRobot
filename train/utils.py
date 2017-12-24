@@ -3,26 +3,46 @@ from __future__ import print_function, division
 import cv2
 import numpy as np
 
+from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
 
-def iterateMinibatches(inputs, targets, batchsize, shuffle=False):
-    """
-    Iterator that creates minibatches
-    :param inputs: (numpy tensor)
-    :param targets: (numpy array)
-    :param batchsize: (int)
-    :param shuffle: (bool)
-    """
-    assert len(inputs) == len(targets)
-    if shuffle:
-        indices = np.arange(len(inputs))
-        np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
-        if shuffle:
-            excerpt = indices[start_idx:start_idx + batchsize]
-        else:
-            excerpt = slice(start_idx, start_idx + batchsize)
-        yield inputs[excerpt], targets[excerpt]
 
+# From https://github.com/pytorch/pytorch/commit/e9ef20eab5e5cf361bdc7a425c7f8b873baad9d3
+class CosineAnnealingLR(_LRScheduler):
+    """Set the learning rate of each parameter group using a cosine annealing
+    schedule, where :math:`\eta_{max}` is set to the initial lr and
+    :math:`T_{cur}` is the number of epochs since the last restart in SGDR:
+
+    .. math::
+
+        \eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 +
+        \cos(\frac{T_{cur}}{T_{max}}\pi))
+
+    When last_epoch=-1, sets initial lr as lr.
+
+    It has been proposed in
+    `SGDR: Stochastic Gradient Descent with Warm Restarts`_. Note that this only
+    implements the cosine annealing part of SGDR, and not the restarts.
+
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        T_max (int): Maximum number of iterations.
+        eta_min (float): Minimum learning rate. Default: 0.
+        last_epoch (int): The index of last epoch. Default: -1.
+
+    .. _SGDR\: Stochastic Gradient Descent with Warm Restarts:
+        https://arxiv.org/abs/1608.03983
+    """
+
+    def __init__(self, optimizer, T_max, eta_min=0, last_epoch=-1):
+        self.T_max = T_max
+        self.eta_min = eta_min
+        super(CosineAnnealingLR, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        return [self.eta_min + (base_lr - self.eta_min) *
+                (1 + np.cos(self.last_epoch / self.T_max * np.pi)) / 2
+                for base_lr in self.base_lrs]
 
 
 def preprocessImage(image, width, height):

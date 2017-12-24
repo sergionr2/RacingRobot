@@ -8,30 +8,43 @@ import argparse
 import cv2
 import numpy as np
 from sklearn.model_selection import train_test_split
+import torch as th
+from torch.autograd import Variable
 
-from constants import UP_KEY, DOWN_KEY, RIGHT_KEY, LEFT_KEY, EXIT_KEYS
-from .train import loadDataset, loadNetwork
+from constants import UP_KEY, DOWN_KEY, RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
+from .train import loadDataset, loadNetwork, loadPytorchNetwork
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', default="", type=str, required=True)
 parser.add_argument('-w', '--weights', help='Saved weights', default="", type=str, required=True)
+parser.add_argument('--pytorch', action='store_true', default=False, help='Use pytorch model')
+
 args = parser.parse_args()
 
-seed = 42
-np.random.seed(seed)
 folder = args.folder
 augmented = True
 
-
 # Load dataset
-X, y_true, images, factor = loadDataset(seed=seed, folder=folder, split=False, augmented=augmented)
+X, y_true, images, factor = loadDataset(seed=SPLIT_SEED, folder=folder, split=False, augmented=augmented)
 indices = np.arange(len(X))
-idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=seed)
-idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=seed)
+idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=SPLIT_SEED)
+idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=SPLIT_SEED)
 # Load trained model
-network, pred_fn = loadNetwork(args.weights)
+pytorch = args.pytorch
 
-y_test = pred_fn(X)
+if pytorch:
+    pred_fn = loadPytorchNetwork(args.weights)
+    y_test = pred_fn(Variable(th.from_numpy(X))).data.numpy()
+else:
+    network, pred_fn = loadNetwork(args.weights)
+    y_test = pred_fn(X)
+
+error = np.square(y_test.flatten() - y_true)
+print('Train error={:.6f}'.format(np.mean(error[idx_train])))
+print('Val error={:.6f}'.format(np.mean(error[idx_val])))
+print('Test error={:.6f}'.format(np.mean(error[idx_test])))
+print('Total error={:.6f}'.format(np.mean(error)))
+
 current_idx = 0
 
 while True:

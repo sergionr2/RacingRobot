@@ -48,4 +48,4 @@ for idx, name in enumerate(images_path):
 
 # Update infos
 with open('{}/infos.pkl'.format(args.output_folder), 'wb') as f:
-    pkl.dump(infos_dict, f)
+    pkl.dump(infos_dict, f, protocol=2)

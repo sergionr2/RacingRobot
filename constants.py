@@ -16,6 +16,9 @@ R4 = [0, 50, MAX_WIDTH, 50]
 REGIONS = np.array([R1, R2, R3])
 # Training
 WIDTH, HEIGHT = 80, 20  # Shape of the resized input image fed to our model
+INPUT_DIM = 3 * WIDTH * HEIGHT
+SPLIT_SEED = 42  # For train/val/test split
+
 
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150

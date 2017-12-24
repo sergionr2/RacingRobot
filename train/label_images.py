@@ -70,7 +70,7 @@ for idx, name in enumerate(images):
             cv2.imwrite('{}/{}.jpg'.format(output_folder, output_name), im_cropped)
             # Update infos
             with open('{}/infos.pkl'.format(output_folder), 'wb') as f:
-                pkl.dump(infos_dict, f)
+                pkl.dump(infos_dict, f, protocol=2)
         j += 1
 
         if exit:
