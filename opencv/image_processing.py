@@ -43,11 +43,10 @@ def processImage(image, debug=False, regions=None, interactive=False):
     if not debug:
         # Batch Prediction
         pred_imgs = []
-        factor = im_width / WIDTH
         for idx, r in enumerate(regions):
             im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
             pred_imgs.append(preprocessImage(im_cropped, WIDTH, HEIGHT))
-        centroids[:, 0] = pred_fn(np.array(pred_imgs, dtype=np.float32))[:, 0] * factor * im_width
+        centroids[:, 0] = pred_fn(np.array(pred_imgs, dtype=np.float32))[:, 0] * im_width
         centroids[:, 0] += regions[:, 0]
         centroids[:, 1] = regions[:, 3] // 2 + regions[:, 1]
     else:
@@ -58,11 +57,10 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
             im_cropped_tmp = im_cropped.copy()
             im_width = im_cropped_tmp.shape[1]
-            factor = im_width / WIDTH
             pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT)
             # Predict where is the center of the line using the trained network
             # WARNING: The scaling factor must be the same as the one used during training
-            x_center = int(pred_fn([pred_img])[0] * factor * im_width)
+            x_center = int(pred_fn([pred_img])[0] * im_width)
             y_center = im_cropped_tmp.shape[0] // 2
 
             if debug:

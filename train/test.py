@@ -28,7 +28,7 @@ args = parser.parse_args()
 augmented = not args.no_data_augmentation
 
 # Load dataset
-X, y_true, images, factor = loadDataset(folder=args.folder, split=False, augmented=augmented)
+X, y_true, images = loadDataset(folder=args.folder, split=False, augmented=augmented)
 indices = np.arange(len(y_true))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=SPLIT_SEED)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=SPLIT_SEED)
@@ -68,8 +68,8 @@ while True:
     cv2.putText(im, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
     # x_center, y_center = map(int, name.split('_')[0].split('-'))
-    x_true = int(y_true[current_idx] * width * factor)
-    x_center = int(y_test[current_idx] * (width * factor))
+    x_true = int(y_true[current_idx] * width)
+    x_center = int(y_test[current_idx] * width)
     x_center = np.clip(x_center, 0, width)
     y_center = height // 2
     print(current_idx, name, "error={}".format(abs(x_center - x_true)))

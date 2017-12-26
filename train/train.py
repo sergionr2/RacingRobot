@@ -119,12 +119,12 @@ def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
 
     print("original_shape=({},{})".format(width, height))
     print("resized_shape=({},{})".format(WIDTH, HEIGHT))
-    factor = width / WIDTH
+    # factor = width / WIDTH
 
     for idx, name in enumerate(images):
         x_center, y_center = images_dict[name]['label']
         # TODO: check the formula below (if this changes, it must be changed in image_processing.py too)
-        y[idx] = x_center / (factor * width)
+        y[idx] = x_center / width
 
         path = images_dict[name]['output_name']
         image_path = '{}/{}.jpg'.format(folder, path)
@@ -135,7 +135,7 @@ def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
             horizontal_flip = cv2.flip(im, 1)
             X[len(images) + idx, :] = preprocessImage(horizontal_flip, WIDTH, HEIGHT)
             images_path_augmented.append(path + '.jpg')
-            y[len(images) + idx] = (width - x_center) / (factor * width)
+            y[len(images) + idx] = (width - x_center) / width
 
     if augmented:
         images_path += images_path_augmented
@@ -143,7 +143,7 @@ def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
     print("Input tensor shape: ", X.shape)
 
     if not split:
-        return X, y, images_path, factor
+        return X, y, images_path
 
     # for CNN
     # X = X.reshape((-1, WIDTH, HEIGHT, 3))
