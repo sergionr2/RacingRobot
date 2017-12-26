@@ -13,7 +13,7 @@ class MlpNetwork(nn.Module):
     :param drop_p: (float) Dropout proba
     """
 
-    def __init__(self, input_dim, n_hidden=None, drop_p=0.1):
+    def __init__(self, input_dim, n_hidden=None, drop_p=0.0):
         super(MlpNetwork, self).__init__()
         if n_hidden is None:
             n_layer1 = 8
@@ -32,4 +32,32 @@ class MlpNetwork(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
+        return x
+
+
+class ConvolutionalNetwork(nn.Module):
+    """
+    Convolutional Neural Network
+    input shape : 3-channel RGB images of shape (3 x H x W)
+    :param state_dim: (int)
+    """
+
+    def __init__(self):
+        super(ConvolutionalNetwork, self).__init__()
+        self.conv_layers = nn.Sequential(
+
+            # 20x80x3 -> 9x39x64
+            nn.Conv2d(3, 8, kernel_size=3, stride=2, padding=0, bias=False),
+            nn.Conv2d(8, 8, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+        )
+
+        self.fc1 = nn.Linear(9 * 39 * 8, 8)
+        self.fc2 = nn.Linear(8, 1)
+
+    def forward(self, x):
+        x = self.conv_layers(x)
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
         return x

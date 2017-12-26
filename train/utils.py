@@ -2,7 +2,6 @@ from __future__ import print_function, division
 
 import cv2
 import numpy as np
-
 from torch.optim.optimizer import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -75,9 +74,9 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
         n_layers = len(f.files) // 2
         for i in range(len(f.files)):
             if i % 2 == 1:
-                b[i // 2] = f['arr_%d' % i]
+                b[i // 2] = f['arr_%d' % i].astype(np.float32)
             else:
-                W[i // 2] = f['arr_%d' % i]
+                W[i // 2] = f['arr_%d' % i].astype(np.float32)
 
     def relu(x):
         """
@@ -103,3 +102,19 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
         return a
 
     return forward
+
+
+def computeMSE(y_test, y_true, indices):
+    """
+    :param y_test: (numpy 1D array)
+    :param y_true: (numpy 1D array)
+    :parma indices: [[int]]
+    """
+    idx_train, idx_val, idx_test = indices
+    # MSE Loss
+    error = np.square(y_test - y_true)
+
+    print('Train error={:.6f}'.format(np.mean(error[idx_train])))
+    print('Val error={:.6f}'.format(np.mean(error[idx_val])))
+    print('Test error={:.6f}'.format(np.mean(error[idx_test])))
+    print('Total error={:.6f}'.format(np.mean(error)))

@@ -25,7 +25,7 @@ from sklearn.model_selection import train_test_split
 
 from constants import WIDTH, HEIGHT, INPUT_DIM, SPLIT_SEED
 from .utils import preprocessImage, CosineAnnealingLR
-from .models import MlpNetwork
+from .models import MlpNetwork, ConvolutionalNetwork
 
 seed = 42
 np.random.seed(seed)
@@ -55,6 +55,7 @@ def loadNetwork(model_name="mlp_model"):
     pred_fn = theano.function([input_var], test_prediction)
     return network, pred_fn
 
+
 def loadPytorchNetwork(model_name="mlp_model_tmp"):
     if '.pth' in model_name:
         model_name = model_name.split('.pth')[0]
@@ -62,6 +63,13 @@ def loadPytorchNetwork(model_name="mlp_model_tmp"):
     model.load_state_dict(th.load(model_name + '.pth'))
     model.eval()
     return model
+
+
+def saveToNpz(model, output_name="mlp_model_tmp"):
+    """
+    :param model: (PyTorch Model)
+    """
+    np.savez(output_name, *[p.data.numpy().T for _, p in model.named_parameters()])
 
 
 def buildMlp(input_var, input_dim):
@@ -137,6 +145,10 @@ def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
     if not split:
         return X, y, images_path, factor
 
+    # for CNN
+    # X = X.reshape((-1, WIDTH, HEIGHT, 3))
+    # X = np.transpose(X, (0, 3, 2, 1))
+    print(X.shape)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=seed)
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=seed)
 
@@ -162,6 +174,7 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
     if cuda:
         th.cuda.manual_seed(seed)
 
+
     kwargs = {'num_workers': 1, 'pin_memory': False} if cuda else {}
 
     # Convert to torch tensor
@@ -183,6 +196,8 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
     input_dim = X_train.shape[1]
     model = MlpNetwork(input_dim, n_hidden=[8, 4], drop_p=0.1)
     model_name = "mlp_model_tmp"
+    # model_name = "cnn__model_tmp"
+    # model = ConvolutionalNetwork()
 
     if cuda:
         model.cuda()
@@ -190,10 +205,10 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
     # L2 penalty
     weight_decay = 1e-4
     # weight_decay = 0
-    optimizer = th.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    # optimizer = th.optim.SGD(model.parameters(), lr=learning_rate,
-    #                          momentum=0.9, weight_decay=weight_decay, nesterov=True)
-    # scheduler = th.optim.lr_scheduler.StepLR(optimizer, step_size=3000, gamma=0.5)
+    # optimizer = th.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = th.optim.SGD(model.parameters(), lr=learning_rate,
+                             momentum=0.9, weight_decay=weight_decay, nesterov=True)
+    # scheduler = th.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
     # scheduler = th.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,80], gamma=0.1)
     # scheduler =  CosineAnnealingLR(optimizer, T_max=10, eta_min=0.05)
 
@@ -240,7 +255,10 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
             best_error = val_error
             if cuda:
                 model.cpu()
+
             th.save(model.state_dict(), best_model_path)
+            saveToNpz(model, model_name)
+
             if cuda:
                 model.cuda()
 
@@ -277,7 +295,6 @@ if __name__ == '__main__':
     parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-5, type=float)
     args = parser.parse_args()
 
-    seed = args.seed
     args.cuda = not args.no_cuda and th.cuda.is_available()
     main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize,
-         learning_rate=args.learning_rate, cuda=args.cuda)
+         learning_rate=args.learning_rate, cuda=args.cuda, seed=args.seed)

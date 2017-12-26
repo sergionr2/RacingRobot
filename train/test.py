@@ -3,53 +3,57 @@ Test the trained model on images
 """
 from __future__ import print_function, division, absolute_import
 
+import time
 import argparse
 
 import cv2
 import numpy as np
-from sklearn.model_selection import train_test_split
 import torch as th
 from torch.autograd import Variable
+from sklearn.model_selection import train_test_split
+
 
 from constants import UP_KEY, DOWN_KEY, RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
 from .train import loadDataset, loadNetwork, loadPytorchNetwork
+from .utils import computeMSE
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', default="", type=str, required=True)
 parser.add_argument('-w', '--weights', help='Saved weights', default="", type=str, required=True)
 parser.add_argument('--pytorch', action='store_true', default=False, help='Use pytorch model')
+parser.add_argument('--no-data-augmentation', action='store_true', default=False, help='Disables data augmentation')
 
 args = parser.parse_args()
 
-folder = args.folder
-augmented = True
+augmented = not args.no_data_augmentation
 
 # Load dataset
-X, y_true, images, factor = loadDataset(seed=SPLIT_SEED, folder=folder, split=False, augmented=augmented)
-indices = np.arange(len(X))
+X, y_true, images, factor = loadDataset(folder=args.folder, split=False, augmented=augmented)
+indices = np.arange(len(y_true))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=SPLIT_SEED)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=SPLIT_SEED)
+
 # Load trained model
 pytorch = args.pytorch
 
 if pytorch:
     pred_fn = loadPytorchNetwork(args.weights)
-    y_test = pred_fn(Variable(th.from_numpy(X))).data.numpy()
+    start_time = time.time()
+    y_test = pred_fn(Variable(th.from_numpy(X))).data.numpy()[:, 0]
+    total_time = time.time() - start_time
+    print("\nTime to predict: {:.2f}s | {:.5f} ms/image".format(total_time, 1000 * total_time / len(y_true)))
 else:
     network, pred_fn = loadNetwork(args.weights)
-    y_test = pred_fn(X)
+    y_test = pred_fn(X)[:, 0]
 
-error = np.square(y_test.flatten() - y_true)
-print('Train error={:.6f}'.format(np.mean(error[idx_train])))
-print('Val error={:.6f}'.format(np.mean(error[idx_val])))
-print('Test error={:.6f}'.format(np.mean(error[idx_test])))
-print('Total error={:.6f}'.format(np.mean(error)))
+# Compute Loss
+computeMSE(y_test, y_true, [idx_train, idx_val, idx_test])
 
 current_idx = 0
 
 while True:
     name = images[current_idx]
-    im = cv2.imread('{}/{}'.format(folder, images[current_idx]))
+    im = cv2.imread('{}/{}'.format(args.folder, images[current_idx]))
     # By convention, mirrored images are at the end
     if augmented and current_idx >= len(images) // 2:
         im = cv2.flip(im, 1)
@@ -65,7 +69,7 @@ while True:
 
     # x_center, y_center = map(int, name.split('_')[0].split('-'))
     x_true = int(y_true[current_idx] * width * factor)
-    x_center = int(y_test[current_idx][0] * (width * factor))
+    x_center = int(y_test[current_idx] * (width * factor))
     x_center = np.clip(x_center, 0, width)
     y_center = height // 2
     print(current_idx, name, "error={}".format(abs(x_center - x_true)))
