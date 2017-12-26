@@ -24,7 +24,7 @@ for i in range(N_ITER):
     # print(centroids)
 
 time_deltas = np.array(time_deltas)
-print("Total time: {:2f}s".format(time_deltas.sum()))
-print("Mean time: {:2f}s".format(time_deltas.mean()))
-print("Std time: {:2f}s".format(time_deltas.std()))
-print("Median time: {:2f}s".format(np.median(time_deltas)))
+print("Total time: {:.6f}s".format(time_deltas.sum()))
+print("Mean time: {:.6f}s".format(time_deltas.mean()))
+print("Std time: {:.6f}s".format(time_deltas.std()))
+print("Median time: {:.6f}s".format(np.median(time_deltas)))

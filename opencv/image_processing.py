@@ -40,14 +40,20 @@ def processImage(image, debug=False, regions=None, interactive=False):
     errors = [False for _ in regions]
     exit = False  # For interactive mode
 
+    # Efficient implementation
     if not debug:
         # Batch Prediction
         pred_imgs = []
         for idx, r in enumerate(regions):
             im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
+            # Preprocess the image: scaling and normalization
             pred_imgs.append(preprocessImage(im_cropped, WIDTH, HEIGHT))
+        # Predict where is the center of the line using the trained network
+        # and scale the output
         centroids[:, 0] = pred_fn(np.array(pred_imgs, dtype=np.float32))[:, 0] * im_width
+        # Add left margin
         centroids[:, 0] += regions[:, 0]
+        # Add top margin + set y_center to the the middle height
         centroids[:, 1] = regions[:, 3] // 2 + regions[:, 1]
     else:
         for idx, r in enumerate(regions):
@@ -59,7 +65,6 @@ def processImage(image, debug=False, regions=None, interactive=False):
             im_width = im_cropped_tmp.shape[1]
             pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT)
             # Predict where is the center of the line using the trained network
-            # WARNING: The scaling factor must be the same as the one used during training
             x_center = int(pred_fn([pred_img])[0] * im_width)
             y_center = im_cropped_tmp.shape[0] // 2
 
@@ -102,6 +107,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
         # y = m*x + b
         m, b = np.linalg.lstsq(A, y)[0]
         if debug:
+            # Points for plotting the line
             x = np.array([0, im_width], dtype=int)
             pts = (np.vstack([x, m * x + b]).T).astype(int)
         track_angle = np.arctan(m)
@@ -134,7 +140,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='White Lane Detection')
+    parser = argparse.ArgumentParser(description='White Line Detection')
     parser.add_argument('-i', '--input_image', help='Input Image', default="", type=str)
 
     args = parser.parse_args()

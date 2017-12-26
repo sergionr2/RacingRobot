@@ -54,10 +54,14 @@ current_idx = 0
 while True:
     name = images[current_idx]
     im = cv2.imread('{}/{}'.format(args.folder, images[current_idx]))
+
+    height, width, n_channels = im.shape
+
     # By convention, mirrored images are at the end
     if augmented and current_idx >= len(images) // 2:
         im = cv2.flip(im, 1)
-    height, width, n_channels = im.shape
+        cv2.putText(im, "flipped", (width - 85, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
+
 
     # Image from train/validation/test set ?
     text = "train"
@@ -67,7 +71,6 @@ while True:
         text = "test"
     cv2.putText(im, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
-    # x_center, y_center = map(int, name.split('_')[0].split('-'))
     x_true = int(y_true[current_idx] * width)
     x_center = int(y_test[current_idx] * width)
     x_center = np.clip(x_center, 0, width)

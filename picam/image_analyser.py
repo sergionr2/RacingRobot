@@ -86,7 +86,6 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 else:
                     if self.frame_num % SAVE_EVERY == 0:
                         cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
-                        pass
                     try:
                         # 10 ms per loop
                         turn_percent, centroids = processImage(frame)

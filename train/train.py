@@ -27,8 +27,6 @@ from constants import WIDTH, HEIGHT, INPUT_DIM, SPLIT_SEED
 from .utils import preprocessImage, CosineAnnealingLR
 from .models import MlpNetwork, ConvolutionalNetwork
 
-seed = 42
-np.random.seed(seed)
 evaluate_print = 1  # Print info every 1 epoch
 VAL_BATCH_SIZE = 256
 
@@ -208,7 +206,7 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
     # optimizer = th.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     optimizer = th.optim.SGD(model.parameters(), lr=learning_rate,
                              momentum=0.9, weight_decay=weight_decay, nesterov=True)
-    # scheduler = th.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
+    # scheduler = th.optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.1)
     # scheduler = th.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,80], gamma=0.1)
     # scheduler =  CosineAnnealingLR(optimizer, T_max=10, eta_min=0.05)
 
@@ -286,13 +284,13 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
-    parser.add_argument('--num_epochs', help='Number of epoch', default=1000, type=int)
-    parser.add_argument('-bs', '--batchsize', help='Batch size', default=1, type=int)
+    parser.add_argument('--num_epochs', help='Number of epoch', default=50, type=int)
+    parser.add_argument('-bs', '--batchsize', help='Batch size', default=4, type=int)
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
     parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA training')
 
     parser.add_argument('-f', '--folder', help='Training folder', default="augmented_dataset", type=str)
-    parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-5, type=float)
+    parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-4, type=float)
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and th.cuda.is_available()

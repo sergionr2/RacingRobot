@@ -31,16 +31,18 @@ indices = np.arange(len(y_true))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=SPLIT_SEED)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=SPLIT_SEED)
 
-X = PCA(n_components=400).fit_transform(X)
+print(args.model)
 
 if args.model == "svm":
-    model = SVR(kernel='rbf', epsilon=0.001, gamma='auto', C=1.0, max_iter=6000, verbose=1)
+    X = PCA(n_components=400).fit_transform(X)
+    model = SVR(kernel='rbf', epsilon=0.0001, gamma=0.002, C=1.0, max_iter=12000, verbose=1)
 elif args.model == "random_forest":
-    model = RandomForestRegressor(n_estimators=20, max_depth=20, random_state=0, verbose=1, n_jobs=-1)
+    model = RandomForestRegressor(n_estimators=40, max_depth=15, random_state=0, verbose=1, n_jobs=-1)
 # elif args.model == "xgboost":
-#     model = XGBRegressor(max_depth=10, learning_rate=0.1, n_estimators=50, silent=True, nthread=8)
+#     model = XGBRegressor(max_depth=15, learning_rate=0.1, n_estimators=80, silent=True, nthread=8)
 elif args.model == "knn":
-    model = KNeighborsRegressor(n_neighbors=4, weights="distance", algorithm="auto", leaf_size=30, p=2, metric='minkowski', n_jobs=-1)
+    X = PCA(n_components=150).fit_transform(X)
+    model = KNeighborsRegressor(n_neighbors=3, weights="distance", algorithm="auto", leaf_size=30, p=2, metric='minkowski', n_jobs=-1)
 else:
     raise ValueError("Unknown model type: {}".format(args.model))
 

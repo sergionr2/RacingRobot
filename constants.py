@@ -15,7 +15,8 @@ R3 = [0, 75, MAX_WIDTH, 50]
 R4 = [0, 50, MAX_WIDTH, 50]
 REGIONS = np.array([R1, R2, R3])
 # Training
-WIDTH, HEIGHT = 80, 20  # Shape of the resized input image fed to our model
+# 80 = CAMERA_RESOLUTION[0] // 4
+WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
 INPUT_DIM = 3 * WIDTH * HEIGHT
 SPLIT_SEED = 42  # For train/val/test split
 
@@ -33,7 +34,7 @@ Kd = 30
 Ki = 0.0
 ALPHA = 0.8  # alpha of the moving mean for the turn coefficient
 # Main Program
-FPS = 60
+FPS = 90
 N_SECONDS = 77  # number of seconds before exiting the program
 
 # Image Analyser
