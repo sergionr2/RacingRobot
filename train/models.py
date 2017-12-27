@@ -16,7 +16,7 @@ class MlpNetwork(nn.Module):
     def __init__(self, input_dim, n_hidden=None, drop_p=0.0):
         super(MlpNetwork, self).__init__()
         if n_hidden is None:
-            n_layer1 = 8
+            n_layer1 = 20
             n_layer2 = 4
         else:
             n_layer1, n_layer2 = n_hidden
@@ -24,14 +24,15 @@ class MlpNetwork(nn.Module):
         self.fc2 = nn.Linear(n_layer1, n_layer2)
         self.fc3 = nn.Linear(n_layer2, 1)
         self.drop_p = drop_p
+        self.activation_fn = F.relu
 
     def forward(self, x):
         # Flatten input
         x = x.view(x.size(0), -1)
         x = F.dropout(x, p=self.drop_p, training=self.training)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
+        x = self.activation_fn(self.fc1(x))
+        x = self.activation_fn(self.fc2(x))
+        x = self.activation_fn(self.fc3(x))
         return x
 
     def customForward(self, x):
@@ -39,9 +40,9 @@ class MlpNetwork(nn.Module):
         Return intermediate results
         """
         x = x.view(x.size(0), -1)
-        x1 = F.relu(self.fc1(x))
-        x2 = F.relu(self.fc2(x1))
-        x = F.relu(self.fc3(x2))
+        x1 = self.activation_fn(self.fc1(x))
+        x2 = self.activation_fn(self.fc2(x1))
+        x = self.activation_fn(self.fc3(x2))
         return x, x1, x2
 
 

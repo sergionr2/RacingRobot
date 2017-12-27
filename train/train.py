@@ -192,7 +192,7 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
                                           batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
     input_dim = X_train.shape[1]
-    model = MlpNetwork(input_dim, n_hidden=[8, 4], drop_p=0.1)
+    model = MlpNetwork(input_dim, n_hidden=[20, 4], drop_p=0.6)
     model_name = "mlp_model_tmp"
     # model_name = "cnn__model_tmp"
     # model = ConvolutionalNetwork()
@@ -201,8 +201,8 @@ def main(folder, num_epochs=1000, batchsize=1, learning_rate=0.0001, seed=42, cu
         model.cuda()
 
     # L2 penalty
-    weight_decay = 1e-4
-    # weight_decay = 0
+    # weight_decay = 1e-4
+    weight_decay = 0
     # optimizer = th.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     optimizer = th.optim.SGD(model.parameters(), lr=learning_rate,
                              momentum=0.9, weight_decay=weight_decay, nesterov=True)

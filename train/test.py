@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
 from .train import loadDataset, loadNetwork, loadPytorchNetwork
-from .utils import computeMSE
+from .utils import computeMSE, loadVanillaNet
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', default="", type=str, required=True)
@@ -43,8 +43,14 @@ if pytorch:
     total_time = time.time() - start_time
     print("\nTime to predict: {:.2f}s | {:.5f} ms/image".format(total_time, 1000 * total_time / len(y_true)))
 else:
-    network, pred_fn = loadNetwork(args.weights)
+    # add npz
+    if not args.weights.endswith('.npz'):
+        args.weights += '.npz'
+    pred_fn = loadVanillaNet(args.weights)
+    start_time = time.time()
     y_test = pred_fn(X)[:, 0]
+    total_time = time.time() - start_time
+    print("\nTime to predict: {:.2f}s | {:.5f} ms/image".format(total_time, 1000 * total_time / len(y_true)))
 
 # Compute Loss
 computeMSE(y_test, y_true, [idx_train, idx_val, idx_test])
