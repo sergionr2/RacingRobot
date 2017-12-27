@@ -13,7 +13,7 @@ from torch.autograd import Variable
 from sklearn.model_selection import train_test_split
 
 
-from constants import UP_KEY, DOWN_KEY, RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
+from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
 from .train import loadDataset, loadNetwork, loadPytorchNetwork
 from .utils import computeMSE
 

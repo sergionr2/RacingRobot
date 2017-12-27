@@ -34,6 +34,16 @@ class MlpNetwork(nn.Module):
         x = F.relu(self.fc3(x))
         return x
 
+    def customForward(self, x):
+        """
+        Return intermediate results
+        """
+        x = x.view(x.size(0), -1)
+        x1 = F.relu(self.fc1(x))
+        x2 = F.relu(self.fc2(x1))
+        x = F.relu(self.fc3(x2))
+        return x, x1, x2
+
 
 class ConvolutionalNetwork(nn.Module):
     """
