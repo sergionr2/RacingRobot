@@ -44,16 +44,20 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
     :return:
     """
 
+    # Load the dataset info file (pickle object)
     with open('{}/infos.pkl'.format(folder), 'rb') as f:
         images_dict = pkl.load(f)['images']
 
+    # Sort names
     images = list(images_dict.keys())
     images.sort()
     images_path = []
 
+    # Load one image to retrieve original shape
     tmp_im = cv2.imread('{}/{}.jpg'.format(folder, images_dict[images[0]]['output_name']))
     height, width, _ = tmp_im.shape
     n_images = len(images)
+    # If we use data augmentation we double the size of training data
     if augmented:
         images_path_augmented = []
         n_images *= 2
@@ -69,9 +73,9 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
         # Normalize output
         y[idx] = x_center / width
 
-        path = images_dict[name]['output_name']
-        image_path = '{}/{}.jpg'.format(folder, path)
+        image_path = '{}/{}.jpg'.format(folder, images_dict[name]['output_name'])
         im = cv2.imread(image_path)
+        # Resize and normalize input
         X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
         images_path.append(path + '.jpg')
         # Flip the image+label to have more training data
@@ -81,6 +85,7 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
             y[len(images) + idx] = (width - x_center) / width
             images_path_augmented.append(path + '.jpg')
 
+    # By convention, augmented data are at the end
     if augmented:
         images_path += images_path_augmented
 
@@ -89,10 +94,11 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
     if not split:
         return X, y, images_path
 
-    # for CNN
+    # For CNN reshape the data to 3D tensors
     # X = X.reshape((-1, WIDTH, HEIGHT, 3))
     # X = np.transpose(X, (0, 3, 2, 1))
-    print(X.shape)
+
+    # Split the data into three subsets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=split_seed)
     X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=split_seed)
 
@@ -161,9 +167,11 @@ def loadVanillaNet(weights_npy='mlp_model.npz'):
 
 def computeMSE(y_test, y_true, indices):
     """
+    Compute Mean Square Error
+    and print its value for the different sets
     :param y_test: (numpy 1D array)
     :param y_true: (numpy 1D array)
-    :param indices: [[int]]
+    :param indices: [[int]] Indices of the different subsets
     """
     idx_train, idx_val, idx_test = indices
     # MSE Loss

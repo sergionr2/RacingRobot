@@ -1,3 +1,7 @@
+"""
+Different neural network architectures for detecting the line
+# TODO: change std of weights initialization
+"""
 from __future__ import print_function, division, absolute_import
 
 import torch.nn as nn

@@ -1,3 +1,7 @@
+"""
+Compute time to process an image
+It processes the images N_ITER times and print statistics
+"""
 from __future__ import print_function, with_statement, division
 
 import time

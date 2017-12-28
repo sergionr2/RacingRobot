@@ -1,3 +1,8 @@
+"""
+Train scikit-learn regressors to detect the line
+(baseline for the neural network approach)
+# TODO: use HOG, FAST, SURF, ... for feature extraction
+"""
 from __future__ import print_function, division, absolute_import
 
 import argparse
@@ -35,9 +40,11 @@ print(args.model)
 
 if args.model == "svm":
     X = PCA(n_components=400).fit_transform(X)
-    model = SVR(kernel='rbf', epsilon=0.0001, gamma=0.002, C=1.0, max_iter=12000, verbose=1)
+    model = SVR(kernel='rbf', epsilon=0.0001, gamma=0.002,
+                C=1.0, max_iter=12000, verbose=1)
 elif args.model == "random_forest":
-    model = RandomForestRegressor(n_estimators=40, max_depth=15, random_state=0, verbose=1, n_jobs=-1)
+    model = RandomForestRegressor(n_estimators=40, max_depth=15, random_state=0,
+                                  verbose=1, n_jobs=-1)
 # elif args.model == "xgboost":
 #     model = XGBRegressor(max_depth=15, learning_rate=0.1, n_estimators=80, silent=True, nthread=8)
 elif args.model == "knn":

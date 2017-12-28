@@ -1,3 +1,7 @@
+"""
+Main script for processing an image:
+it extracts the different ROI, detect the line and estimate line curve
+"""
 from __future__ import print_function, with_statement, division
 
 import argparse
@@ -6,11 +10,11 @@ import cv2
 import numpy as np
 
 from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS, WIDTH, HEIGHT
-from train import preprocessImage, loadVanillaNet
+from train import preprocessImage, loadVanillaNet, loadPytorchNetwork
 
 
 # Either load network with pytorch or with numpy
-# pred_fn = loadNetwork()
+# pred_fn = loadPytorchNetwork()
 pred_fn = loadVanillaNet()
 
 
@@ -44,6 +48,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
     if not debug:
         # Batch Prediction
         pred_imgs = []
+        # Preprocess each region of interest
         for idx, r in enumerate(regions):
             im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
             # Preprocess the image: scaling and normalization
@@ -95,7 +100,10 @@ def processImage(image, debug=False, regions=None, interactive=False):
                 cx, cy = x_center, y_center
 
             centroids[idx] = np.array([cx + margin_left, cy + margin_top])
+
     # Linear Regression to fit a line
+    # It estimates the line curve
+    # TODO: test with l2 penalty to reduce noise
     x = centroids[:, 0]
     y = centroids[:, 1]
     # Case x = cst
@@ -104,12 +112,14 @@ def processImage(image, debug=False, regions=None, interactive=False):
         turn_percent = 0
     else:
         A = np.vstack([x, np.ones(len(x))]).T
+        # Linear regression using least squares method
         # y = m*x + b
         m, b = np.linalg.lstsq(A, y)[0]
         if debug:
             # Points for plotting the line
             x = np.array([0, im_width], dtype=int)
             pts = (np.vstack([x, m * x + b]).T).astype(int)
+        # Compute the angle between the reference and the fitted line
         track_angle = np.arctan(m)
         diff_angle = abs(REF_ANGLE) - abs(track_angle)
         # Estimation of the line curvature
@@ -122,7 +132,6 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
     if debug:
         if all(errors):
-            # print("No centroids found")
             cv2.imshow('result', image)
         else:
             for cx, cy in centroids:
@@ -139,13 +148,13 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='White Line Detection')
+    parser = argparse.ArgumentParser(description='Line Detection')
     parser.add_argument('-i', '--input_image', help='Input Image', default="", type=str)
 
     args = parser.parse_args()
     if args.input_image != "":
         img = cv2.imread(args.input_image)
         turn_percent, centroids = processImage(img, debug=True)
-        if cv2.waitKey(0) & 0xff == 27:
+        if cv2.waitKey(0) & 0xff in EXIT_KEYS:
             cv2.destroyAllWindows()
             exit()

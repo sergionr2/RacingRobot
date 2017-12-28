@@ -77,7 +77,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 try:
                     frame = self.frame_queue.get(block=True, timeout=1)
                 except queue.Empty:
-                    print("Queue empty")
+                    print("Frame queue empty")
                     continue
                 # 1 ms per loop
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

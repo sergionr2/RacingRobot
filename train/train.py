@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Train a neural network to detect a black&white line
 """
@@ -18,10 +17,7 @@ from .utils import preprocessImage, saveToNpz, loadDataset
 from .models import MlpNetwork, ConvolutionalNetwork
 
 evaluate_print = 1  # Print info every 1 epoch
-VAL_BATCH_SIZE = 256
-
-
-# TODO: change std of weights initialization
+VAL_BATCH_SIZE = 256  # Batch size for validation and test data
 
 
 def main(folder, num_epochs=1000, batchsize=1,
@@ -38,22 +34,24 @@ def main(folder, num_epochs=1000, batchsize=1,
     """
     # Load the dataset
     print("Loading data...")
-
     X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, split_seed=SPLIT_SEED)
+
     # Seed the random generator
     np.random.seed(seed)
     th.manual_seed(seed)
     if cuda:
         th.cuda.manual_seed(seed)
 
-    kwargs = {'num_workers': 1, 'pin_memory': False} if cuda else {}
 
     # Convert to torch tensor
     X_train, y_train = th.from_numpy(X_train), th.from_numpy(y_train).view(-1, 1)
     X_val, y_val = th.from_numpy(X_val), th.from_numpy(y_val).view(-1, 1)
     X_test, y_test = th.from_numpy(X_test), th.from_numpy(y_test).view(-1, 1)
+    # Retrieve number of samples per set
     n_train, n_val, n_test = len(y_train), len(y_val), len(y_test)
 
+    # Keywords for pytorch dataloader
+    kwargs = {'num_workers': 1, 'pin_memory': False} if cuda else {}
     # Create data loaders
     train_loader = th.utils.data.DataLoader(th.utils.data.TensorDataset(X_train, y_train),
                                             batch_size=batchsize, shuffle=True, **kwargs)
@@ -64,8 +62,7 @@ def main(folder, num_epochs=1000, batchsize=1,
     test_loader = th.utils.data.DataLoader(th.utils.data.TensorDataset(X_test, y_test),
                                            batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
-    input_dim = X_train.shape[1]
-    model = MlpNetwork(input_dim, n_hidden=[20, 4], drop_p=0.6)
+    model = MlpNetwork(X_train.shape[1], n_hidden=[20, 4], drop_p=0.6)
     model_name = "mlp_model_tmp"
     # model_name = "cnn__model_tmp"
     # model = ConvolutionalNetwork()
@@ -86,6 +83,7 @@ def main(folder, num_epochs=1000, batchsize=1,
     # scheduler = th.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.5)
     # scheduler = th.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[30,80], gamma=0.1)
 
+    # Loss functions
     loss_fn = nn.MSELoss(size_average=False)
     # loss_fn = nn.SmoothL1Loss(size_average=False)
     best_error = np.inf
@@ -96,6 +94,7 @@ def main(folder, num_epochs=1000, batchsize=1,
     # We iterate over epochs:
     for epoch in range(num_epochs):
         # scheduler.step()
+        # Switch to training mode
         model.train()
         train_loss, val_loss = 0, 0
         start_time = time.time()
@@ -105,7 +104,7 @@ def main(folder, num_epochs=1000, batchsize=1,
             # Move variables to gpu
             if cuda:
                 inputs, targets = inputs.cuda(), targets.cuda()
-            # Convert to pytorch variabless
+            # Convert to pytorch variables
             inputs, targets = Variable(inputs), Variable(targets)
             optimizer.zero_grad()
             predictions = model(inputs)
@@ -126,6 +125,7 @@ def main(folder, num_epochs=1000, batchsize=1,
             loss = loss_fn(predictions, targets)
             val_loss += loss.data[0]
 
+        # Compute error per sample
         val_error = val_loss / n_val
         # Save the new best model
         if val_error < best_error:
@@ -142,6 +142,7 @@ def main(folder, num_epochs=1000, batchsize=1,
 
         if (epoch + 1) % evaluate_print == 0:
             # Then we print the results for this epoch:
+            # Losses are averaged over the samples
             print("Epoch {} of {} took {:.3f}s".format(
                 epoch + 1, num_epochs, time.time() - start_time))
             print("  training loss:\t\t{:.6f}".format(train_loss / n_train))
@@ -157,6 +158,7 @@ def main(folder, num_epochs=1000, batchsize=1,
         predictions = model(inputs)
         loss = loss_fn(predictions, targets)
         test_loss += loss.data[0]
+
     print("Final results:")
     print("  best validation loss:\t\t{:.6f}".format(best_error))
     print("  test loss:\t\t\t{:.6f}".format(test_loss / n_test))
@@ -164,15 +166,16 @@ def main(folder, num_epochs=1000, batchsize=1,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
-    parser.add_argument('-f', '--folder', help='Training folder', default="augmented_dataset", type=str, required=True)
+    parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
     parser.add_argument('--num_epochs', help='Number of epoch', default=50, type=int)
     parser.add_argument('-bs', '--batchsize', help='Batch size', default=4, type=int)
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
-    parser.add_argument('--no-cuda', action='store_true', default=False, help='disables CUDA training')
+    parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables CUDA training')
     parser.add_argument('--load_model', help='Start from a saved model', default="", type=str)
     parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-4, type=float)
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and th.cuda.is_available()
     main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize,
-         learning_rate=args.learning_rate, cuda=args.cuda, seed=args.seed, load_model=args.load_model)
+         learning_rate=args.learning_rate, cuda=args.cuda,
+         seed=args.seed, load_model=args.load_model)

@@ -21,12 +21,14 @@ INPUT_DIM = 3 * WIDTH * HEIGHT
 SPLIT_SEED = 42  # For train/val/test split
 
 
+# Direction and speed
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
 MAX_SPEED_STRAIGHT_LINE = 50  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 15
 MIN_SPEED = 10
+
 # PID Control
 Kp_turn = 40
 Kp_line = 35
@@ -55,4 +57,4 @@ LEFT_KEY = 81
 ENTER_KEY = 10
 SPACE_KEY = 32
 EXIT_KEYS = [113, 27]  # Escape and q
-S_KEY = 115  # Save key
+S_KEY = 115  # S key

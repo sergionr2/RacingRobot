@@ -1,5 +1,5 @@
 """
-Process a folder of images
+Apply image processing on a folder of images
 """
 from __future__ import print_function, with_statement, division
 
@@ -31,10 +31,12 @@ if args.input_image != "" or args.folder != "":
         regions = None
         if args.regions == 0:
             regions = [[0, 0, img.shape[1], img.shape[0]]]
-        
+
         processImage(img, debug=True, regions=regions)
 
+        # Retrieve pressed key
         key = cv2.waitKey(0) & 0xff
+
         if key in EXIT_KEYS:
             cv2.destroyAllWindows()
             exit()

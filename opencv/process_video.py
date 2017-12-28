@@ -1,5 +1,7 @@
 """
-Process a video
+Apply image processing on a video:
+it processes each frame (line detection + line curve estimation)
+and shows the result
 """
 from __future__ import print_function, with_statement, division
 
@@ -11,7 +13,8 @@ import numpy as np
 from constants import RIGHT_KEY, LEFT_KEY, SPACE_KEY, EXIT_KEYS
 from opencv.image_processing import processImage
 
-play_video = False
+# Pressing the space bar, it plays the video
+playing_video = False
 
 parser = argparse.ArgumentParser(description='Line Detection on a video')
 parser.add_argument('-i', '--input_video', help='Input Video', default="video.mp4", type=str)
@@ -61,17 +64,18 @@ while True:
 
     processImage(img, debug=True, regions=regions)
 
-    if not play_video:
+    if not playing_video:
         key = cv2.waitKey(0) & 0xff
     else:
         key = cv2.waitKey(10) & 0xff
+
     if key in EXIT_KEYS:
         cv2.destroyAllWindows()
         exit()
-    elif key in [LEFT_KEY, RIGHT_KEY] or play_video:
-        current_idx += 1 if key == RIGHT_KEY or play_video else -1
+    elif key in [LEFT_KEY, RIGHT_KEY] or playing_video:
+        current_idx += 1 if key == RIGHT_KEY or playing_video else -1
         current_idx = np.clip(current_idx, 0, n_frames - 1)
     elif key == SPACE_KEY:
-        play_video = not play_video
+        playing_video = not playing_video
 
     cap.set(image_zero_index, current_idx)

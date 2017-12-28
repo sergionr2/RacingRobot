@@ -63,15 +63,16 @@ python main.py
 
 0. You need a computer in addition to the raspberry pi
 1. Create a Local Wifi Network (e.g. using [create ap](https://github.com/oblique/create_ap))
-2. Connect the raspberrypi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
+2. Connect the raspberry pi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
 3. Launch teleoperation server (it will use the port 5556)
 ```
 python command/python/teleop_server.py
 ```
-4. Launch teleoperation client on your computer (you have to edit the raspberry pi Ip in the code)
+4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in the code)
 ```
 python command/python/teleop_client.py
 ```
+5. Enjoy! You can now control the car with the keyboard.
 
 ## How to train the line detector ?
 
@@ -102,15 +103,22 @@ python -m train.train -f path/input/folder
 ```
 The best model (lowest error on the validation data) will be saved as *mlp_model_tmp.npz*.
 
+
+6. Test the trained neural network
+
+```
+python -m train.test -f path/input/folder -w mlp_model_tmp
+```
+
 ### Installation
 
-#### Recommended : Use an image with everything installed
+#### Recommended : Use an image with everything already installed
 
 0. You need a micro sd card (warning, all data on that card will be overwritten)
 
 1. Download the image [here](https://drive.google.com/open?id=0Bz4VOC2vLbgPTl9LZzNNcnBCWUU)
 
-The characteristics of the image:
+Infos about the linux image:
 OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 **Username**: enstar

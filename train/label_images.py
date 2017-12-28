@@ -13,7 +13,7 @@ import cv2
 from opencv.image_processing import processImage
 from constants import REGIONS
 
-parser = argparse.ArgumentParser(description='Split a video into a sequence of images')
+parser = argparse.ArgumentParser(description='Labeling tool for line detection')
 parser.add_argument('-i', '--input_folder', help='Input Folder', default="", type=str, required=True)
 parser.add_argument('-o', '--output_folder', help='Output folder', default="", type=str, required=True)
 
@@ -70,6 +70,7 @@ for idx, name in enumerate(images):
             cv2.imwrite('{}/{}.jpg'.format(output_folder, output_name), im_cropped)
             # Update infos
             with open('{}/infos.pkl'.format(output_folder), 'wb') as f:
+                # protocol=2 for python 2 compatibility
                 pkl.dump(infos_dict, f, protocol=2)
         j += 1
 
