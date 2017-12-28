@@ -1,5 +1,4 @@
 enum34==1.1.6
-Lasagne==0.2.dev1
 numpy==1.13.3
 pygame==1.9.3
 pyserial==3.4
@@ -8,7 +7,6 @@ scikit-learn==0.19.0
 scipy==0.19.1
 six==1.11.0
 sklearn==0.0
-Theano==0.10.0b2
 torch==0.3.0.post4
 torchvision==0.2.0
 zmq==0.0.0

@@ -9,11 +9,6 @@ import os
 import time
 import pickle as pkl
 
-import lasagne
-import theano
-import theano.tensor as T
-from lasagne.layers import DenseLayer
-
 import cv2
 import numpy as np
 import torch as th
@@ -32,27 +27,6 @@ VAL_BATCH_SIZE = 256
 
 # TODO: change std of weights initialization
 
-def loadNetwork(model_name="mlp_model"):
-    """
-    Load a trained network and return
-    prediction function along with the network object
-    :param model_name: (str)
-    :return: (lasagne network object, theano function)
-    """
-    # Remove npz
-    if '.npz' in model_name:
-        model_name = model_name.split('.npz')[0]
-    input_var = T.matrix('inputs')
-    network = buildMlp(input_var, INPUT_DIM)
-
-    with np.load('{}.npz'.format(model_name)) as f:
-        param_values = [f['arr_%d' % i].astype(np.float32) for i in range(len(f.files))]
-    lasagne.layers.set_all_param_values(network, param_values)
-
-    test_prediction = lasagne.layers.get_output(network, deterministic=True)
-    pred_fn = theano.function([input_var], test_prediction)
-    return network, pred_fn
-
 
 def loadPytorchNetwork(model_name="mlp_model_tmp"):
     if '.pth' in model_name:
@@ -68,24 +42,6 @@ def saveToNpz(model, output_name="mlp_model_tmp"):
     :param model: (PyTorch Model)
     """
     np.savez(output_name, *[p.data.numpy().T for _, p in model.named_parameters()])
-
-
-def buildMlp(input_var, input_dim):
-    """
-    Create the feedfoward neural net
-    :param input_var: (Theano tensor)
-    :param input_dim: (int)
-    :return: (lasagne network object)
-    """
-    relu = lasagne.nonlinearities.rectify
-    # linear = lasagne.nonlinearities.linear
-    net = lasagne.layers.InputLayer(shape=(None, input_dim), input_var=input_var)
-    net = lasagne.layers.DropoutLayer(net, p=0.1)
-    net = DenseLayer(net, num_units=8, nonlinearity=relu)
-    net = DenseLayer(net, num_units=4, nonlinearity=relu)
-    l_out = DenseLayer(net, num_units=1, nonlinearity=relu)
-    return l_out
-
 
 def loadDataset(seed=42, folder='cropped', split=True, augmented=True):
     """

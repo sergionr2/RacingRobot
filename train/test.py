@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
-from .train import loadDataset, loadNetwork, loadPytorchNetwork
+from .train import loadDataset, loadPytorchNetwork
 from .utils import computeMSE, loadVanillaNet
 
 parser = argparse.ArgumentParser(description='Test a line detector')

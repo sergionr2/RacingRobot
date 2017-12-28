@@ -13,7 +13,7 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from train.train import loadDataset, loadNetwork, loadPytorchNetwork
+from train.train import loadDataset, loadPytorchNetwork
 from constants import WIDTH, HEIGHT, RIGHT_KEY, LEFT_KEY, EXIT_KEYS
 
 # Init seaborn

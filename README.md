@@ -115,7 +115,7 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV 3.2.0, Theano, ...)
+ - all the dependencies for that project (OpenCV 3.2.0, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
 Camera and ssh are enabled.
@@ -226,8 +226,9 @@ pip install pyzmq
 
 Additional python dev-dependencies for training the neural network:
 ```
-pip install --upgrade https://github.com/Theano/Theano/archive/rel-0.10.0beta2.zip
-pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
+pip install http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
+pip install torchvision
+
 pip install sklearn # or sudo apt-get install python-sklearn
 ```
 

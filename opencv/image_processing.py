@@ -6,11 +6,11 @@ import cv2
 import numpy as np
 
 from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS
-from train import preprocessImage, loadNetwork, loadVanillaNet, WIDTH, HEIGHT
+from train import preprocessImage, loadVanillaNet, WIDTH, HEIGHT
 
 
-# Either load network with theano or with numpy
-# network, pred_fn = loadNetwork()
+# Either load network with pytorch or with numpy
+# pred_fn = loadNetwork()
 pred_fn = loadVanillaNet()
 
 
