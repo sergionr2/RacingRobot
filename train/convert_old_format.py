@@ -29,7 +29,7 @@ except IOError:
 
 should_exit = False
 j = 0
-for idx, name in enumerate(images_path):
+for name in images_path:
     if 'hori' in name:
         continue
     im = cv2.imread('{}/{}'.format(args.input_folder, name))

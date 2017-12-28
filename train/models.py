@@ -50,7 +50,6 @@ class ConvolutionalNetwork(nn.Module):
     """
     Convolutional Neural Network
     input shape : 3-channel RGB images of shape (3 x H x W)
-    :param state_dim: (int)
     """
 
     def __init__(self):

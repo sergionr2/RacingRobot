@@ -12,10 +12,8 @@ import torch as th
 from torch.autograd import Variable
 from sklearn.model_selection import train_test_split
 
-
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
-from .train import loadDataset, loadPytorchNetwork
-from .utils import computeMSE, loadVanillaNet
+from .utils import computeMSE, loadVanillaNet, loadDataset, loadPytorchNetwork
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', default="", type=str, required=True)

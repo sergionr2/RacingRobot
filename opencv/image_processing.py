@@ -5,8 +5,8 @@ import argparse
 import cv2
 import numpy as np
 
-from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS
-from train import preprocessImage, loadVanillaNet, WIDTH, HEIGHT
+from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS, WIDTH, HEIGHT
+from train import preprocessImage, loadVanillaNet
 
 
 # Either load network with pytorch or with numpy
@@ -38,7 +38,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
     centroids = np.zeros((len(regions), 2), dtype=int)
     errors = [False for _ in regions]
-    exit = False  # For interactive mode
+    exit_interactive = False  # For interactive mode
 
     # Efficient implementation
     if not debug:
@@ -83,7 +83,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
                     # Retrieve mouse click position
                     cv2.setMouseCallback('crop{}'.format(idx), mouseCallback, center)
                     key = cv2.waitKey(0) & 0xff
-                    exit = key in EXIT_KEYS
+                    exit_interactive = key in EXIT_KEYS
 
             if debug and interactive:
                 if center.get(0):
@@ -118,7 +118,6 @@ def processImage(image, debug=False, regions=None, interactive=False):
     if debug and len(centroids) > 1:
         a, b = pts
     else:
-        pts = None
         a, b = (0, 0), (0, 0)
 
     if debug:
@@ -134,7 +133,7 @@ def processImage(image, debug=False, regions=None, interactive=False):
             cv2.imshow('result', image)
 
     if interactive:
-        return centroids, errors, exit
+        return centroids, errors, exit_interactive
     return turn_percent, centroids
 
 

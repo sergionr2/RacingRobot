@@ -1,47 +1,102 @@
-from __future__ import print_function, division
+from __future__ import print_function, division, absolute_import
+
+import pickle as pkl
 
 import cv2
 import numpy as np
-from torch.optim.optimizer import Optimizer
-from torch.optim.lr_scheduler import _LRScheduler
+import torch as th
+from sklearn.model_selection import train_test_split
+
+from constants import INPUT_DIM, HEIGHT, WIDTH
+from .models import MlpNetwork
 
 
-# From https://github.com/pytorch/pytorch/commit/e9ef20eab5e5cf361bdc7a425c7f8b873baad9d3
-class CosineAnnealingLR(_LRScheduler):
-    """Set the learning rate of each parameter group using a cosine annealing
-    schedule, where :math:`\eta_{max}` is set to the initial lr and
-    :math:`T_{cur}` is the number of epochs since the last restart in SGDR:
+def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None):
+    """
+    Load a saved pytorch model
+    :param model_name: (str)
+    :param n_hidden: ([int])
+    :return: (pytorch model)
+    """
+    if '.pth' in model_name:
+        model_name = model_name.split('.pth')[0]
+    model = MlpNetwork(INPUT_DIM, n_hidden=n_hidden)
+    model.load_state_dict(th.load(model_name + '.pth'))
+    model.eval()
+    return model
 
-    .. math::
 
-        \eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 +
-        \cos(\frac{T_{cur}}{T_{max}}\pi))
+def saveToNpz(model, output_name="mlp_model_tmp"):
+    """
+    :param model: (PyTorch Model)
+    :param output_name: (str)
+    """
+    np.savez(output_name, *[p.data.numpy().T for _, p in model.named_parameters()])
 
-    When last_epoch=-1, sets initial lr as lr.
 
-    It has been proposed in
-    `SGDR: Stochastic Gradient Descent with Warm Restarts`_. Note that this only
-    implements the cosine annealing part of SGDR, and not the restarts.
-
-    Args:
-        optimizer (Optimizer): Wrapped optimizer.
-        T_max (int): Maximum number of iterations.
-        eta_min (float): Minimum learning rate. Default: 0.
-        last_epoch (int): The index of last epoch. Default: -1.
-
-    .. _SGDR\: Stochastic Gradient Descent with Warm Restarts:
-        https://arxiv.org/abs/1608.03983
+def loadDataset(split_seed=42, folder='', split=True, augmented=True):
+    """
+    Load the training images and preprocess them
+    :param split_seed: (int) split_seed for pseudo-random generator
+    :param folder: (str) input folder
+    :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
+    :param augmented: (bool) Whether to use data augmentation
+    :return:
     """
 
-    def __init__(self, optimizer, T_max, eta_min=0, last_epoch=-1):
-        self.T_max = T_max
-        self.eta_min = eta_min
-        super(CosineAnnealingLR, self).__init__(optimizer, last_epoch)
+    with open('{}/infos.pkl'.format(folder), 'rb') as f:
+        images_dict = pkl.load(f)['images']
 
-    def get_lr(self):
-        return [self.eta_min + (base_lr - self.eta_min) *
-                (1 + np.cos(self.last_epoch / self.T_max * np.pi)) / 2
-                for base_lr in self.base_lrs]
+    images = list(images_dict.keys())
+    images.sort()
+    images_path = []
+
+    tmp_im = cv2.imread('{}/{}.jpg'.format(folder, images_dict[images[0]]['output_name']))
+    height, width, _ = tmp_im.shape
+    n_images = len(images)
+    if augmented:
+        images_path_augmented = []
+        n_images *= 2
+
+    X = np.zeros((n_images, INPUT_DIM), dtype=np.float32)
+    y = np.zeros((n_images,), dtype=np.float32)
+
+    print("original_shape=({},{})".format(width, height))
+    print("resized_shape=({},{})".format(WIDTH, HEIGHT))
+
+    for idx, name in enumerate(images):
+        x_center, y_center = images_dict[name]['label']
+        # Normalize output
+        y[idx] = x_center / width
+
+        path = images_dict[name]['output_name']
+        image_path = '{}/{}.jpg'.format(folder, path)
+        im = cv2.imread(image_path)
+        X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
+        images_path.append(path + '.jpg')
+        # Flip the image+label to have more training data
+        if augmented:
+            horizontal_flip = cv2.flip(im, 1)
+            X[len(images) + idx, :] = preprocessImage(horizontal_flip, WIDTH, HEIGHT)
+            y[len(images) + idx] = (width - x_center) / width
+            images_path_augmented.append(path + '.jpg')
+
+    if augmented:
+        images_path += images_path_augmented
+
+    print("Input tensor shape: ", X.shape)
+
+    if not split:
+        return X, y, images_path
+
+    # for CNN
+    # X = X.reshape((-1, WIDTH, HEIGHT, 3))
+    # X = np.transpose(X, (0, 3, 2, 1))
+    print(X.shape)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=split_seed)
+    X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=split_seed)
+
+    return X_train, y_train, X_val, y_val, X_test, y_test
 
 
 def preprocessImage(image, width, height):
@@ -108,7 +163,7 @@ def computeMSE(y_test, y_true, indices):
     """
     :param y_test: (numpy 1D array)
     :param y_true: (numpy 1D array)
-    :parma indices: [[int]]
+    :param indices: [[int]]
     """
     idx_train, idx_val, idx_test = indices
     # MSE Loss

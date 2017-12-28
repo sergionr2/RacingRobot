@@ -42,7 +42,8 @@ elif args.model == "random_forest":
 #     model = XGBRegressor(max_depth=15, learning_rate=0.1, n_estimators=80, silent=True, nthread=8)
 elif args.model == "knn":
     X = PCA(n_components=150).fit_transform(X)
-    model = KNeighborsRegressor(n_neighbors=3, weights="distance", algorithm="auto", leaf_size=30, p=2, metric='minkowski', n_jobs=-1)
+    model = KNeighborsRegressor(n_neighbors=3, weights="distance", algorithm="auto",
+                                leaf_size=30, p=2, metric='minkowski', n_jobs=-1)
 else:
     raise ValueError("Unknown model type: {}".format(args.model))
 

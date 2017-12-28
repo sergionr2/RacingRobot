@@ -13,7 +13,7 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from train.train import loadDataset, loadPytorchNetwork
+from train import loadDataset, loadPytorchNetwork
 from constants import WIDTH, HEIGHT, RIGHT_KEY, LEFT_KEY, EXIT_KEYS
 
 # Init seaborn
@@ -21,12 +21,13 @@ sns.set()
 
 np.set_printoptions(precision=2)
 
+
 def plot_representation(x, y, colors, name="", add_colorbar=True):
     fig = plt.figure(name)
     plt.scatter(x, y, s=7, c=colors, cmap='coolwarm', linewidths=0.1)
     plt.xlabel('State dimension 1')
     plt.ylabel('State dimension 2')
-    plt.title(fill(name, TITLE_MAX_LENGTH))
+    plt.title(name)
     fig.tight_layout()
     if add_colorbar:
         plt.colorbar(label='x center')
@@ -48,7 +49,7 @@ def plot_input_weights(weights, name='Input Weights', cmap='coolwarm'):
             ax.set_yticks([])
             if i == len(weights) - 1:
                 ax.set_xlabel(labels[j])
-            if j == 0 :
+            if j == 0:
                 ax.set_ylabel("Unit {}".format(i))
 
     cax, kwargs = matplotlib.colorbar.make_axes([ax for ax in axes.flat])
@@ -57,8 +58,9 @@ def plot_input_weights(weights, name='Input Weights', cmap='coolwarm'):
     plt.pause(0.0001)
     # plt.show()
 
+
 def plot_matrix(matrix, name='Matrix', cmap='coolwarm'):
-    fig = plt.figure(name)
+    plt.figure(name)
     plt.clf()
     im = plt.imshow(matrix, cmap=cmap)
     im.axes.grid(False)

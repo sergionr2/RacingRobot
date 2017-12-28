@@ -11,7 +11,7 @@ from collections import defaultdict
 import cv2
 
 from opencv.image_processing import processImage
-from constants import EXIT_KEYS, REGIONS
+from constants import REGIONS
 
 parser = argparse.ArgumentParser(description='Split a video into a sequence of images')
 parser.add_argument('-i', '--input_folder', help='Input Folder', default="", type=str, required=True)
@@ -55,7 +55,7 @@ for idx, name in enumerate(images):
         img = original_img.copy()
         margin_left, margin_top, _, _ = r
         im_cropped = original_img[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
-        centroids, errors, exit = processImage(img, debug=True, regions=[r], interactive=True)
+        centroids, errors, exit_loop = processImage(img, debug=True, regions=[r], interactive=True)
         if not all(errors):
             # Save the labeled image (and store the label in the name)
             x, y = centroids.flatten()
@@ -73,6 +73,6 @@ for idx, name in enumerate(images):
                 pkl.dump(infos_dict, f, protocol=2)
         j += 1
 
-        if exit:
+        if exit_loop:
             should_exit = True
             break
