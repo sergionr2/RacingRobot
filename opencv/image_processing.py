@@ -2,7 +2,7 @@
 Main script for processing an image:
 it extracts the different ROI, detect the line and estimate line curve
 """
-from __future__ import print_function, with_statement, division
+from __future__ import print_function, with_statement, division, absolute_import
 
 import argparse
 
