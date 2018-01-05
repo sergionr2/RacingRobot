@@ -1,7 +1,7 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
 Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
-**Vidéo of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
+**Video of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
 [![The racing robot](https://cdn-images-1.medium.com/max/2000/1*UsmiJ4IzXi6U9svKjB22zw.jpeg)](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
@@ -20,6 +20,8 @@ We wrote an article on medium that detailed our approach. You can read it [here]
 - [Raspberry Pi Holder](https://cad.onshape.com/documents/621b6943711d60790ddc2b9f/w/c29ba5f453ce625afc8128f6/e/1aa39940e0bdabd3303d76c4)
 
 ### Training Data
+
+**Outdated** (you have to use convert_old_format.py to use current code, now all the informations are in a pickle file)
 
 The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
@@ -44,7 +46,7 @@ For installation, see section **Installation**.
 
 ## Autonomous mode
 
-0. Compile and upload the code on the arduino
+0. Compile and upload the code on the Arduino
 ```
 cd arduino/
 make
@@ -61,15 +63,16 @@ python main.py
 
 0. You need a computer in addition to the raspberry pi
 1. Create a Local Wifi Network (e.g. using [create ap](https://github.com/oblique/create_ap))
-2. Connect the raspberrypi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
+2. Connect the raspberry pi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
 3. Launch teleoperation server (it will use the port 5556)
 ```
 python command/python/teleop_server.py
 ```
-4. Launch teleoperation client on your computer (you have to edit the raspberry pi Ip in the code)
+4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in the code)
 ```
 python command/python/teleop_client.py
 ```
+5. Enjoy! You can now control the car with the keyboard.
 
 ## How to train the line detector ?
 
@@ -78,35 +81,44 @@ python command/python/teleop_client.py
 python command/python/teleop_server.py -v my_video
 ```
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
-3. Split the video into a sequence of images (please change the paths in the script)
 ```
-python -m opencv.split_video -i video.mp4
+MP4Box -add video.h264 video.mp4
 ```
-You have to press enter to pass to the next frame
 
-4. Label the data using the labeling tool (again please change the paths in the script)
+3. Split the video into a sequence of images
 ```
-python -m opencv.train.label_images
+python -m train.split_video -i video.mp4 --no-display -o path/output/folder
+```
+
+4. Label the data using the labeling tool
+```
+python -m train.label_images -i path/to/input/folder -o path/to/output/folder
 ```
 To label an image, you have to click on the center of line in the displayed image.
 If the image do not contain any line, or if you want to pass to the next frame, press any key.
 
-5. (optional) Augment the dataset using the augmentDataset() function in opencv/train/train.py
-6. Train the neural network (again please change the paths in the script)
+5. Train the neural network (again please change the paths in the script)
 ```
-cd opencv/train/ (enter train folder)
-python train.py
+python -m train.train -f path/input/folder
 ```
-The best model (lowest error on the validation data) will be saved as *mlp_model.npz*.
+The best model (lowest error on the validation data) will be saved as *mlp_model_tmp.npz*.
+
+
+6. Test the trained neural network
+
+```
+python -m train.test -f path/input/folder -w mlp_model_tmp
+```
 
 ### Installation
 
-#### Recommended : Use an image with everything installed
+#### Recommended : Use an image with everything already installed
+
 0. You need a micro sd card (warning, all data on that card will be overwritten)
 
 1. Download the image [here](https://drive.google.com/open?id=0Bz4VOC2vLbgPTl9LZzNNcnBCWUU)
 
-The characteristics of the image:
+Infos about the linux image:
 OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 **Username**: enstar
@@ -115,7 +127,7 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV 3.2.0, Theano, ...)
+ - all the dependencies for that project (OpenCV 3.2.0, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
 Camera and ssh are enabled.
@@ -195,6 +207,11 @@ sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
 
+TQDM (for progressbar)
+```
+pip install tqdm
+```
+
 [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
 For teleoperation
 ```
@@ -225,10 +242,27 @@ pip install pyzmq
 ```
 
 Additional python dev-dependencies for training the neural network:
+On your laptop:
 ```
-pip install --upgrade https://github.com/Theano/Theano/archive/rel-0.10.0beta2.zip
-pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip
+pip install http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
+pip install torchvision
+
 pip install sklearn # or sudo apt-get install python-sklearn
+```
+
+On the raspberry pi
+[PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+0. Make sure you have at least 3 Go of Swap. (see link above)
+1. (optional) Install a recent version of cmake + scikit-build + ninja
+2. Install PyTorch
+```
+# don't forget to set the env variables:
+export NO_CUDA=1
+export NO_DISTRIBUTED=1
+git clone --recursive https://github.com/pytorch/pytorch
+sudo -EH python setup.py install
+# torchvision is not used yet
+sudo -H pip install torchvision
 ```
 
 ### Contributors
