@@ -237,11 +237,27 @@ pip install pyzmq
 ```
 
 Additional python dev-dependencies for training the neural network:
+On your laptop:
 ```
 pip install http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
 pip install torchvision
 
 pip install sklearn # or sudo apt-get install python-sklearn
+```
+
+On the raspberry pi
+[PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+0. Make sure you have at least 3 Go of Swap. (see link above)
+1. (optional) Install a recent version of cmake + scikit-build + ninja
+2. Install PyTorch
+```
+# don't forget to set the env variables:
+export NO_CUDA=1
+export NO_DISTRIBUTED=1
+git clone --recursive https://github.com/pytorch/pytorch
+sudo -EH python setup.py install
+# torchvision is not used yet
+sudo -H pip install torchvision
 ```
 
 ### Contributors

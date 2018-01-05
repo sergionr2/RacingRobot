@@ -103,24 +103,24 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
     # Linear Regression to fit a line
     # It estimates the line curve
-    # TODO: test with l2 penalty to reduce noise
     x = centroids[:, 0]
     y = centroids[:, 1]
-    # Case x = cst
+    # Case x = cst, m = 0
     if len(np.unique(x)) == 1:
         pts = centroids[:2, :]
         turn_percent = 0
     else:
-        A = np.vstack([x, np.ones(len(x))]).T
         # Linear regression using least squares method
-        # y = m*x + b
-        m, b = np.linalg.lstsq(A, y)[0]
+        # x = m*y + b -> y = 1/m * x - b/m if m != 0
+        A = np.vstack([y, np.ones(len(y))]).T
+        m, b = np.linalg.lstsq(A, x)[0]
+
         if debug:
             # Points for plotting the line
-            x = np.array([0, im_width], dtype=int)
-            pts = (np.vstack([x, m * x + b]).T).astype(int)
+            y = np.array([0, image.shape[0]], dtype=int)
+            pts = (np.vstack([m * y + b, y]).T).astype(int)
         # Compute the angle between the reference and the fitted line
-        track_angle = np.arctan(m)
+        track_angle = np.arctan(1 / m)
         diff_angle = abs(REF_ANGLE) - abs(track_angle)
         # Estimation of the line curvature
         turn_percent = (diff_angle / MAX_ANGLE) * 100
