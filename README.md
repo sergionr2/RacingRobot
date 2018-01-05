@@ -207,6 +207,11 @@ sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
 
+TQDM (for progressbar)
+```
+pip install tqdm
+```
+
 [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
 For teleoperation
 ```
