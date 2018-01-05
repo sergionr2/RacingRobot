@@ -16,6 +16,7 @@ except ImportError:
 
 import serial
 import numpy as np
+from tqdm import tqdm
 
 import command.python.common as common
 from command.python.common import is_connected, n_received_semaphore, command_queue, \
@@ -64,8 +65,15 @@ def main_control(out_queue, resolution, n_seconds=5):
 
     signal.signal(signal.SIGINT, ctrl_c)
     last_time = time.time()
+    last_time_update = time.time()
+    pbar = tqdm(total=n_seconds)
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
+        # Display progress bar
+        if time.time() - last_time_update > 1:
+            pbar.update(int(time.time() - last_time_update))
+            last_time_update = time.time()
+
         # Output of image processing
         turn_percent, centroids = out_queue.get()
 
@@ -126,6 +134,7 @@ def main_control(out_queue, resolution, n_seconds=5):
     forceStop()
     # Make sure STOP order is sent
     time.sleep(0.2)
+    pbar.close()
 
 
 if __name__ == '__main__':
