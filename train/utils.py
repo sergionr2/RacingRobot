@@ -74,6 +74,8 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
         y[idx] = x_center / width
 
         image_path = '{}/{}.jpg'.format(folder, images_dict[name]['output_name'])
+        path = images_dict[name]['output_name']
+        image_path = '{}/{}.jpg'.format(folder, path)
         im = cv2.imread(image_path)
         # Resize and normalize input
         X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
