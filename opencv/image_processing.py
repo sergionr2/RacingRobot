@@ -114,7 +114,6 @@ def processImage(image, debug=False, regions=None, interactive=False):
         # x = m*y + b -> y = 1/m * x - b/m if m != 0
         A = np.vstack([y, np.ones(len(y))]).T
         m, b = np.linalg.lstsq(A, x)[0]
-
         if debug:
             # Points for plotting the line
             y = np.array([0, image.shape[0]], dtype=int)

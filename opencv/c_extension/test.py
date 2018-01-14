@@ -5,7 +5,7 @@ import time
 import numpy as np
 import cv2
 
-from test_module import forward, setWeights, processImage
+from fast_image_processing import forward, setWeights, processImage
 
 N_ITER = 5000
 batchsize = 3
@@ -13,6 +13,7 @@ np.random.seed(2)
 
 weights_npy='mlp_model.npz'
 
+# Load pretrained network
 W, b = {}, {}
 with np.load(weights_npy) as f:
     n_layers = len(f.files) // 2
@@ -26,24 +27,12 @@ with np.load(weights_npy) as f:
 setWeights(W[0], b[0], W[1], b[1], W[2], b[2])
 
 
-
-def loadVanillaNet(weights_npy='mlp_model.npz'):
+def loadVanillaNet():
     """
     Load a trained network and
     return the forward function in pure numpy
-    :param weights_npy: (str) path to the numpy archive
     :return: (function) the neural net forward function
     """
-    W, b = {}, {}
-    with np.load(weights_npy) as f:
-        print("Loading network")
-        n_layers = len(f.files) // 2
-        for i in range(len(f.files)):
-            if i % 2 == 1:
-                b[i // 2] = f['arr_%d' % i].astype(np.float32)
-            else:
-                W[i // 2] = f['arr_%d' % i].astype(np.float32)
-
     def relu(x):
         """
         Rectify activation function: f(x) = max(0, x)
@@ -86,7 +75,6 @@ for _ in range(N_ITER):
     start_time = time.time()
     # b = model_py(a)
     # b = forward(a)
-    # b = forward2(a)
     r = processImage(image)
     times.append(time.time() - start_time)
     # print(r)

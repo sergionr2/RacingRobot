@@ -1,11 +1,12 @@
 from __future__ import print_function, absolute_import, division
 
 import numpy as np
-from .test_module import processImage as processImage2
-from .test_module import setWeights
+from .fast_image_processing import processImage as fastProcessImage
+from .fast_image_processing import setWeights
 
 weights_npy='mlp_model.npz'
 
+# Load pretrained network
 W, b = {}, {}
 with np.load(weights_npy) as f:
     n_layers = len(f.files) // 2

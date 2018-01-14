@@ -1,76 +1,34 @@
-# pybind11_opencv_numpy
+# C++ extension for fast image processing
 
-An example of pybind11 for cv::Mat <-> np.array
+It is based on [pybind11_opencv_numpy](https://github.com/edmBernard/pybind11_opencv_numpy).
+that allows interpolation between cv::Mat <-> np.array.
 
-```bash
-/project folder
-├── src
-│   └── pybind11
-│       ├── numpy.h
-│       ├── stl.h
-│       └── ...
-├── build
-├── example
-│   ├── exemple.so  # generate with make
-│   └── example.cpython-36m-x86_64-linux-gnu.so  # generate with setup.py
-├── CMakeLists.txt
-├── setup.py
-└── ...
-```
+Depending on the resize strategy (nearest neighbors or bilinear), the speedup compare to pure python + numpy is between X3 and X6.
 
-## Generation with make
+## Dependencies
 
-### Link pybind11 source in src folder
-```
-ln -s path/to/pybind11/include/pybind11 src/pybind11
-```
+- [PyBind11 2.2.1](https://github.com/pybind/pybind11)
+- OpenCV 3 with Eigen support
 
-### Compile
+### Compile with CMake
 
 ```bash
-mkdir build
-cd build
+mkdir build && cd build
 # configure make
 cmake ..
-# generate the example.so library
+# generate the fast_image_processing.so library
 make
-# move example.so library in example folder
+# move fast_image_processing.so library in example folder
 make install
+```
+
+### Compile with setup.py
+WARNING: you have to manually edit the path to OpenCV + Eigen
+```
+./compile.sh
 ```
 
 ### Run
 ```bash
-python3 test.py
-```
-
-## Generation with setup.py
-
-### install pybind11
-
-```
-pip3 install pybind11
-```
-
-### Compile
-
-```
-python3 setup.py build
-```
-
-### Install
-
-```
-python3 setup.py install 
-```
-
-or
-
-```
-mv build/lib.linux-x86_64-3.5/example/example.cpython-36m-x86_64-linux-gnu.so example/example.cpython-36m-x86_64-linux-gnu.so
-```
-
-### Run 
-
-```
-python3 test.py
+python test.py
 ```

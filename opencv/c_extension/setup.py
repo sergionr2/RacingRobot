@@ -109,9 +109,9 @@ extra_compile_args += ["-DNDEBUG", "-O3"]
 
 ext_modules = [
     Extension(
-        'test_module',
+        'fast_image_processing',
         [
-            'example.cpp',
+            'fast_image_processing.cpp',
             'ndarray_converter.cpp',
         ],
         include_dirs=[
@@ -129,10 +129,10 @@ ext_modules = [
 ]
 
 setup(
-    name='pybind11-opencv-numpy-example',
+    name='fast_image_processing',
     version='0.1',
-    author='Dustin Spicuzza',
-    author_email='dustin@virtualroadside.com',
+    author='Antonin Raffin',
+    author_email='antonin.raffin@ensta.org',
     packages=find_packages(),
     ext_modules=ext_modules,
     install_requires=None,

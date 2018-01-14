@@ -217,7 +217,7 @@ std::tuple<float, cv::Mat> processImage(cv::Mat image)
 }
 
 
-PYBIND11_MODULE(test_module, m) {
+PYBIND11_MODULE(fast_image_processing, m) {
   NDArrayConverter::init_numpy();
   m.def("forward", forward, "");
   m.def("processImage", processImage, "");

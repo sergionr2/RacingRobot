@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 
 from opencv.image_processing import processImage
-from opencv.c_extension import processImage2
+from opencv.c_extension import fastProcessImage
 
 parser = argparse.ArgumentParser(description='Benchmark line detection algorithm')
 parser.add_argument('-i', '--input_image', help='Input Image', default="", type=str, required=False)
@@ -27,7 +27,7 @@ time_deltas = []
 for i in range(N_ITER):
     start_time = time.time()
     # turn_percent, centroids = processImage(image, debug=False, regions=None, interactive=False)
-    turn_percent, centroids = processImage2(image)
+    turn_percent, centroids = fastProcessImage(image)
     time_deltas.append(time.time() - start_time)
     print(centroids)
     print(turn_percent)
