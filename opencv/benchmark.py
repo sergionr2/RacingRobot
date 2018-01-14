@@ -29,8 +29,8 @@ for i in range(N_ITER):
     # turn_percent, centroids = processImage(image, debug=False, regions=None, interactive=False)
     turn_percent, centroids = fastProcessImage(image)
     time_deltas.append(time.time() - start_time)
-    print(centroids)
-    print(turn_percent)
+    # print(centroids)
+    # print(turn_percent)
 
 time_deltas = np.array(time_deltas)
 print("Total time: {:.6f}s".format(time_deltas.sum()))

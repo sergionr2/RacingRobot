@@ -20,6 +20,7 @@
 #define REF_ANGLE float(- PI / 2)
 #define MAX_ANGLE float(PI / 4)
 #define IM_WIDTH MAX_WIDTH
+#define N_REGIONS 3
 
 #include "ndarray_converter.h"
 
@@ -67,6 +68,9 @@ void setWeights(cv::Mat w1_, cv::Mat b1_, cv::Mat w2_, cv::Mat b2_, cv::Mat w3_,
   b3 = b3_.clone().t();
   // Concatenate bias to avoid broadcast issue
   // (addition between a matrix and a vector)
+  // TODO: replace vector creation with
+  //  a loop that depends on the number of regions
+  CV_Assert(REGIONS.size() == N_REGIONS);
   std::vector<cv::Mat> m1 {b1, b1, b1};
   cv::vconcat(m1, b1);
   std::vector<cv::Mat> m2 {b2, b2, b2};
