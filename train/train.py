@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 from constants import SPLIT_SEED
-from .utils import preprocessImage, saveToNpz, loadDataset
+from .utils import preprocessImage, saveToNpz, loadDataset, adjustLearningRate
 from .models import MlpNetwork, ConvolutionalNetwork
 
 evaluate_print = 1  # Print info every 1 epoch
@@ -100,7 +100,10 @@ def main(folder, num_epochs=1000, batchsize=1,
         start_time = time.time()
         # Full pass on training data
         # Update the model after each minibatch
-        for inputs, targets in train_loader:
+        for i, (inputs, targets) in enumerate(train_loader):
+            # Adjust learning rate
+            # adjustLearningRate(optimizer, epoch, num_epochs, lr_init=learning_rate,
+            #                         batch=i, n_batch=len(train_loader), method='multistep')
             # Move variables to gpu
             if cuda:
                 inputs, targets = inputs.cuda(), targets.cuda()
@@ -172,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
     parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables CUDA training')
     parser.add_argument('--load_model', help='Start from a saved model', default="", type=str)
-    parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-4, type=float)
+    parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-3, type=float)
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and th.cuda.is_available()

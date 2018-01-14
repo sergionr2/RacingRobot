@@ -11,6 +11,35 @@ from constants import INPUT_DIM, HEIGHT, WIDTH
 from .models import MlpNetwork
 
 
+def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
+                         n_batch, method='cosine'):
+    """
+    :param optimizer: (PyTorch Optimizer object)
+    :param epoch: (int)
+    :param n_epochs: (int)
+    :param lr_init: (float)
+    :param batch: (int)
+    :param n_batch: (int)
+    :param method: (str)
+    """
+    if method == 'cosine':
+        T_total = n_epochs * n_batch
+        T_cur = (epoch % n_epochs) * n_batch + batch
+        lr = 0.5 * lr_init * (1 + np.cos(np.pi * T_cur / T_total))
+    elif method == 'multistep':
+        lr, decay_rate = lr_init, 0.7
+        if epoch >= n_epochs * 0.75:
+            lr *= decay_rate ** 2
+        elif epoch >= n_epochs * 0.5:
+            lr *= decay_rate
+    # else:
+    #     # Sets the learning rate to the initial LR decayed by 10 every 30 epochs
+    #     lr = lr_init * (0.1 ** (epoch // 30))
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+
 def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None):
     """
     Load a saved pytorch model
@@ -73,7 +102,6 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
         # Normalize output
         y[idx] = x_center / width
 
-        image_path = '{}/{}.jpg'.format(folder, images_dict[name]['output_name'])
         path = images_dict[name]['output_name']
         image_path = '{}/{}.jpg'.format(folder, path)
         im = cv2.imread(image_path)
@@ -115,6 +143,7 @@ def preprocessImage(image, width, height):
     :param height: (int)
     :return: (numpy array)
     """
+    # The resizing is a bottleneck in the computation
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
     # Normalize
