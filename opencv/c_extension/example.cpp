@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 
+#include <Eigen/Core>
 #include <Eigen/Dense>
 
 #include <opencv2/core/core.hpp>
@@ -33,9 +34,6 @@ cv::Mat centroids;
 cv::Mat resized = cv::Mat::ones(20, 80, CV_32FC3);
 
 cv::Mat x1 = cv::Mat::ones(3, 80*20*3, CV_32FC1);
-// cv::Mat z1 = cv::Mat::ones(3, 20, CV_32F);
-// cv::Mat x1 = cv::Mat::ones(3, 80*20*3, CV_32F);
-// cv::Mat x1 = cv::Mat::ones(3, 80*20*3, CV_32F);
 cv::Mat z;
 
 cv::Mat w1 = cv::Mat::ones(80*20*3, 20, CV_32F).t();
@@ -61,6 +59,8 @@ cv::Rect R3(0, 75, MAX_WIDTH, 50);
 cv::Rect R4(0, 50, MAX_WIDTH, 50);
 std::vector<cv::Rect> REGIONS({R1, R2, R3});
 
+using EigenMat = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
 
 void init()
 {
@@ -69,6 +69,7 @@ void init()
   // Matrix<float, 1, 20> w1_e;
   // cv::cv2eigen(w1, w1_e);
 }
+
 
 void setWeights(cv::Mat w1_, cv::Mat b1_, cv::Mat w2_, cv::Mat b2_, cv::Mat w3_, cv::Mat b3_)
 {
@@ -84,7 +85,6 @@ void setWeights(cv::Mat w1_, cv::Mat b1_, cv::Mat w2_, cv::Mat b2_, cv::Mat w3_,
   cv::vconcat(m2, b2);
   std::vector<cv::Mat> m3 {b3, b3, b3};
   cv::vconcat(m3, b3);
-  // init();
 }
 
 cv::Mat preprocessImage(cv::Mat image)
@@ -137,23 +137,44 @@ void relu(cv::Mat &x)
 //   }
 // }
 
+float relu2(float x) // the functor we want to apply
+{
+    return std::max(float(0.0), x);
+}
+
+cv::Mat forward(cv::Mat x);
+
 //
-// void forward2()
-// {
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> w1_Eigen( (float *) w1.ptr(), w1.rows, w1.cols);
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> b1_Eigen( (float *) b1.ptr(), b1.rows, b1.cols);
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> w2_Eigen( (float *) w2.ptr(), w2.rows, w2.cols);
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> b2_Eigen( (float *) b2.ptr(), b2.rows, b2.cols);
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> w3_Eigen( (float *) w3.ptr(), w3.rows, w3.cols);
-//   Map<Matrix<float, Dynamic, Dynamic, RowMajor>> b3_Eigen( (float *) b3.ptr(), b3.rows, b3.cols);
-//   relu2(b3_Eigen);
-// }
+cv::Mat forward2(cv::Mat x)
+{
+  // Convert to eigen matrices
+  Map<EigenMat> w1_Eigen(w1.ptr<float>(), w1.rows, w1.cols);
+  Map<EigenMat> b1_Eigen(b1.ptr<float>(), b1.rows, b1.cols);
+  Map<EigenMat> w2_Eigen(w2.ptr<float>(), w2.rows, w2.cols);
+  Map<EigenMat> b2_Eigen(b2.ptr<float>(), b2.rows, b2.cols);
+  Map<EigenMat> w3_Eigen(w3.ptr<float>(), w3.rows, w3.cols);
+  Map<EigenMat> b3_Eigen(b3.ptr<float>(), b3.rows, b3.cols);
+  Map<EigenMat> x_Eigen(x.ptr<float>(), x.rows, x.cols);
+
+
+  EigenMat z1 = x_Eigen * w1_Eigen.transpose() + b1_Eigen;
+  z1 = z1.unaryExpr(&relu2);
+
+  EigenMat z2 = z1 * w2_Eigen.transpose() + b2_Eigen;
+  z2 = z2.unaryExpr(&relu2);
+
+  EigenMat z3 = z2 * w3_Eigen.transpose() + b3_Eigen;
+  z3 = z3.unaryExpr(&relu2);
+
+  cv::Mat z3_mat;
+  cv::eigen2cv(z3, z3_mat);
+  return z3_mat;
+}
 
 cv::Mat forward(cv::Mat x)
 {
   cv::gemm(x, w1, 1, b1, 1, z, cv::GEMM_2_T);
   relu(z);
-  // cv::threshold(z, z, 0, 0, 3);
   cv::gemm(z, w2, 1, b2, 1, z, cv::GEMM_2_T);
   relu(z);
   cv::gemm(z, w3, 1, b3, 1, z, cv::GEMM_2_T);
@@ -186,7 +207,8 @@ std::tuple<float, cv::Mat> processImage(cv::Mat image)
     i++;
   }
   cv::vconcat(matrices, batch);
-  cv::Mat pred = forward(batch) * im_width;
+  // cv::Mat pred = forward(batch) * im_width;
+  cv::Mat pred = forward2(batch) * im_width;
 
   pred.convertTo(pred, CV_16U);
   first_col += pred;
@@ -223,7 +245,14 @@ std::tuple<float, cv::Mat> processImage(cv::Mat image)
     A.convertTo(A, CV_32F);
     x.convertTo(x, CV_32F);
 
+    // Map<EigenMat> A_Eigen(A.ptr<float>(), A.rows, A.cols);
+    // Map<EigenMat> b_Eigen(x.ptr<float>(), x.rows, x.cols);
+    // EigenMat coeff_Eigen = A_Eigen.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b_Eigen);
+    // EigenMat coeff_Eigen = A_Eigen.colPivHouseholderQr().solve(b_Eigen);
+    // cv::eigen2cv(coeff_Eigen, coeff_mat);
+
     cv::solve(A, x, coeff_mat, cv::DECOMP_SVD);
+
     float m = coeff_mat.at<float>(0, 0);
     float track_angle = atan(1 / m);
     float diff_angle = std::abs(REF_ANGLE) - std::abs(track_angle);
@@ -238,6 +267,7 @@ std::tuple<float, cv::Mat> processImage(cv::Mat image)
 PYBIND11_MODULE(test_module, m) {
   NDArrayConverter::init_numpy();
   m.def("forward", forward, "");
+  m.def("forward2", forward2, "");
   // m.def("init", init, "");
   m.def("processImage", processImage, "");
   m.def("setWeights", setWeights, "");

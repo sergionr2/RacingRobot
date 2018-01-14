@@ -5,7 +5,7 @@ import time
 import numpy as np
 import cv2
 
-from test_module import forward, setWeights, processImage
+from test_module import forward, setWeights, processImage, forward2
 
 N_ITER = 5000
 batchsize = 3
@@ -26,9 +26,6 @@ with np.load(weights_npy) as f:
 
 setWeights(W[0], b[0], W[1], b[1], W[2], b[2])
 
-# exit()
-
-x = np.random.uniform(-1, 1, (1, 80*20*3)).astype(np.float32)
 
 
 def loadVanillaNet(weights_npy='mlp_model.npz'):
@@ -77,6 +74,10 @@ model_py = loadVanillaNet()
 
 a = np.random.uniform(low=-1, high=1, size=(batchsize, 80, 20, 3)).reshape((batchsize, -1)).astype(np.float32)
 
+# print(forward2(a))
+# print(model_py(a))
+# exit()
+
 # print(forward(a))
 # print(model_py(a))
 # exit()
@@ -92,6 +93,7 @@ for _ in range(N_ITER):
     start_time = time.time()
     # b = model_py(a)
     # b = forward(a)
+    # b = forward2(a)
     r = processImage(image)
     times.append(time.time() - start_time)
     # print(r)
