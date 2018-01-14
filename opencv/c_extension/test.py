@@ -5,12 +5,11 @@ import time
 import numpy as np
 import cv2
 
-from test_module import forward, setWeights, processImage, forward2
+from test_module import forward, setWeights, processImage
 
 N_ITER = 5000
 batchsize = 3
 np.random.seed(2)
-
 
 weights_npy='mlp_model.npz'
 
@@ -74,16 +73,10 @@ model_py = loadVanillaNet()
 
 a = np.random.uniform(low=-1, high=1, size=(batchsize, 80, 20, 3)).reshape((batchsize, -1)).astype(np.float32)
 
-# print(forward2(a))
-# print(model_py(a))
-# exit()
-
 # print(forward(a))
 # print(model_py(a))
 # exit()
-# start_time = time.time()
-# forward2(N_ITER)
-# print("Total cpp: {:.4f}s".format(time.time() - start_time))
+
 image = cv2.imread("test_sun.jpg").astype(np.float32)
 
 times = []

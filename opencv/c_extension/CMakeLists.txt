@@ -12,13 +12,17 @@ MESSAGE( " *** OpenCV_INCLUDE_DIRS : " ${OpenCV_INCLUDE_DIRS} )
 MESSAGE( " *** OpenCV_LIB_DIRS : " ${OpenCV_LIB_DIRS} )
 MESSAGE( " *** OpenCV_LIBS : " ${OpenCV_LIBS} )
 
-find_package(PythonLibs 3 REQUIRED)
+find_package(PythonLibs REQUIRED)
 MESSAGE( " *** PYTHON_INCLUDE_DIRS : " ${PYTHON_INCLUDE_DIRS} )
 MESSAGE( " *** PYTHON_LIBRARIES : " ${PYTHON_LIBRARIES} )
+
+find_package(Eigen3 REQUIRED)
+
 
 #**************************************************************************************************
 # Include **************************************************************************************************
 include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pybind11/include)
@@ -45,7 +49,7 @@ LINK_DIRECTORIES(
 # Make configuration
 #**************************************************************************************************
 add_library(example SHARED ${SOURCES})
-target_link_libraries(example ${PYTHON_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(example ${PYTHON_LIBRARIES} ${OpenCV_LIBS} ${Eigen3_LIBS})
 SET_TARGET_PROPERTIES(example PROPERTIES PREFIX "")
 
 install(TARGETS example DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/example)
