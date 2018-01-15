@@ -29,6 +29,7 @@ WARNING: you have to manually edit the path to OpenCV + Eigen
 ```
 
 ### Run
+To run the test, you need to copy `mlp_model.npz` in this folder and have an image named `test_sun.jpg` (ideally taken from the raspicam).
 ```bash
 python test.py
 ```

@@ -153,22 +153,36 @@ def preprocessImage(image, width, height):
     return x
 
 
-def loadVanillaNet(weights_npy='mlp_model.npz'):
+def loadWeights(weights_npy='mlp_model.npz'):
     """
-    Load a trained network and
-    return the forward function in pure numpy
-    :param weights_npy: (str) path to the numpy archive
-    :return: (function) the neural net forward function
+    Load and return weights of a trained model
+    :param weights_npy: (str) path to the numpy file
+    :return: (dict, dict)
     """
+    weights_npy='mlp_model.npz'
+
+    # Load pretrained network
     W, b = {}, {}
     with np.load(weights_npy) as f:
-        print("Loading network")
         n_layers = len(f.files) // 2
         for i in range(len(f.files)):
+            # print(f['arr_%d' % i].shape)
             if i % 2 == 1:
                 b[i // 2] = f['arr_%d' % i].astype(np.float32)
             else:
                 W[i // 2] = f['arr_%d' % i].astype(np.float32)
+    return W, b
+
+
+def loadVanillaNet(weights_npy='mlp_model.npz'):
+    """
+    Load a trained network and
+    return the forward function in pure numpy
+    :param weights_npy: (str) path to the numpy file
+    :return: (function) the neural net forward function
+    """
+    W, b = loadWeights(weights_npy)
+    n_layers = len(W)
 
     def relu(x):
         """
