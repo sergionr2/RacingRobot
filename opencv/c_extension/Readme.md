@@ -9,6 +9,7 @@ Depending on the resize strategy (nearest neighbors or bilinear), the speedup co
 
 - [PyBind11 2.2.1](https://github.com/pybind/pybind11)
 - OpenCV 3 with Eigen support
+- [Eigen 3.3](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
 ### Compile with CMake
 

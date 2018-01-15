@@ -110,6 +110,13 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 python -m train.test -f path/input/folder -w mlp_model_tmp
 ```
 
+## Benchmark
+
+For profiling 5000 iterations of image processing:
+```
+python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
+```
+
 ### Installation
 
 #### Recommended : Use an image with everything already installed
