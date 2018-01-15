@@ -13,13 +13,19 @@ Depending on the resize strategy (nearest neighbors or bilinear), the speedup co
 
 ### Compile with CMake
 
+#### On the rapsberry pi
+```
+./pi_cmake.sh
+```
+
+#### On the Laptop
 ```bash
 mkdir build && cd build
 # configure make
 cmake ..
 # generate the fast_image_processing.so library
 make
-# move fast_image_processing.so library in example folder
+# move fast_image_processing.so library in current folder
 make install
 ```
 
