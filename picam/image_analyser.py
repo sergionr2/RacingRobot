@@ -80,7 +80,8 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                     print("Frame queue empty")
                     continue
                 # 1 ms per loop
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # TODO: check that this conversion is not needed
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if self.debug:
                     self.out_queue.put(item=frame, block=False)
                 else:

@@ -3,7 +3,7 @@
 It is based on [pybind11_opencv_numpy](https://github.com/edmBernard/pybind11_opencv_numpy).
 that allows interpolation between cv::Mat <-> np.array.
 
-Depending on the resize strategy (nearest neighbors or bilinear), the speedup compare to pure python + numpy is between X3 and X6.
+Depending on the resize strategy (nearest neighbors or bilinear), the speedup compare to pure python + numpy is between x2 and x6.
 
 ## Dependencies
 
