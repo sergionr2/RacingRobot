@@ -8,7 +8,6 @@
 bool isConnected = false; ///< True if the connection with the master is available
 int8_t motorSpeed = 0;
 int16_t servoPosition = INITIAL_THETA;
-unsigned long int lastMillis = 0;
 Servo servomotor;
 
 void setup()
@@ -46,20 +45,15 @@ void setup()
   //   getMessageFromSerial();
   // }
 
-  lastMillis = millis();
 }
 
 void loop()
 {
   getMessageFromSerial();
-  if(millis() - lastMillis > CYCLE_DURATION)
-  {
-    lastMillis = millis();
-    cycle(); //run this function after every CYCLE_DURATION
-  }
+  pidControl();
 }
 
-void cycle()
+void pidControl()
 {
   // PID Control -> send orders to motors
   servomotor.write(constrain(servoPosition, THETA_MIN, THETA_MAX));

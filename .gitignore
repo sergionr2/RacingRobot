@@ -5,6 +5,7 @@ lib/
 __pycache__/
 *.x
 build/
+tmp/
 *.png
 *.jpg
 *.pyc
@@ -16,3 +17,6 @@ render/
 *.zip
 *.h264
 *.mp4
+*.pkl
+*.pth
+*.so

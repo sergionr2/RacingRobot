@@ -77,16 +77,18 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 try:
                     frame = self.frame_queue.get(block=True, timeout=1)
                 except queue.Empty:
-                    print("Queue empty")
+                    print("Frame queue empty")
                     continue
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # 1 ms per loop
+                # TODO: check that this conversion is not needed
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if self.debug:
                     self.out_queue.put(item=frame, block=False)
                 else:
                     if self.frame_num % SAVE_EVERY == 0:
                         cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
-                        pass
                     try:
+                        # 10 ms per loop
                         turn_percent, centroids = processImage(frame)
                         self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:

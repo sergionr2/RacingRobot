@@ -9,7 +9,7 @@
  */
 
 
-void cycle();
+void pidControl();
 void stop();
 int convertOrderToPWM(float speedOrder);
 
