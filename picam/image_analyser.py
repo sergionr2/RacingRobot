@@ -10,6 +10,7 @@ except ImportError:
 
 import picamera.array
 import cv2
+import numpy as np
 
 from opencv.image_processing import processImage
 from constants import SAVE_EVERY
@@ -72,6 +73,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.frame_queue.put(item=frame, block=True)
 
     def extractInfo(self):
+        # times = []
         try:
             while not self.exit:
                 try:
@@ -89,13 +91,17 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                         cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
                     try:
                         # 10 ms per loop
+                        # start_time = time.time()
                         turn_percent, centroids = processImage(frame)
+                        # times.append(time.time() - start_time)
                         self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:
                         print("Exception in RBGAnalyser processing image: {}".format(e))
                 self.frame_num += 1
         except Exception as e:
             print("Exception in RBGAnalyser after loop: {}".format(e))
+        # s_per_loop_image = np.mean(times)
+        # print("Image processing: {:.2f}ms per loop | {} fps".format(s_per_loop_image * 1000, int(1 / s_per_loop_image)))
 
     def start(self):
         t = threading.Thread(target=self.extractInfo)
