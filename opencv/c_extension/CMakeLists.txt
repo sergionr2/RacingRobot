@@ -4,6 +4,7 @@ project(fast_image_processing)
 # General cMake settings
 #**************************************************************************************************
 cmake_minimum_required(VERSION 3.5)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 #**************************************************************************************************
 # Find Package **************************************************************************************************
@@ -17,7 +18,11 @@ MESSAGE( STATUS "PYTHON_INCLUDE_DIRS : " ${PYTHON_INCLUDE_DIRS} )
 MESSAGE( STATUS "PYTHON_LIBRARIES : " ${PYTHON_LIBRARIES} )
 
 find_package(Eigen3 REQUIRED)
-# TODO: find_package pybind11
+
+find_package(NumPy REQUIRED)
+
+set(PYBIND11_CPP_STANDARD -std=c++14)
+find_package(pybind11 REQUIRED)
 
 #**************************************************************************************************
 # Include **************************************************************************************************
@@ -25,6 +30,9 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${NUMPY_INCLUDE_DIRS})
+include_directories(${PYBIND11_INCLUDE_DIRS})
+
 # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/pybind11/include)
 
 #**************************************************************************************************
@@ -37,7 +45,6 @@ SET(SOURCES
 #**************************************************************************************************
 # Set compiler **************************************************************************************************
 SET(CMAKE_CXX_FLAGS "-std=c++14 -Wall -O3 -fPIC")
-set(PYBIND11_CPP_STANDARD -std=c++14)
 
 #**************************************************************************************************
 # Linker **************************************************************************************************

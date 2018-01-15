@@ -14,12 +14,14 @@ import setuptools
 import glob
 import sysconfig
 
-#
-# pybind-specific compilation stuff
-#
-#
 opencv_lib_folder = '/usr/local/lib/'
 opencv_include_dir = '/usr/local/include/opencv2'
+
+if not os.path.isdir(opencv_include_dir):
+    # Use ROS OpenCV installation
+    opencv_lib_folder = '/opt/ros/kinetic/lib/'
+    opencv_include_dir = '/opt/ros/kinetic/include/opencv2/opencv-3.3.1'
+
 cvlibs = list()
 for file in glob.glob(os.path.join(opencv_lib_folder, 'libopencv_*')):
     cvlibs.append(file.split('.')[0])
@@ -49,6 +51,21 @@ class get_pybind_include(object):
     def __str__(self):
         import pybind11
         return pybind11.get_include(self.user)
+
+
+class get_numpy_include(object):
+    """Helper class to determine the numpy include path
+
+    The purpose of this class is to postpone importing numpy
+    until it is actually installed, so that the ``get_include()``
+    method can be invoked. """
+
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        import numpy as np
+        return np.get_include()
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
 # cf http://bugs.python.org/issue26689
@@ -118,6 +135,7 @@ ext_modules = [
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
+            get_numpy_include(),
             opencv_include_dir,
             '/usr/include/eigen3/'
         ],
