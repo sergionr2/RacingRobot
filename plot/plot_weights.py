@@ -39,7 +39,7 @@ def plot_input_weights(weights, name='Input Weights', cmap='coolwarm'):
     m, n = len(weights), 3
     axes = fig.subplots(m, n)
     v_min, v_max = np.min(weights), np.max(weights)
-    labels = ['R', 'G', 'B']
+    labels = ['B', 'G', 'R']
 
     for i in range(len(weights)):
         for j in range(3):

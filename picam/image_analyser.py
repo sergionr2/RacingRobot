@@ -135,7 +135,7 @@ class Viewer(object):
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue, debug=self.debug)
-        self.camera.start_recording(self.analyser, format='rgb')
+        self.camera.start_recording(self.analyser, format='bgr')
 
     def stop(self):
         self.camera.wait_recording()
