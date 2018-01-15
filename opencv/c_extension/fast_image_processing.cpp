@@ -90,7 +90,7 @@ cv::Mat preprocessImage(cv::Mat image)
   // Best image quality: cv::INTER_AREA
   // Fastest:  cv::INTER_NEAREST
   // Between the two: cv::INTER_LINEAR (bilinear interpolation)
-  cv::resize(image, image, resized.size(), 0, 0, cv::INTER_LINEAR);
+  cv::resize(image, image, resized.size(), 0, 0, cv::INTER_NEAREST);
   image = image.reshape(1, 1);
   image /= 255.0;
   image -= 0.5;
