@@ -9,16 +9,23 @@ Depending on the resize strategy (nearest neighbors or bilinear), the speedup co
 
 - [PyBind11 2.2.1](https://github.com/pybind/pybind11)
 - OpenCV 3 with Eigen support
+- [Eigen 3.3](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
 ### Compile with CMake
 
+#### On the rapsberry pi
+```
+./pi_cmake.sh
+```
+
+#### On the Laptop
 ```bash
 mkdir build && cd build
 # configure make
 cmake ..
 # generate the fast_image_processing.so library
 make
-# move fast_image_processing.so library in example folder
+# move fast_image_processing.so library in current folder
 make install
 ```
 
@@ -29,6 +36,7 @@ WARNING: you have to manually edit the path to OpenCV + Eigen
 ```
 
 ### Run
+To run the test, you need to copy `mlp_model.npz` in this folder and have an image named `test_sun.jpg` (ideally taken from the raspicam).
 ```bash
 python test.py
 ```

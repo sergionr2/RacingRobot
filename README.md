@@ -21,7 +21,7 @@ We wrote an article on medium that detailed our approach. You can read it [here]
 
 ### Training Data
 
-**Outdated** (you have to use convert_old_format.py to use current code, now all the informations are in a pickle file)
+**Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
 
 The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
@@ -110,6 +110,13 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 python -m train.test -f path/input/folder -w mlp_model_tmp
 ```
 
+## Benchmark
+
+For profiling 5000 iterations of image processing:
+```
+python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
+```
+
 ### Installation
 
 #### Recommended : Use an image with everything already installed
@@ -127,11 +134,10 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV 3.2.0, PyTorch, ...)
+ - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
 Camera and ssh are enabled.
-
 
 
 2. Identify the name of your sd card using:
@@ -252,9 +258,13 @@ pip install sklearn # or sudo apt-get install python-sklearn
 
 On the raspberry pi
 [PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+
 0. Make sure you have at least 3 Go of Swap. (see link above)
+
 1. (optional) Install a recent version of cmake + scikit-build + ninja
+
 2. Install PyTorch
+
 ```
 # don't forget to set the env variables:
 export NO_CUDA=1
@@ -264,6 +274,10 @@ sudo -EH python setup.py install
 # torchvision is not used yet
 sudo -H pip install torchvision
 ```
+
+### C++ Extension
+
+Please read [opencv/c_extension/README.md](opencv/c_extension/README.md) for more information.
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez
