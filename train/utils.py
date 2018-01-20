@@ -159,8 +159,6 @@ def loadWeights(weights_npy='mlp_model.npz'):
     :param weights_npy: (str) path to the numpy file
     :return: (dict, dict)
     """
-    weights_npy='mlp_model.npz'
-
     # Load pretrained network
     W, b = {}, {}
     with np.load(weights_npy) as f:

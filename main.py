@@ -165,7 +165,6 @@ if __name__ == '__main__':
             is_connected = True
 
     print("Connected to Arduino")
-    resolution = CAMERA_RESOLUTION
 
     # Image processing queue, output centroids
     out_queue = queue.Queue()
@@ -176,7 +175,7 @@ if __name__ == '__main__':
     # It starts 2 threads:
     #  - one for retrieving images from camera
     #  - one for processing the images
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
+    image_thread = ImageProcessingThread(Viewer(out_queue, CAMERA_RESOLUTION, debug=False, fps=FPS), exit_condition)
     # Wait for camera warmup
     time.sleep(1)
 
@@ -191,7 +190,7 @@ if __name__ == '__main__':
         t.start()
 
     print("Starting Control Thread")
-    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
+    main_control(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
 
     # End the threads
     exit_event.set()
