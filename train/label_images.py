@@ -43,7 +43,7 @@ print(len(images))
 
 j = 0
 should_exit = False
-for idx, name in enumerate(images):
+for name in images:
     if should_exit:
         break
     img = cv2.imread('{}/{}'.format(input_folder, name))
