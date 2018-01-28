@@ -149,7 +149,10 @@ void getMessageFromSerial()
   				return;
       }
     }
-    sendOrder(RECEIVED); // Confirm the reception
+    if (DEBUG)
+    {
+      sendOrder(RECEIVED); // Confirm the reception
+    }
   }
 }
 

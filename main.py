@@ -5,8 +5,8 @@ It launches all the thread and does the PID control
 from __future__ import division, print_function
 
 import signal
-import time
 import threading
+import time
 
 # Python 2/3 support
 try:
@@ -18,9 +18,8 @@ import serial
 import numpy as np
 from tqdm import tqdm
 
-import command.python.common as common
-from command.python.common import is_connected, n_received_semaphore, command_queue, \
-    CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
+from command.python.common import is_connected, writeOneByteInt, writeTwoBytesInt, \
+    sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
 from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
     MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
@@ -29,13 +28,21 @@ emptyException = queue.Empty
 fullException = queue.Full
 
 
+def sendOrders(speed_order, angle_order):
+    """
+    Send orders to the arduino
+    :param speed_order: (float)
+    :param angle_order: (int)
+    """
+    sendOrder(serial_file, Order.MOTOR.value)
+    writeOneByteInt(serial_file, int(speed_order))
+    sendOrder(serial_file, Order.SERVO.value)
+    writeTwoBytesInt(serial_file, angle_order)
+
+
 def forceStop():
     # SEND STOP ORDER at the end
-    common.resetCommandQueue()
-    n_received_semaphore.release()
-    n_received_semaphore.release()
-    common.command_queue.put((Order.MOTOR, 0))
-    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
+    sendOrders(speed_order=0, angle_order=int((THETA_MIN + THETA_MAX) / 2))
 
 
 def main_control(out_queue, resolution, n_seconds=5):
@@ -49,7 +56,6 @@ def main_control(out_queue, resolution, n_seconds=5):
     start_time = time.time()
     error, errorD, errorI = 0, 0, 0
     last_error = 0
-    initialized = False  # compute derivative error for t > 1 only
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
     # Middle of the image
@@ -67,9 +73,7 @@ def main_control(out_queue, resolution, n_seconds=5):
     last_time = time.time()
     last_time_update = time.time()
     pbar = tqdm(total=n_seconds)
-    # Number of time the command queue was full
-    n_full = 0
-    n_total = 0
+    n_total = 0  # For monitoring control frequency
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
         # Display progress bar
@@ -108,10 +112,7 @@ def main_control(out_queue, resolution, n_seconds=5):
         # Reduce speed if we have a high error
         speed_order = t * MIN_SPEED + (1 - t) * v_max
 
-        if initialized:
-            errorD = error - last_error
-        else:
-            initialized = True
+        errorD = error - last_error
         # Update derivative error
         last_error = error
 
@@ -127,12 +128,7 @@ def main_control(out_queue, resolution, n_seconds=5):
         angle_order = np.clip(angle_order, THETA_MIN, THETA_MAX).astype(int)
 
         # Send orders to Arduino
-        try:
-            common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
-            common.command_queue.put_nowait((Order.SERVO, angle_order))
-        except fullException:
-            n_full += 1
-            # print("Command queue is full")
+        sendOrders(speed_order, angle_order)
         n_total += 1
 
     # SEND STOP ORDER at the end
@@ -140,8 +136,7 @@ def main_control(out_queue, resolution, n_seconds=5):
     # Make sure STOP order is sent
     time.sleep(0.2)
     pbar.close()
-    print("{:.2f}% of time the command queue was full".format(100 * n_full / n_total))
-    print("Main loop: {:.2f} Hz".format((n_total - n_full) / (time.time() - start_time)))
+    print("Main loop: {:.2f} Hz".format(n_total / (time.time() - start_time)))
 
 
 if __name__ == '__main__':
@@ -176,29 +171,15 @@ if __name__ == '__main__':
     #  - one for retrieving images from camera
     #  - one for processing the images
     image_thread = ImageProcessingThread(Viewer(out_queue, CAMERA_RESOLUTION, debug=False, fps=FPS), exit_condition)
+    image_thread.start()
     # Wait for camera warmup
     time.sleep(1)
 
-    # Event to notify threads that they should terminate
-    exit_event = threading.Event()
-
-    print("Starting Communication Threads")
-    # Threads for arduino communication
-    threads = [CommandThread(serial_file, command_queue, exit_event),
-               ListenerThread(serial_file, exit_event), image_thread]
-    for t in threads:
-        t.start()
-
     print("Starting Control Thread")
     main_control(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
-
-    # End the threads
-    exit_event.set()
-    n_received_semaphore.release()
 
     print("Exiting...")
     with exit_condition:
         exit_condition.notify_all()
 
-    for t in threads:
-        t.join()
+    image_thread.join()
