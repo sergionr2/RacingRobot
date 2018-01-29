@@ -144,7 +144,7 @@ def preprocessImage(image, width, height):
     :return: (numpy array)
     """
     # The resizing is a bottleneck in the computation
-    image = cv2.resize(image, (width, height), interpolation=cv2.INTER_NEAREST)
+    image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
     # Normalize
     x = x / 255.
