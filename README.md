@@ -19,6 +19,9 @@ We wrote an article on medium that detailed our approach. You can read it [here]
 - [Additional Camera Piece](https://cad.onshape.com/documents/1c4a51d839f2a5989e78ef1f/w/1af5b4b508310461911ecd97/e/a35856fc588eb371f0bac58b)
 - [Raspberry Pi Holder](https://cad.onshape.com/documents/621b6943711d60790ddc2b9f/w/c29ba5f453ce625afc8128f6/e/1aa39940e0bdabd3303d76c4)
 
+Note: the Battery Holder was designed for this [External Battery](https://www.amazon.fr/gp/product/B00Y7S4JRQ/ref=oh_aui_detailpage_o00_s01?ie=UTF8&psc=1)
+
+
 ### Training Data
 
 **Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
