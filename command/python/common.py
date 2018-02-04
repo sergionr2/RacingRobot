@@ -37,7 +37,6 @@ class CustomQueue(queue.Queue):
 
 
 BAUDRATE = 115200
-is_connected_lock = threading.Lock()
 is_connected = False
 # Number of messages we can send to the Arduino without receiving a RECEIVED response
 n_messages_allowed = 3

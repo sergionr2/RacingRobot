@@ -49,7 +49,6 @@ def main_control(out_queue, resolution, n_seconds=5):
     start_time = time.time()
     error, errorD, errorI = 0, 0, 0
     last_error = 0
-    initialized = False  # compute derivative error for t > 1 only
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
     # Middle of the image
@@ -82,9 +81,8 @@ def main_control(out_queue, resolution, n_seconds=5):
 
         # Compute the error to the center of the line
         # We want the line to be in the middle of the image
-        # Here we use the farthest centroids
-        # TODO: try with the mean of the centroids to reduce noise
-        error = (x_center - centroids[-1, 0]) / max_error_px
+        # Here we use the second centroid
+        error = (x_center - centroids[1, 0]) / max_error_px
 
         # Represent line curve as a number in [0, 1]
         # h = 0 -> straight line
@@ -108,17 +106,13 @@ def main_control(out_queue, resolution, n_seconds=5):
         # Reduce speed if we have a high error
         speed_order = t * MIN_SPEED + (1 - t) * v_max
 
-        if initialized:
-            errorD = error - last_error
-        else:
-            initialized = True
+        errorD = error - last_error
         # Update derivative error
         last_error = error
 
         # PID Control
-        # TODO: add dt in the equation
         dt = time.time() - last_time
-        u_angle = Kp * error + Kd * errorD + Ki * errorI
+        u_angle = Kp * error + Kd * (errorD / dt) + Ki * (errorI * dt)
         # Update integral error
         errorI += error
         last_time = time.time()
