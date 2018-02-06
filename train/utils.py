@@ -75,7 +75,11 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
 
     # Load the dataset info file (pickle object)
     with open('{}/infos.pkl'.format(folder), 'rb') as f:
-        images_dict = pkl.load(f)['images']
+        try:
+            images_dict = pkl.load(f)['images']
+        except UnicodeDecodeError:
+            # (python 2 -> python 3)
+            images_dict = pkl.load(f, encoding='latin1')['images']
 
     # Sort names
     images = list(images_dict.keys())
