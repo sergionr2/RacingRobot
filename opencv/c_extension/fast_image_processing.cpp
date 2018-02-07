@@ -52,7 +52,7 @@ cv::Rect R2(0, 100, MAX_WIDTH, 50);
 cv::Rect R3(0, 75, MAX_WIDTH, 50);
 cv::Rect R4(0, 50, MAX_WIDTH, 50);
 // ROI used
-std::vector<cv::Rect> REGIONS({R1, R2, R3});
+std::vector<cv::Rect> REGIONS({R0, R1, R2});
 
 /**
  * Set the weights of the neural network

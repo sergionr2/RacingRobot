@@ -34,8 +34,9 @@ class MlpNetwork(nn.Module):
     def _initializeWeights(self):
         for m in self.modules():
             if isinstance(m, nn.Linear):
+                pass
                 # m.weight.data.normal_(0, 0.005)
-                m.weight.data.uniform_(-0.005, 0.005)
+                # m.weight.data.uniform_(-0.005, 0.005)
                 # nn.init.xavier_uniform(m.weight.data, gain=nn.init.calculate_gain('relu'))
                 # nn.init.kaiming_normal(m.weight.data)
                 # nn.init.kaiming_uniform(m.weight.data)

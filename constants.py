@@ -13,7 +13,7 @@ R1 = [0, 125, MAX_WIDTH, 50]
 R2 = [0, 100, MAX_WIDTH, 50]
 R3 = [0, 75, MAX_WIDTH, 50]
 R4 = [0, 50, MAX_WIDTH, 50]
-REGIONS = np.array([R1, R2, R3])
+REGIONS = np.array([R0, R1, R2])
 # Training
 # 80 = CAMERA_RESOLUTION[0] // 4
 WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
