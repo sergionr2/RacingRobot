@@ -26,7 +26,7 @@ THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
 MAX_SPEED_STRAIGHT_LINE = 40  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 35
+MAX_SPEED_SHARP_TURN = 30
 MIN_SPEED = 25
 
 # PID Control
