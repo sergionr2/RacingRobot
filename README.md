@@ -9,6 +9,8 @@ Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Medium
 
 We wrote an article on medium that detailed our approach. You can read it [here](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
+En français: [http://enstar.ensta-paristech.fr/blog/public/racing_car/](http://enstar.ensta-paristech.fr/blog/public/racing_car/)
+
 ## 3D Models and Training Data
 
 ### 3D Models
@@ -114,9 +116,10 @@ python -m train.test -f path/input/folder -w mlp_model_tmp
 
 #### Recommended : Use an image with everything already installed
 
-0. You need a micro sd card (warning, all data on that card will be overwritten)
+0. You need a 32GB micro sd card (warning, all data on that card will be overwritten)
+WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://github.com/billw2/rpi-clone) may help)
 
-1. Download the image [here](https://drive.google.com/open?id=0Bz4VOC2vLbgPTl9LZzNNcnBCWUU)
+1. Download the image [here](https://drive.google.com/open?id=1CUmSKOQ7i_XTrsLCRntypK9KcVaVwM4h)
 
 Infos about the linux image:
 OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
@@ -250,7 +253,18 @@ pip install torchvision
 pip install sklearn # or sudo apt-get install python-sklearn
 ```
 
-On the raspberry pi
+On the raspberry pi :
+
+- You can try to use Python 2 wheel (not tested) that was created for this project:
+
+0. Download Python Wheel [here](https://drive.google.com/open?id=1vFV73nZDbZ1GDRzz4YeBGDbc4S5Ddxwr)
+
+And then:
+```
+pip install torch-0.4.0a0+b23fa21-cp27-cp27mu-linux_armv7l.whl
+```
+
+Or follow this tutorial:
 [PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
 0. Make sure you have at least 3 Go of Swap. (see link above)
 1. (optional) Install a recent version of cmake + scikit-build + ninja
