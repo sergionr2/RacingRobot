@@ -51,6 +51,8 @@ while True:
     original_img = img.copy()
     if args.no_display:
         key = RIGHT_KEY  # Next frame
+        if current_idx == n_frames - 1:
+            break
     else:
         cv2.imshow("current", img)
         key = cv2.waitKey(0) & 0xff

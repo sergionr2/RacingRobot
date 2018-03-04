@@ -11,6 +11,35 @@ from constants import INPUT_DIM, HEIGHT, WIDTH
 from .models import MlpNetwork
 
 
+def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
+                         n_batch, method='cosine'):
+    """
+    :param optimizer: (PyTorch Optimizer object)
+    :param epoch: (int)
+    :param n_epochs: (int)
+    :param lr_init: (float)
+    :param batch: (int)
+    :param n_batch: (int)
+    :param method: (str)
+    """
+    if method == 'cosine':
+        T_total = n_epochs * n_batch
+        T_cur = (epoch % n_epochs) * n_batch + batch
+        lr = 0.5 * lr_init * (1 + np.cos(np.pi * T_cur / T_total))
+    elif method == 'multistep':
+        lr, decay_rate = lr_init, 0.7
+        if epoch >= n_epochs * 0.75:
+            lr *= decay_rate ** 2
+        elif epoch >= n_epochs * 0.5:
+            lr *= decay_rate
+    # else:
+    #     # Sets the learning rate to the initial LR decayed by 10 every 30 epochs
+    #     lr = lr_init * (0.1 ** (epoch // 30))
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+
 def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None):
     """
     Load a saved pytorch model
@@ -46,7 +75,11 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
 
     # Load the dataset info file (pickle object)
     with open('{}/infos.pkl'.format(folder), 'rb') as f:
-        images_dict = pkl.load(f)['images']
+        try:
+            images_dict = pkl.load(f)['images']
+        except UnicodeDecodeError:
+            # (python 2 -> python 3)
+            images_dict = pkl.load(f, encoding='latin1')['images']
 
     # Sort names
     images = list(images_dict.keys())
@@ -73,7 +106,6 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
         # Normalize output
         y[idx] = x_center / width
 
-        image_path = '{}/{}.jpg'.format(folder, images_dict[name]['output_name'])
         path = images_dict[name]['output_name']
         image_path = '{}/{}.jpg'.format(folder, path)
         im = cv2.imread(image_path)
@@ -115,6 +147,7 @@ def preprocessImage(image, width, height):
     :param height: (int)
     :return: (numpy array)
     """
+    # The resizing is a bottleneck in the computation
     image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     x = image.flatten()
     # Normalize
@@ -124,22 +157,34 @@ def preprocessImage(image, width, height):
     return x
 
 
-def loadVanillaNet(weights_npy='mlp_model.npz'):
+def loadWeights(weights_npy='mlp_model.npz'):
     """
-    Load a trained network and
-    return the forward function in pure numpy
-    :param weights_npy: (str) path to the numpy archive
-    :return: (function) the neural net forward function
+    Load and return weights of a trained model
+    :param weights_npy: (str) path to the numpy file
+    :return: (dict, dict)
     """
+    # Load pretrained network
     W, b = {}, {}
     with np.load(weights_npy) as f:
-        print("Loading network")
         n_layers = len(f.files) // 2
         for i in range(len(f.files)):
+            # print(f['arr_%d' % i].shape)
             if i % 2 == 1:
                 b[i // 2] = f['arr_%d' % i].astype(np.float32)
             else:
                 W[i // 2] = f['arr_%d' % i].astype(np.float32)
+    return W, b
+
+
+def loadVanillaNet(weights_npy='mlp_model.npz'):
+    """
+    Load a trained network and
+    return the forward function in pure numpy
+    :param weights_npy: (str) path to the numpy file
+    :return: (function) the neural net forward function
+    """
+    W, b = loadWeights(weights_npy)
+    n_layers = len(W)
 
     def relu(x):
         """

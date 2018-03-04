@@ -49,7 +49,6 @@ def main_control(out_queue, resolution, n_seconds=5):
     start_time = time.time()
     error, errorD, errorI = 0, 0, 0
     last_error = 0
-    initialized = False  # compute derivative error for t > 1 only
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
     # Middle of the image
@@ -67,6 +66,9 @@ def main_control(out_queue, resolution, n_seconds=5):
     last_time = time.time()
     last_time_update = time.time()
     pbar = tqdm(total=n_seconds)
+    # Number of time the command queue was full
+    n_full = 0
+    n_total = 0
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
         # Display progress bar
@@ -79,9 +81,8 @@ def main_control(out_queue, resolution, n_seconds=5):
 
         # Compute the error to the center of the line
         # We want the line to be in the middle of the image
-        # Here we use the farthest centroids
-        # TODO: try with the mean of the centroids to reduce noise
-        error = (x_center - centroids[-1, 0]) / max_error_px
+        # Here we use the second centroid
+        error = (x_center - centroids[1, 0]) / max_error_px
 
         # Represent line curve as a number in [0, 1]
         # h = 0 -> straight line
@@ -105,17 +106,13 @@ def main_control(out_queue, resolution, n_seconds=5):
         # Reduce speed if we have a high error
         speed_order = t * MIN_SPEED + (1 - t) * v_max
 
-        if initialized:
-            errorD = error - last_error
-        else:
-            initialized = True
+        errorD = error - last_error
         # Update derivative error
         last_error = error
 
         # PID Control
-        # TODO: add dt in the equation
         dt = time.time() - last_time
-        u_angle = Kp * error + Kd * errorD + Ki * errorI
+        u_angle = Kp * error + Kd * (errorD / dt) + Ki * (errorI * dt)
         # Update integral error
         errorI += error
         last_time = time.time()
@@ -128,13 +125,17 @@ def main_control(out_queue, resolution, n_seconds=5):
             common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
             common.command_queue.put_nowait((Order.SERVO, angle_order))
         except fullException:
-            print("Command queue is full")
+            n_full += 1
+            # print("Command queue is full")
+        n_total += 1
 
     # SEND STOP ORDER at the end
     forceStop()
     # Make sure STOP order is sent
     time.sleep(0.2)
     pbar.close()
+    print("{:.2f}% of time the command queue was full".format(100 * n_full / n_total))
+    print("Main loop: {:.2f} Hz".format((n_total - n_full) / (time.time() - start_time)))
 
 
 if __name__ == '__main__':
@@ -158,7 +159,6 @@ if __name__ == '__main__':
             is_connected = True
 
     print("Connected to Arduino")
-    resolution = CAMERA_RESOLUTION
 
     # Image processing queue, output centroids
     out_queue = queue.Queue()
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     # It starts 2 threads:
     #  - one for retrieving images from camera
     #  - one for processing the images
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=False, fps=FPS), exit_condition)
+    image_thread = ImageProcessingThread(Viewer(out_queue, CAMERA_RESOLUTION, debug=False, fps=FPS), exit_condition)
     # Wait for camera warmup
     time.sleep(1)
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         t.start()
 
     print("Starting Control Thread")
-    main_control(out_queue, resolution=resolution, n_seconds=N_SECONDS)
+    main_control(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
 
     # End the threads
     exit_event.set()

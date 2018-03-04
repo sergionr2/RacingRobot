@@ -12,6 +12,13 @@ import numpy as np
 from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS, WIDTH, HEIGHT
 from train import preprocessImage, loadVanillaNet, loadPytorchNetwork
 
+fast_processing = True
+try:
+    from opencv.c_extension import fastProcessImage
+except ImportError:
+    print("Fast Image Processing not available")
+    fast_processing = False
+
 
 # Either load network with pytorch or with numpy
 # pred_fn = loadPytorchNetwork()
@@ -35,6 +42,10 @@ def processImage(image, debug=False, regions=None, interactive=False):
     :param interactive: (bool)
     :return:(float, numpy array)
     """
+    if not debug and fast_processing:
+        # Use C++ Extension
+        return fastProcessImage(image.astype(np.float32))
+
     im_width = image.shape[1]
     if regions is None:
         # Regions of interest
@@ -114,7 +125,6 @@ def processImage(image, debug=False, regions=None, interactive=False):
         # x = m*y + b -> y = 1/m * x - b/m if m != 0
         A = np.vstack([y, np.ones(len(y))]).T
         m, b = np.linalg.lstsq(A, x)[0]
-
         if debug:
             # Points for plotting the line
             y = np.array([0, image.shape[0]], dtype=int)

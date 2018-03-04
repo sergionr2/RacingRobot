@@ -13,7 +13,7 @@ R1 = [0, 125, MAX_WIDTH, 50]
 R2 = [0, 100, MAX_WIDTH, 50]
 R3 = [0, 75, MAX_WIDTH, 50]
 R4 = [0, 50, MAX_WIDTH, 50]
-REGIONS = np.array([R1, R2, R3])
+REGIONS = np.array([R0, R1, R2])
 # Training
 # 80 = CAMERA_RESOLUTION[0] // 4
 WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
@@ -25,16 +25,16 @@ SPLIT_SEED = 42  # For train/val/test split
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
-MAX_SPEED_STRAIGHT_LINE = 50  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 15
-MIN_SPEED = 10
+MAX_SPEED_STRAIGHT_LINE = 40  # order between 0 and 100
+MAX_SPEED_SHARP_TURN = 30
+MIN_SPEED = 25
 
 # PID Control
 Kp_turn = 40
-Kp_line = 35
-Kd = 30
-Ki = 0.0
-ALPHA = 0.8  # alpha of the moving mean for the turn coefficient
+Kp_line = 40
+Kd = 1
+Ki = 0
+ALPHA = 1  # alpha of the moving mean for the turn coefficient
 # Main Program
 FPS = 90
 N_SECONDS = 77  # number of seconds before exiting the program

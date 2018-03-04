@@ -10,6 +10,7 @@ except ImportError:
 
 import picamera.array
 import cv2
+import numpy as np
 
 from opencv.image_processing import processImage
 from constants import SAVE_EVERY
@@ -72,6 +73,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.frame_queue.put(item=frame, block=True)
 
     def extractInfo(self):
+        # times = []
         try:
             while not self.exit:
                 try:
@@ -80,7 +82,8 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                     print("Frame queue empty")
                     continue
                 # 1 ms per loop
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # TODO: check that this conversion is not needed
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if self.debug:
                     self.out_queue.put(item=frame, block=False)
                 else:
@@ -88,13 +91,17 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                         cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
                     try:
                         # 10 ms per loop
+                        # start_time = time.time()
                         turn_percent, centroids = processImage(frame)
+                        # times.append(time.time() - start_time)
                         self.out_queue.put(item=(turn_percent, centroids), block=False)
                     except Exception as e:
                         print("Exception in RBGAnalyser processing image: {}".format(e))
                 self.frame_num += 1
         except Exception as e:
             print("Exception in RBGAnalyser after loop: {}".format(e))
+        # s_per_loop_image = np.mean(times)
+        # print("Image processing: {:.2f}ms per loop | {} fps".format(s_per_loop_image * 1000, int(1 / s_per_loop_image)))
 
     def start(self):
         t = threading.Thread(target=self.extractInfo)
@@ -121,7 +128,7 @@ class Viewer(object):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
         # TODO: try with mode 6, larger FoV (works only with v2 module)
-        self.camera.sensor_mode = 7
+        self.camera.sensor_mode = 6
         self.camera.resolution = resolution
         print(self.camera.resolution)
         self.camera.framerate = fps
@@ -134,7 +141,7 @@ class Viewer(object):
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue, debug=self.debug)
-        self.camera.start_recording(self.analyser, format='rgb')
+        self.camera.start_recording(self.analyser, format='bgr')
 
     def stop(self):
         self.camera.wait_recording()

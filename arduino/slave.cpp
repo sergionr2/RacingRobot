@@ -84,7 +84,7 @@ int convertOrderToPWM(float speedOrder)
 
 void getMessageFromSerial()
 {
-  while(Serial.available() > 0)
+  if(Serial.available() > 0)
   {
     // The first byte received is the instruction
     Order orderReceived = readOrder();

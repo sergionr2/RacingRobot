@@ -21,9 +21,12 @@ En français: [http://enstar.ensta-paristech.fr/blog/public/racing_car/](http://
 - [Additional Camera Piece](https://cad.onshape.com/documents/1c4a51d839f2a5989e78ef1f/w/1af5b4b508310461911ecd97/e/a35856fc588eb371f0bac58b)
 - [Raspberry Pi Holder](https://cad.onshape.com/documents/621b6943711d60790ddc2b9f/w/c29ba5f453ce625afc8128f6/e/1aa39940e0bdabd3303d76c4)
 
+Note: the Battery Holder was designed for this [External Battery](https://www.amazon.fr/gp/product/B00Y7S4JRQ/ref=oh_aui_detailpage_o00_s01?ie=UTF8&psc=1)
+
+
 ### Training Data
 
-**Outdated** (you have to use convert_old_format.py to use current code, now all the informations are in a pickle file)
+**Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
 
 The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
@@ -112,6 +115,13 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 python -m train.test -f path/input/folder -w mlp_model_tmp
 ```
 
+## Benchmark
+
+For profiling 5000 iterations of image processing:
+```
+python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
+```
+
 ### Installation
 
 #### Recommended : Use an image with everything already installed
@@ -130,11 +140,10 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV 3.2.0, PyTorch, ...)
+ - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
 Camera and ssh are enabled.
-
 
 
 2. Identify the name of your sd card using:
@@ -266,9 +275,13 @@ pip install torch-0.4.0a0+b23fa21-cp27-cp27mu-linux_armv7l.whl
 
 Or follow this tutorial:
 [PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+
 0. Make sure you have at least 3 Go of Swap. (see link above)
+
 1. (optional) Install a recent version of cmake + scikit-build + ninja
+
 2. Install PyTorch
+
 ```
 # don't forget to set the env variables:
 export NO_CUDA=1
@@ -278,6 +291,10 @@ sudo -EH python setup.py install
 # torchvision is not used yet
 sudo -H pip install torchvision
 ```
+
+### C++ Extension
+
+Please read [opencv/c_extension/README.md](opencv/c_extension/README.md) for more information.
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez

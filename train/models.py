@@ -29,6 +29,19 @@ class MlpNetwork(nn.Module):
         self.fc3 = nn.Linear(n_layer2, 1)
         self.drop_p = drop_p
         self.activation_fn = F.relu
+        self._initializeWeights()
+
+    def _initializeWeights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                pass
+                # m.weight.data.normal_(0, 0.005)
+                # m.weight.data.uniform_(-0.005, 0.005)
+                # nn.init.xavier_uniform(m.weight.data, gain=nn.init.calculate_gain('relu'))
+                # nn.init.kaiming_normal(m.weight.data)
+                # nn.init.kaiming_uniform(m.weight.data)
+                # m.bias.data.zero_()
+                # m.bias.data.uniform_(-0.1, 0.1)
 
     def forward(self, x):
         # Flatten input

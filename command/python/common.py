@@ -37,14 +37,13 @@ class CustomQueue(queue.Queue):
 
 
 BAUDRATE = 115200
-is_connected_lock = threading.Lock()
 is_connected = False
 # Number of messages we can send to the Arduino without receiving a RECEIVED response
 n_messages_allowed = 3
 n_received_semaphore = threading.Semaphore(n_messages_allowed)
 serial_lock = threading.Lock()
 command_queue = CustomQueue(2)  # Must be >= 2 (motor + servo order)
-rate = 1 / 1000  # 1000 Hz (limit the rate of communication with the arduino)
+rate = 1 / 2000  # 2000 Hz (limit the rate of communication with the arduino)
 
 
 def resetCommandQueue():
