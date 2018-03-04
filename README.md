@@ -115,14 +115,14 @@ The best model (lowest error on the validation data) will be saved as *mlp_model
 python -m train.test -f path/input/folder -w mlp_model_tmp
 ```
 
-## Benchmark
+### Benchmark
 
 For profiling 5000 iterations of image processing:
 ```
 python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
 ```
 
-### Installation
+## Installation
 
 #### Recommended : Use an image with everything already installed
 
@@ -294,7 +294,7 @@ sudo -H pip install torchvision
 
 ### C++ Extension
 
-Please read [opencv/c_extension/README.md](opencv/c_extension/README.md) for more information.
+Please read [opencv/c_extension/README.md](https://github.com/sergionr2/RacingRobot/tree/master/opencv/c_extension) for more information.
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez
