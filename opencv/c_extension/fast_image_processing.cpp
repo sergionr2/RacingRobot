@@ -33,9 +33,9 @@ bool initialized = false;
 
 
 cv::Mat centroids;
-cv::Mat resized = cv::Mat::ones(25, 80, CV_32FC3);
+cv::Mat resized = cv::Mat::ones(20, 80, CV_32FC3);
 
-cv::Mat w1 = cv::Mat::ones(80*25*3, 20, CV_32F).t();
+cv::Mat w1 = cv::Mat::ones(80*20*3, 20, CV_32F).t();
 cv::Mat b1 = cv::Mat::ones(20, 1, CV_32F).t();
 
 cv::Mat w2 = cv::Mat::ones(20, 4, CV_32F).t();
@@ -45,13 +45,13 @@ cv::Mat w3 = cv::Mat::ones(4, 1, CV_32F).t();
 cv::Mat b3 = cv::Mat::ones(1, 1, CV_32F).t();
 
 // Regions of interest (ROIs)
-cv::Rect R0(0, 50, MAX_WIDTH, 100);
-cv::Rect R1(0, 100, MAX_WIDTH, 100);
-cv::Rect R2(0, 100, MAX_WIDTH, 50);
+cv::Rect R0(0, 100, MAX_WIDTH, 100);
+cv::Rect R1(0, 75, MAX_WIDTH, 100);
+cv::Rect R2(0, 50, MAX_WIDTH, 100);
 cv::Rect R3(0, 75, MAX_WIDTH, 50);
 cv::Rect R4(0, 50, MAX_WIDTH, 50);
 // ROI used
-std::vector<cv::Rect> REGIONS({R0, R1});
+std::vector<cv::Rect> REGIONS({R0, R1, R2});
 
 /**
  * Set the weights of the neural network

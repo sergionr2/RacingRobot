@@ -9,14 +9,14 @@ CAMERA_RESOLUTION = (640 // 2, 480 // 2)
 MAX_WIDTH = CAMERA_RESOLUTION[0]
 # r = [margin_left, margin_top, width, height]
 R0 = [0, 100, MAX_WIDTH, 100]
-R1 = [0, 50, MAX_WIDTH, 100]
-# R2 = [0, 100, MAX_WIDTH, 50]
+R1 = [0, 75, MAX_WIDTH, 100]
+R2 = [0, 50, MAX_WIDTH, 100]
 # R3 = [0, 75, MAX_WIDTH, 50]
 # R4 = [0, 50, MAX_WIDTH, 50]
-REGIONS = np.array([R0, R1])
+REGIONS = np.array([R0, R1, R2])
 # Training
 # 80 = CAMERA_RESOLUTION[0] // 4
-WIDTH, HEIGHT = 80, 25 # Shape of the resized input image fed to our model
+WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
 INPUT_DIM = 3 * WIDTH * HEIGHT
 SPLIT_SEED = 42  # For train/val/test split
 
