@@ -25,19 +25,19 @@ SPLIT_SEED = 42  # For train/val/test split
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
-MAX_SPEED_STRAIGHT_LINE = 40  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 30
-MIN_SPEED = 25
+MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
+MAX_SPEED_SHARP_TURN = 25
+MIN_SPEED = 20
 
 # PID Control
-Kp_turn = 40
-Kp_line = 40
+Kp_turn = 50
+Kp_line = 50
 Kd = 1
 Ki = 0
 ALPHA = 1  # alpha of the moving mean for the turn coefficient
 # Main Program
 FPS = 90
-N_SECONDS = 77  # number of seconds before exiting the program
+N_SECONDS = 3000  # number of seconds before exiting the program
 
 # Image Analyser
 SAVE_EVERY = 1000  # Save every 1000 frame to debug folder
