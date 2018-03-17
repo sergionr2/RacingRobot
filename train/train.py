@@ -62,7 +62,7 @@ def main(folder, num_epochs=1000, batchsize=1,
     test_loader = th.utils.data.DataLoader(th.utils.data.TensorDataset(X_test, y_test),
                                            batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
-    model = MlpNetwork(X_train.shape[1], n_hidden=[20, 4], drop_p=0.6)
+    model = MlpNetwork(X_train.shape[1], n_hidden=[20, 4], drop_p=0.5)
     model_name = "mlp_model_tmp"
     # model_name = "cnn__model_tmp"
     # model = ConvolutionalNetwork()
