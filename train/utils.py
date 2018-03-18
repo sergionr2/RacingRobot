@@ -40,7 +40,7 @@ def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
         param_group['lr'] = lr
 
 
-def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None):
+def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None, model_type="mlp"):
     """
     Load a saved pytorch model
     :param model_name: (str)
@@ -49,7 +49,10 @@ def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None):
     """
     if '.pth' in model_name:
         model_name = model_name.split('.pth')[0]
-    model = MlpNetwork(INPUT_DIM, n_hidden=n_hidden)
+    if model_type == "mlp":
+        model = MlpNetwork(INPUT_DIM, n_hidden=n_hidden)
+    else:
+        model = ConvolutionalNetwork()
     model.load_state_dict(th.load(model_name + '.pth'))
     model.eval()
     return model

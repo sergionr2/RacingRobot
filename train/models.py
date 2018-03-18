@@ -1,18 +1,18 @@
 """
 Different neural network architectures for detecting the line
-# TODO: change std of weights initialization
 """
 from __future__ import print_function, division, absolute_import
 
 import torch.nn as nn
 import torch.nn.functional as F
 
+from constants import HEIGHT, WIDTH
+
 
 class MlpNetwork(nn.Module):
     """
-    Dense Neural Net for State Representation Learning (SRL)
-    input shape : 3-channel RGB images of shape (3 x H x W) (to be consistent with CNN network)
-    :param input_dim: (int) 3 x H x H
+    MLP network for detecting the line
+    :param input_dim: (int) 3 x H x W
     :param n_hidden: [int]
     :param drop_p: (float) Dropout proba
     """
@@ -66,23 +66,27 @@ class MlpNetwork(nn.Module):
 class ConvolutionalNetwork(nn.Module):
     """
     Convolutional Neural Network
-    input shape : 3-channel RGB images of shape (3 x H x W)
+    Take same input as MLP and reshape it
+    to have images
     """
 
-    def __init__(self):
+    def __init__(self, drop_p=0.0):
         super(ConvolutionalNetwork, self).__init__()
         self.conv_layers = nn.Sequential(
 
-            # 20x80x3 -> 9x39x64
-            nn.Conv2d(3, 8, kernel_size=3, stride=2, padding=0, bias=False),
-            nn.Conv2d(8, 8, kernel_size=3, stride=1, padding=1),
+            # 20x80x3 -> 9x39x20
+            nn.Conv2d(3, 20, kernel_size=3, stride=2, padding=0, bias=False),
+            nn.Conv2d(20, 20, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
         )
 
-        self.fc1 = nn.Linear(9 * 39 * 8, 8)
+        self.fc1 = nn.Linear(9 * 39 * 20, 8)
         self.fc2 = nn.Linear(8, 1)
+        self.drop_p = drop_p
 
     def forward(self, x):
+        x = x.view(x.size(0), 3, HEIGHT, WIDTH)
+        x = F.dropout(x, p=self.drop_p, training=self.training)
         x = self.conv_layers(x)
         x = x.view(x.size(0), -1)
         x = F.relu(self.fc1(x))
