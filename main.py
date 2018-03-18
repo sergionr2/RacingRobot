@@ -4,9 +4,11 @@ It launches all the thread and does the PID control
 """
 from __future__ import division, print_function
 
+import logging
 import signal
 import time
 import threading
+from datetime import datetime
 
 # Python 2/3 support
 try:
@@ -27,6 +29,26 @@ from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX
 
 emptyException = queue.Empty
 fullException = queue.Full
+
+# Logging
+log = logging.getLogger('racing_robot')
+log.setLevel(logging.DEBUG)
+
+# Formatter for logger
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# formatter = logging.Formatter(fmt="%(asctime)s -- %(levelname)s -- %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
+
+# Create file handler which logs even debug messages
+fh = logging.FileHandler('logs/{}.log'.format(datetime.now().strftime("%y-%m-%d_%Hh%M_%S")))
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+log.addHandler(fh)
+
+# Create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(formatter)
+log.addHandler(ch)
 
 
 def forceStop():
@@ -59,7 +81,7 @@ def main_control(out_queue, resolution, n_seconds=5):
 
     # Stop the robot on ctrl+c and exit the script
     def ctrl_c(signum, frame):
-        print("STOP")
+        log.info("STOP")
         should_exit[0] = True
 
     signal.signal(signal.SIGINT, ctrl_c)
@@ -69,6 +91,8 @@ def main_control(out_queue, resolution, n_seconds=5):
     # Number of time the command queue was full
     n_full = 0
     n_total = 0
+
+    log.debug("Entering in the control loop")
 
     while time.time() - start_time < n_seconds and not should_exit[0]:
         # Display progress bar
@@ -82,7 +106,8 @@ def main_control(out_queue, resolution, n_seconds=5):
         # Compute the error to the center of the line
         # We want the line to be in the middle of the image
         # Here we use the second centroid
-        error = (x_center - centroids[1, 0]) / max_error_px
+        x_pred = centroids[1, 0]
+        error = (x_center - x_pred) / max_error_px
 
         # Represent line curve as a number in [0, 1]
         # h = 0 -> straight line
@@ -129,13 +154,19 @@ def main_control(out_queue, resolution, n_seconds=5):
             # print("Command queue is full")
         n_total += 1
 
+        # Logging
+        log.debug("Error={:.2f} errorD={:.2f} errorI={:.2f}".format(error, errorD, errorI))
+        log.debug("Turn percent={:.2f} x_pred={:.2f}".format(turn_percent, x_pred))
+        log.debug("v_max={:.2f} mean_h={:.2f}".format(v_max, mean_h))
+        log.debug("speed={:.2f} angle={:.2f}".format(speed_order, angle_order))
+
     # SEND STOP ORDER at the end
     forceStop()
     # Make sure STOP order is sent
     time.sleep(0.2)
     pbar.close()
-    print("{:.2f}% of time the command queue was full".format(100 * n_full / n_total))
-    print("Main loop: {:.2f} Hz".format((n_total - n_full) / (time.time() - start_time)))
+    log.info("{:.2f}% of time the command queue was full".format(100 * n_full / n_total))
+    log.info("Main loop: {:.2f} Hz".format((n_total - n_full) / (time.time() - start_time)))
 
 
 if __name__ == '__main__':
@@ -148,7 +179,7 @@ if __name__ == '__main__':
 
     # Initialize communication with Arduino
     while not is_connected:
-        print("Waiting for arduino...")
+        log.info("Waiting for arduino...")
         sendOrder(serial_file, Order.HELLO.value)
         bytes_array = bytearray(serial_file.read(1))
         if not bytes_array:
@@ -158,14 +189,14 @@ if __name__ == '__main__':
         if byte in [Order.HELLO.value, Order.ALREADY_CONNECTED.value]:
             is_connected = True
 
-    print("Connected to Arduino")
+    log.info("Connected to Arduino")
 
     # Image processing queue, output centroids
     out_queue = queue.Queue()
     condition_lock = threading.Lock()
     exit_condition = threading.Condition(condition_lock)
 
-    print("Starting Image Processing Thread")
+    log.info("Starting Image Processing Thread")
     # It starts 2 threads:
     #  - one for retrieving images from camera
     #  - one for processing the images
@@ -176,21 +207,21 @@ if __name__ == '__main__':
     # Event to notify threads that they should terminate
     exit_event = threading.Event()
 
-    print("Starting Communication Threads")
+    log.info("Starting Communication Threads")
     # Threads for arduino communication
     threads = [CommandThread(serial_file, command_queue, exit_event),
                ListenerThread(serial_file, exit_event), image_thread]
     for t in threads:
         t.start()
 
-    print("Starting Control Thread")
+    log.info("Starting Control Thread")
     main_control(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
 
     # End the threads
     exit_event.set()
     n_received_semaphore.release()
 
-    print("Exiting...")
+    log.info("Exiting...")
     with exit_condition:
         exit_condition.notify_all()
 

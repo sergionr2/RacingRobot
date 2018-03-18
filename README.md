@@ -26,6 +26,16 @@ Note: the Battery Holder was designed for this [External Battery](https://www.am
 
 ### Training Data
 
+#### IronCar and Toulouse Robot Race Datasets
+
+
+We release the different videos taken with the on-board camera, along we the labeled data (the labels are in a pickle file) for IronCar and Toulouse Robot Race:
+
+- [Videos](https://drive.google.com/open?id=1VJ46uBZUfxwUVPHGw1p8d6cgHDGervcL)
+- [Toulouse Dataset](https://drive.google.com/open?id=1vj7N0aE-eyKg7OY0ZdlkwW2rl51UzwEW)
+- [IronCar Dataset](https://drive.google.com/open?id=1FZdXnrO7WAo4A4-repE_dglCc2ZoAJwa)
+
+#### Other Dataset (Old Format)
 **Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
 
 The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
