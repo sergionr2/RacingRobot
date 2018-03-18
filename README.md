@@ -136,7 +136,7 @@ python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
 
 #### Recommended : Use an image with everything already installed
 
-0. You need a 32GB micro sd card (warning, all data on that card will be overwritten)
+0. You need a 16GB micro sd card (warning, all data on that card will be overwritten)
 WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://github.com/billw2/rpi-clone) may help)
 
 1. Download the image [here](https://drive.google.com/open?id=1CUmSKOQ7i_XTrsLCRntypK9KcVaVwM4h)
@@ -153,6 +153,7 @@ Installed softwares:
  - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
+
 Camera and ssh are enabled.
 
 

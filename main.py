@@ -35,16 +35,15 @@ log = logging.getLogger('racing_robot')
 log.setLevel(logging.DEBUG)
 
 # Formatter for logger
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# formatter = logging.Formatter(fmt="%(asctime)s -- %(levelname)s -- %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
+formatter = logging.Formatter('%(asctime)s -- %(levelname)s - %(message)s')
 
 # Create file handler which logs even debug messages
 fh = logging.FileHandler('logs/{}.log'.format(datetime.now().strftime("%y-%m-%d_%Hh%M_%S")))
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
 log.addHandler(fh)
 
-# Create console handler with a higher log level
+# Create console handler
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 ch.setFormatter(formatter)
