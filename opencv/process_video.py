@@ -18,7 +18,6 @@ playing_video = False
 
 parser = argparse.ArgumentParser(description='Line Detection on a video')
 parser.add_argument('-i', '--input_video', help='Input Video', default="video.mp4", type=str)
-parser.add_argument('-r', '--regions', help='ROI', default=1, type=int)
 args = parser.parse_args()
 
 # OpenCV 3.x.x compatibility
@@ -58,11 +57,7 @@ while True:
 
     original_img = img.copy()
 
-    regions = None
-    if args.regions == 0:
-        regions = [[0, 0, img.shape[1], img.shape[0]]]
-
-    processImage(img, debug=True, regions=regions)
+    processImage(img, debug=True)
 
     if not playing_video:
         key = cv2.waitKey(0) & 0xff

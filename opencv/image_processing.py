@@ -9,7 +9,7 @@ import argparse
 import cv2
 import numpy as np
 
-from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS, WIDTH, HEIGHT
+from constants import REF_ANGLE, MAX_ANGLE, REGIONS, EXIT_KEYS, WIDTH, HEIGHT, WEIGHTS_NPZ
 from train import preprocessImage, loadVanillaNet, loadPytorchNetwork
 
 fast_processing = True
@@ -22,7 +22,7 @@ except ImportError:
 
 # Either load network with pytorch or with numpy
 # pred_fn = loadPytorchNetwork()
-pred_fn = loadVanillaNet()
+pred_fn = loadVanillaNet(WEIGHTS_NPZ)
 
 
 def mouseCallback(event, x, y, flags, centers):
@@ -79,22 +79,21 @@ def processImage(image, debug=False, regions=None, interactive=False):
 
             im_cropped_tmp = im_cropped.copy()
             im_width = im_cropped_tmp.shape[1]
-            pred_img = preprocessImage(im_cropped, WIDTH, HEIGHT)
+            pred_img = preprocessImage(im_cropped_tmp, WIDTH, HEIGHT)
             # Predict where is the center of the line using the trained network
-            # x_center = int(pred_fn([pred_img])[0] * im_width)
-            # y_center = im_cropped_tmp.shape[0] // 2
-            x_center, y_center = 0, 0
+            x_center = int(pred_fn([pred_img])[0] * im_width)
+            y_center = im_cropped_tmp.shape[0] // 2
 
             if debug:
-                # Draw prediction and true center
-                # cv2.circle(im_cropped_tmp, (x_center, y_center), radius=10,
-                #            color=(0, 0, 255), thickness=2, lineType=8, shift=0)
+                # Draw prediction
+                cv2.circle(im_cropped_tmp, (x_center, y_center), radius=10,
+                           color=(0, 0, 255), thickness=2, lineType=8, shift=0)
                 # cv2.imshow('crop_pred{}'.format(idx), im_cropped_tmp)
 
                 # display line: y = height // 2
                 h = im_cropped.shape[0] // 2
-                cv2.line(im_cropped, (0, h), (1000, h), (0, 0, 255), 2)
-                cv2.imshow('crop{}'.format(idx), im_cropped)
+                cv2.line(im_cropped_tmp, (0, h), (1000, h), (0, 0, 255), 2)
+                cv2.imshow('crop{}'.format(idx), im_cropped_tmp)
                 # Labeling mode
                 if interactive:
                     # Retrieve mouse click position
