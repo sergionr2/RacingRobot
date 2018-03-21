@@ -147,8 +147,8 @@ def processImage(image, debug=False, regions=None, interactive=False):
             for cx, cy in centroids:
                 cv2.circle(image, (cx, cy), radius=10, color=(0, 0, 255), thickness=1, lineType=8, shift=0)
                 cv2.line(image, tuple(a), tuple(b), color=(100, 100, 0), thickness=2, lineType=8)
-            cv2.line(image, (im_width // 2, 0), (im_width // 2, image.shape[0]),
-                     color=(100, 0, 0), thickness=2, lineType=8)
+            # cv2.line(image, (im_width // 2, 0), (im_width // 2, image.shape[0]),
+            #          color=(100, 0, 0), thickness=2, lineType=8)
             cv2.imshow('result', image)
 
     if interactive:

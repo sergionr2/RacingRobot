@@ -66,13 +66,14 @@ def saveToNpz(model, output_name="mlp_model_tmp"):
     np.savez(output_name, *[p.data.numpy().T for _, p in model.named_parameters()])
 
 
-def loadDataset(split_seed=42, folder='', split=True, augmented=True):
+def loadDataset(split_seed=42, folder='', split=True, augmented=True, num_stack=1):
     """
     Load the training images and preprocess them
     :param split_seed: (int) split_seed for pseudo-random generator
     :param folder: (str) input folder
     :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
     :param augmented: (bool) Whether to use data augmentation
+    :param num_stack: (int)
     :return:
     """
 
@@ -86,7 +87,7 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
 
     # Sort names
     images = list(images_dict.keys())
-    images.sort()
+    images.sort(key=lambda name: int(images_dict[name]['output_name']))
     images_path = []
 
     # Load one image to retrieve original shape
@@ -126,14 +127,42 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True):
     if augmented:
         images_path += images_path_augmented
 
+    if num_stack > 1:
+        X_stack = np.zeros((n_images, num_stack * INPUT_DIM), dtype=np.float32)
+        for i in range(n_images):
+            X_stack[i, :INPUT_DIM] = X[i]
+
+        num_skipped = 0
+        for i in range(n_images - num_stack):
+            input_image_idx, input_region = map(int, images[i % len(images)].split('.jpg_r'))
+            for k in range(num_stack):
+                next_frame_idx = input_image_idx + k + 1
+                j = i + 1
+                ok = False
+                # Find the same region in the next frame
+                while j < n_images:
+                    image_idx, region = map(int, images[j % len(images)].split('.jpg_r'))
+                    # import ipdb; ipdb.set_trace()
+                    # print(input_image_idx, next_frame_idx, image_idx)
+                    if image_idx == next_frame_idx and region == input_region:
+                        ok = True
+                        break
+                    if image_idx > next_frame_idx:
+                        break
+                    j += 1
+                if not ok:
+                    num_skipped += 1
+                    # print("Skipping frame stacking for {}".format(images[i % len(images)]))
+                    break
+                X_stack[i, k*INPUT_DIM:(k + 1) * INPUT_DIM] = X[j]
+
+        print("{:.2f}% skipped".format(num_skipped / n_images))
+        X = X_stack
+
     print("Input tensor shape: ", X.shape)
 
     if not split:
         return X, y, images_path
-
-    # For CNN reshape the data to 3D tensors
-    # X = X.reshape((-1, WIDTH, HEIGHT, 3))
-    # X = np.transpose(X, (0, 3, 2, 1))
 
     # Split the data into three subsets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=split_seed)

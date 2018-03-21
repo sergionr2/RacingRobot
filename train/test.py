@@ -12,7 +12,7 @@ import torch as th
 from torch.autograd import Variable
 from sklearn.model_selection import train_test_split
 
-from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED
+from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, SPLIT_SEED, NUM_STACK
 from .utils import computeMSE, loadVanillaNet, loadDataset, loadPytorchNetwork
 
 parser = argparse.ArgumentParser(description='Test a line detector')
@@ -26,7 +26,7 @@ args = parser.parse_args()
 augmented = not args.no_data_augmentation
 
 # Load dataset
-X, y_true, images = loadDataset(folder=args.folder, split=False, augmented=augmented)
+X, y_true, images = loadDataset(folder=args.folder, split=False, augmented=augmented, num_stack=NUM_STACK)
 indices = np.arange(len(y_true))
 idx_train, idx_test = train_test_split(indices, test_size=0.4, random_state=SPLIT_SEED)
 idx_val, idx_test = train_test_split(idx_test, test_size=0.5, random_state=SPLIT_SEED)

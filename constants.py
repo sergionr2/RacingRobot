@@ -20,6 +20,7 @@ WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
 INPUT_DIM = 3 * WIDTH * HEIGHT
 SPLIT_SEED = 42  # For train/val/test split
 WEIGHTS_NPZ = "mlp_model.npz"  # Path to the trained model (npz file)
+NUM_STACK = 1  # Stack n images as input
 
 
 # Direction and speed

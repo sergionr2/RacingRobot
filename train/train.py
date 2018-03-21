@@ -12,7 +12,7 @@ import torch.utils.data
 import torch.nn as nn
 from torch.autograd import Variable
 
-from constants import SPLIT_SEED
+from constants import SPLIT_SEED, NUM_STACK
 from .utils import preprocessImage, saveToNpz, loadDataset, adjustLearningRate
 from .models import MlpNetwork, ConvolutionalNetwork
 
@@ -35,7 +35,7 @@ def main(folder, num_epochs=1000, batchsize=1,
     """
     # Load the dataset
     print("Loading data...")
-    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, split_seed=SPLIT_SEED)
+    X_train, y_train, X_val, y_val, X_test, y_test = loadDataset(folder=folder, split_seed=SPLIT_SEED, num_stack=NUM_STACK)
 
     # Seed the random generator
     np.random.seed(seed)
@@ -67,7 +67,7 @@ def main(folder, num_epochs=1000, batchsize=1,
         model = MlpNetwork(X_train.shape[1], n_hidden=[20, 4], drop_p=0.5)
         model_name = "mlp_model_tmp"
     else:
-        model_name = "cnn__model_tmp"
+        model_name = "cnn_model_tmp"
         model = ConvolutionalNetwork(drop_p=0.1)
 
     if load_model != "":
