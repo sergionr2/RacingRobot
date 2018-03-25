@@ -132,24 +132,24 @@ def loadDataset(split_seed=42, folder='', split=True, augmented=True, num_stack=
         for i in range(n_images):
             X_stack[i, :INPUT_DIM] = X[i]
 
+        # TODO: skip transition between flip and normal frames
         num_skipped = 0
-        for i in range(n_images - num_stack):
+        for i in range(n_images - 1, num_stack, -1):
             input_image_idx, input_region = map(int, images[i % len(images)].split('.jpg_r'))
             for k in range(num_stack):
-                next_frame_idx = input_image_idx + k + 1
-                j = i + 1
+                prev_frame_idx = input_image_idx - k - 1
+                j = i - 1
                 ok = False
                 # Find the same region in the next frame
-                while j < n_images:
+                while j >= 0:
                     image_idx, region = map(int, images[j % len(images)].split('.jpg_r'))
-                    # import ipdb; ipdb.set_trace()
-                    # print(input_image_idx, next_frame_idx, image_idx)
-                    if image_idx == next_frame_idx and region == input_region:
+
+                    if image_idx == prev_frame_idx and region == input_region:
                         ok = True
                         break
-                    if image_idx > next_frame_idx:
+                    if image_idx < prev_frame_idx:
                         break
-                    j += 1
+                    j -= 1
                 if not ok:
                     num_skipped += 1
                     # print("Skipping frame stacking for {}".format(images[i % len(images)]))
