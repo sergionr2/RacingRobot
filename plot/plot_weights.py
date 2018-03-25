@@ -22,18 +22,6 @@ sns.set()
 np.set_printoptions(precision=2)
 
 
-def plot_representation(x, y, colors, name="", add_colorbar=True):
-    fig = plt.figure(name)
-    plt.scatter(x, y, s=7, c=colors, cmap='coolwarm', linewidths=0.1)
-    plt.xlabel('State dimension 1')
-    plt.ylabel('State dimension 2')
-    plt.title(name)
-    fig.tight_layout()
-    if add_colorbar:
-        plt.colorbar(label='x center')
-    plt.show()
-
-
 def plot_input_weights(weights, name='Input Weights', cmap='coolwarm'):
     fig = plt.figure(name)
     m, n = len(weights), 3

@@ -32,28 +32,9 @@ Note: the Battery Holder was designed for this [External Battery](https://www.am
 We release the different videos taken with the on-board camera, along we the labeled data (the labels are in a pickle file) for IronCar and Toulouse Robot Race:
 
 - [Videos](https://drive.google.com/open?id=1VJ46uBZUfxwUVPHGw1p8d6cgHDGervcL)
-- [Toulouse Dataset](https://drive.google.com/open?id=1vj7N0aE-eyKg7OY0ZdlkwW2rl51UzwEW)
-- [IronCar Dataset](https://drive.google.com/open?id=1FZdXnrO7WAo4A4-repE_dglCc2ZoAJwa)
+- (outdated) [Toulouse Dataset](https://drive.google.com/open?id=1vj7N0aE-eyKg7OY0ZdlkwW2rl51UzwEW)
+- (outdated) [IronCar Dataset](https://drive.google.com/open?id=1FZdXnrO7WAo4A4-repE_dglCc2ZoAJwa)
 
-#### Other Dataset (Old Format)
-**Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
-
-The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
-
-There are two folders:
-- input_images/ (raw images from remote control)
-- label_regions/ (labeled regions of the input images)
-
-The name of the labeled images is as follow: **"x_center"-"y_center"\_"id".jpg**
-
-For example:
-- `0-28_452-453r0.jpg`
-=> center = (0, 28)
-| id = "452-453r0"
-
-- `6-22_691-23sept1506162644_2073r2.jpg`
-=> center = (6, 22)
-| id = "691-23sept1506162644_2073r2"
 
 ## How to run everything ?
 
@@ -102,27 +83,25 @@ MP4Box -add video.h264 video.mp4
 
 3. Split the video into a sequence of images
 ```
-python -m train.split_video -i video.mp4 --no-display -o path/output/folder
+python -m train.split_video -i video.mp4 --no-display -o path/to/dataset/folder
 ```
 
-4. Label the data using the labeling tool
-```
-python -m train.label_images -i path/to/input/folder -o path/to/output/folder
-```
-To label an image, you have to click on the center of line in the displayed image.
-If the image do not contain any line, or if you want to pass to the next frame, press any key.
+4. Label the data using the labeling tool: [https://github.com/araffin/graph-annotation-tool](https://github.com/araffin/graph-annotation-tool)
+
+
+5. Rename the json file that contains the labels to `labels.json` and put it in the same folder of the dataset (folder with the images)
 
 5. Train the neural network (again please change the paths in the script)
 ```
-python -m train.train -f path/input/folder
+python -m train.train -f path/to/dataset/folder
 ```
-The best model (lowest error on the validation data) will be saved as *mlp_model_tmp.npz*.
+The best model (lowest error on the validation data) will be saved as *cnn_model_tmp.pth*.
 
 
 6. Test the trained neural network
 
 ```
-python -m train.test -f path/input/folder -w mlp_model_tmp
+python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
 ```
 
 ### Benchmark

@@ -1,14 +1,14 @@
 from __future__ import print_function, division, absolute_import
 
-import pickle as pkl
+import json
 
 import cv2
 import numpy as np
 import torch as th
+from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
-from constants import INPUT_DIM, HEIGHT, WIDTH
-from .models import MlpNetwork
+from constants import MAX_WIDTH, MAX_HEIGHT, ROI, INPUT_HEIGHT, INPUT_WIDTH, SPLIT_SEED
 
 
 def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
@@ -40,148 +40,19 @@ def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
         param_group['lr'] = lr
 
 
-def loadPytorchNetwork(model_name="mlp_model_tmp", n_hidden=None, model_type="mlp"):
-    """
-    Load a saved pytorch model
-    :param model_name: (str)
-    :param n_hidden: ([int])
-    :return: (pytorch model)
-    """
-    if '.pth' in model_name:
-        model_name = model_name.split('.pth')[0]
-    if model_type == "mlp":
-        model = MlpNetwork(INPUT_DIM, n_hidden=n_hidden)
-    else:
-        model = ConvolutionalNetwork()
-    model.load_state_dict(th.load(model_name + '.pth'))
-    model.eval()
-    return model
-
-
-def saveToNpz(model, output_name="mlp_model_tmp"):
-    """
-    :param model: (PyTorch Model)
-    :param output_name: (str)
-    """
-    np.savez(output_name, *[p.data.numpy().T for _, p in model.named_parameters()])
-
-
-def loadDataset(split_seed=42, folder='', split=True, augmented=True, num_stack=1):
-    """
-    Load the training images and preprocess them
-    :param split_seed: (int) split_seed for pseudo-random generator
-    :param folder: (str) input folder
-    :param split: (bool) Whether to split the dataset into 3 subsets (train, validation, test)
-    :param augmented: (bool) Whether to use data augmentation
-    :param num_stack: (int)
-    :return:
-    """
-
-    # Load the dataset info file (pickle object)
-    with open('{}/infos.pkl'.format(folder), 'rb') as f:
-        try:
-            images_dict = pkl.load(f)['images']
-        except UnicodeDecodeError:
-            # (python 2 -> python 3)
-            images_dict = pkl.load(f, encoding='latin1')['images']
-
-    # Sort names
-    images = list(images_dict.keys())
-    images.sort(key=lambda name: int(images_dict[name]['output_name']))
-    images_path = []
-
-    # Load one image to retrieve original shape
-    tmp_im = cv2.imread('{}/{}.jpg'.format(folder, images_dict[images[0]]['output_name']))
-    height, width, _ = tmp_im.shape
-    n_images = len(images)
-    # If we use data augmentation we double the size of training data
-    if augmented:
-        images_path_augmented = []
-        n_images *= 2
-
-    X = np.zeros((n_images, INPUT_DIM), dtype=np.float32)
-    y = np.zeros((n_images,), dtype=np.float32)
-
-    print("original_shape=({},{})".format(width, height))
-    print("resized_shape=({},{})".format(WIDTH, HEIGHT))
-
-    for idx, name in enumerate(images):
-        x_center, y_center = images_dict[name]['label']
-        # Normalize output
-        y[idx] = x_center / width
-
-        path = images_dict[name]['output_name']
-        image_path = '{}/{}.jpg'.format(folder, path)
-        im = cv2.imread(image_path)
-        # Resize and normalize input
-        X[idx, :] = preprocessImage(im, WIDTH, HEIGHT)
-        images_path.append(path + '.jpg')
-        # Flip the image+label to have more training data
-        if augmented:
-            horizontal_flip = cv2.flip(im, 1)
-            X[len(images) + idx, :] = preprocessImage(horizontal_flip, WIDTH, HEIGHT)
-            y[len(images) + idx] = (width - x_center) / width
-            images_path_augmented.append(path + '.jpg')
-
-    # By convention, augmented data are at the end
-    if augmented:
-        images_path += images_path_augmented
-
-    if num_stack > 1:
-        X_stack = np.zeros((n_images, num_stack * INPUT_DIM), dtype=np.float32)
-        for i in range(n_images):
-            X_stack[i, :INPUT_DIM] = X[i]
-
-        # TODO: skip transition between flip and normal frames
-        num_skipped = 0
-        for i in range(n_images - 1, num_stack, -1):
-            input_image_idx, input_region = map(int, images[i % len(images)].split('.jpg_r'))
-            for k in range(num_stack):
-                prev_frame_idx = input_image_idx - k - 1
-                j = i - 1
-                ok = False
-                # Find the same region in the next frame
-                while j >= 0:
-                    image_idx, region = map(int, images[j % len(images)].split('.jpg_r'))
-
-                    if image_idx == prev_frame_idx and region == input_region:
-                        ok = True
-                        break
-                    if image_idx < prev_frame_idx:
-                        break
-                    j -= 1
-                if not ok:
-                    num_skipped += 1
-                    # print("Skipping frame stacking for {}".format(images[i % len(images)]))
-                    break
-                X_stack[i, k*INPUT_DIM:(k + 1) * INPUT_DIM] = X[j]
-
-        print("{:.2f}% skipped".format(num_skipped / n_images))
-        X = X_stack
-
-    print("Input tensor shape: ", X.shape)
-
-    if not split:
-        return X, y, images_path
-
-    # Split the data into three subsets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=split_seed)
-    X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=split_seed)
-
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
-
 def preprocessImage(image, width, height):
     """
     Preprocessing script to convert image into neural net input array
     :param image: (cv2 image)
     :param width: (int)
     :param height: (int)
-    :return: (numpy array)
+    :return: (numpy tensor)
     """
+    # Crop the image
+    r = ROI
+    image = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
     # The resizing is a bottleneck in the computation
-    image = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
-    x = image.flatten()
+    x = cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
     # Normalize
     x = x / 255.
     x -= 0.5
@@ -189,59 +60,75 @@ def preprocessImage(image, width, height):
     return x
 
 
-def loadWeights(weights_npy='mlp_model.npz'):
-    """
-    Load and return weights of a trained model
-    :param weights_npy: (str) path to the numpy file
-    :return: (dict, dict)
-    """
-    # Load pretrained network
-    W, b = {}, {}
-    with np.load(weights_npy) as f:
-        n_layers = len(f.files) // 2
-        for i in range(len(f.files)):
-            # print(f['arr_%d' % i].shape)
-            if i % 2 == 1:
-                b[i // 2] = f['arr_%d' % i].astype(np.float32)
-            else:
-                W[i // 2] = f['arr_%d' % i].astype(np.float32)
-    return W, b
+def transformPrediction(y):
+    margin_left, margin_top, _, _ = ROI
+    points = y.flatten()
+    x = points[::2]
+    y = points[1::2]
+    y = (y * MAX_HEIGHT) + margin_top
+    x = (x * MAX_WIDTH) + margin_left
+    return x, y
 
 
-def loadVanillaNet(weights_npy='mlp_model.npz'):
-    """
-    Load a trained network and
-    return the forward function in pure numpy
-    :param weights_npy: (str) path to the numpy file
-    :return: (function) the neural net forward function
-    """
-    W, b = loadWeights(weights_npy)
-    n_layers = len(W)
+def loadLabels(folder):
+    if not folder.endswith('/'):
+        folder += '/'
+    labels = json.load(open(folder + 'labels.json'))
 
-    def relu(x):
+    images = list(labels.keys())
+    images.sort(key=lambda name: int(name.split('.jpg')[0]))
+
+    # Split the data into three subsets
+    train_keys, tmp_keys = train_test_split(list(labels.keys()), test_size=0.4, random_state=SPLIT_SEED)
+    val_keys, test_keys = train_test_split(tmp_keys, test_size=0.5, random_state=SPLIT_SEED)
+
+    train_labels = {key: labels[key] for key in train_keys}
+    val_labels = {key: labels[key] for key in val_keys}
+    test_labels = {key: labels[key] for key in test_keys}
+    return train_labels, val_labels, test_labels, labels
+
+
+class JsonDataset(Dataset):
+    def __init__(self, labels, folder="", preprocess=False, random_flip=0.0, swap=False):
+        self.keys = list(labels.keys())
+        self.labels = labels.copy()
+        self.folder = folder
+        self.preprocess = preprocess
+        self.random_flip = random_flip
+        self.swap = swap
+
+    def __getitem__(self, index):
         """
-        Rectify activation function: f(x) = max(0, x)
-        :param x: (numpy array)
-        :return: (numpy array)
+        :param index: (int)
+        :return: (PyTorch Tensor, PyTorch Tensor)
         """
-        y = x.copy()
-        y[y < 0] = 0
-        return y
+        image = self.keys[index]
+        margin_left, margin_top = 0, 0
+        im = cv2.imread(self.folder + image)
 
-    def forward(X):
-        """
-        Forward pass of a fully-connected neural net
-        with rectifier activation function
-        :param X: (numpy tensor)
-        :return: (numpy array)
-        """
-        a = X
-        for i in range(n_layers):
-            z = np.dot(a, W[i]) + b[i]
-            a = relu(z)
-        return a
+        # Crop the image and normalize it
+        if self.preprocess:
+            margin_left, margin_top, _, _ = ROI
+            im = preprocessImage(im, INPUT_WIDTH, INPUT_HEIGHT)
 
-    return forward
+        labels = np.array(self.labels[image]).astype(np.float32)
+        labels[:, 0] = (labels[:, 0] - margin_left) / MAX_WIDTH
+        labels[:, 1] = (labels[:, 1] - margin_top) / MAX_HEIGHT
+
+        if np.random.random() < self.random_flip:
+            im = cv2.flip(im, 1)
+            labels[:, 0] = 1 - labels[:, 0]
+        # Predict 6 points
+        y = labels.flatten().astype(np.float32)
+
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+        im = im.transpose((2, 0, 1)).astype(np.float32)
+        return th.from_numpy(im), th.from_numpy(y)
+
+    def __len__(self):
+        return len(self.keys)
 
 
 def computeMSE(y_test, y_true, indices):

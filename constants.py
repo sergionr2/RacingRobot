@@ -7,20 +7,16 @@ import numpy as np
 CAMERA_RESOLUTION = (640 // 2, 480 // 2)
 # Regions of interest
 MAX_WIDTH = CAMERA_RESOLUTION[0]
+MAX_HEIGHT = CAMERA_RESOLUTION[1]
 # r = [margin_left, margin_top, width, height]
-R0 = [0, 100, MAX_WIDTH, 100]
-R1 = [0, 75, MAX_WIDTH, 100]
-R2 = [0, 50, MAX_WIDTH, 100]
-# R3 = [0, 75, MAX_WIDTH, 50]
-# R4 = [0, 50, MAX_WIDTH, 50]
-REGIONS = np.array([R0, R1, R2])
+ROI = [0, 75, MAX_WIDTH, MAX_HEIGHT - 75]
+
 # Training
-# 80 = CAMERA_RESOLUTION[0] // 4
-WIDTH, HEIGHT = 80, 20 # Shape of the resized input image fed to our model
-INPUT_DIM = 3 * WIDTH * HEIGHT
+FACTOR = 4  # Resize factor
+INPUT_HEIGHT = ROI[3] // FACTOR
+INPUT_WIDTH = ROI[2] // FACTOR
 SPLIT_SEED = 42  # For train/val/test split
-WEIGHTS_NPZ = "mlp_model.npz"  # Path to the trained model (npz file)
-NUM_STACK = 1  # Stack n images as input
+WEIGHTS_PTH = "cnn_model.pth"  # Path to the trained model
 
 
 # Direction and speed

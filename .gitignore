@@ -20,3 +20,4 @@ render/
 *.pkl
 *.pth
 *.so
+datasets/
