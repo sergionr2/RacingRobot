@@ -85,6 +85,8 @@ def loadLabels(folder):
     train_labels = {key: labels[key] for key in train_keys}
     val_labels = {key: labels[key] for key in val_keys}
     test_labels = {key: labels[key] for key in test_keys}
+
+    print("{} images".format(len(labels)))
     return train_labels, val_labels, test_labels, labels
 
 
