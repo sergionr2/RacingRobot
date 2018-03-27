@@ -8,12 +8,9 @@ import os
 
 import cv2
 import numpy as np
-import torch as th
-from torch.autograd import Variable
 
-from constants import INPUT_WIDTH, INPUT_HEIGHT, RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI
-from .utils import preprocessImage, transformPrediction, loadLabels
-from .models import ConvolutionalNetwork
+from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT
+from .utils import loadLabels, loadNetwork, predict
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
@@ -22,16 +19,15 @@ parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_
 args = parser.parse_args()
 
 current_idx = 0
-model = ConvolutionalNetwork(num_output=6)
-model.load_state_dict(th.load(args.weights))
+model = loadNetwork(args.weights, NUM_OUTPUT)
 
 train_labels, val_labels, test_labels, labels = loadLabels(args.folder)
 
 images = list(labels.keys())
 # TODO: add support for folders without labels
-if False:
+if True:
     images = [f for f in os.listdir(args.folder) if f.endswith('.jpg')]
-    labels = {}
+    # labels = {}
 
 images.sort(key=lambda name: int(name.split('.jpg')[0]))
 
@@ -53,11 +49,7 @@ while True:
     cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
     # print(current_idx)
-
-    im = preprocessImage(image, INPUT_WIDTH, INPUT_HEIGHT)
-    im = im.transpose((2, 0, 1)).astype(np.float32)
-    predictions = model(Variable(th.from_numpy(im[None]), volatile=True))[0].data.numpy()
-    x, y = transformPrediction(predictions)
+    x, y = predict(model, image)
 
     if labels.get(images[current_idx]) is not None:
         true_labels = np.array(labels[images[current_idx]])

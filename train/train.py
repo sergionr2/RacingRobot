@@ -12,6 +12,7 @@ import torch.utils.data
 import torch.nn as nn
 from torch.autograd import Variable
 
+from constants import NUM_OUTPUT
 from .utils import JsonDataset, loadLabels
 from .models import ConvolutionalNetwork
 
@@ -20,7 +21,7 @@ VAL_BATCH_SIZE = 64  # Batch size for validation and test data
 
 
 def main(folder, num_epochs=100, batchsize=32,
-         learning_rate=0.0001, seed=42, cuda=False, num_output=6, random_flip=0.5,
+         learning_rate=0.0001, seed=42, cuda=False, random_flip=0.5,
          model_type="cnn", evaluate_print=1, load_model=""):
 
     if not folder.endswith('/'):
@@ -53,7 +54,7 @@ def main(folder, num_epochs=100, batchsize=32,
 
     model_name = "{}_model_tmp".format(model_type)
     if model_type == "cnn":
-        model = ConvolutionalNetwork(num_output=num_output, drop_p=0.1)
+        model = ConvolutionalNetwork(num_output=NUM_OUTPUT, drop_p=0.0)
     else:
         raise ValueError("Model type not supported")
 

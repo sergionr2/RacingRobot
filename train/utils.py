@@ -5,14 +5,16 @@ import json
 import cv2
 import numpy as np
 import torch as th
+from torch.autograd import Variable
 from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
 from constants import MAX_WIDTH, MAX_HEIGHT, ROI, INPUT_HEIGHT, INPUT_WIDTH, SPLIT_SEED
+from .models import ConvolutionalNetwork
 
 
 def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
-                         n_batch, method='cosine'):
+                       n_batch, method='cosine'):
     """
     :param optimizer: (PyTorch Optimizer object)
     :param epoch: (int)
@@ -40,6 +42,32 @@ def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
         param_group['lr'] = lr
 
 
+def predict(model, image):
+    """
+    :param model: (PyTorch Model)
+    :param image: (numpy tensor)
+    :return: (numpy array, numpy array)
+    """
+    im = preprocessImage(image, INPUT_WIDTH, INPUT_HEIGHT)
+    # Re-order channels for pytorch
+    im = im.transpose((2, 0, 1)).astype(np.float32)
+    predictions = model(Variable(th.from_numpy(im[None]), volatile=True))[0].data.numpy()
+    x, y = transformPrediction(predictions)
+    return x, y
+
+
+def loadNetwork(weights, num_output=6):
+    """
+    :param weights: (str)
+    :param num_output: (int)
+    :return: (PyTorch Model)
+    """
+    model = ConvolutionalNetwork(num_output=num_output)
+    model.load_state_dict(th.load(weights))
+    model.eval()
+    return model
+
+
 def preprocessImage(image, width, height):
     """
     Preprocessing script to convert image into neural net input array
@@ -61,6 +89,12 @@ def preprocessImage(image, width, height):
 
 
 def transformPrediction(y):
+    """
+    Transform the model output back
+    to original image space (pixel position)
+    :param y: (numpy array)
+    :return: (numpy array, numpy array)
+    """
     margin_left, margin_top, _, _ = ROI
     points = y.flatten()
     x = points[::2]

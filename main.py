@@ -100,12 +100,10 @@ def main_control(out_queue, resolution, n_seconds=5):
             last_time_update = time.time()
 
         # Output of image processing
-        turn_percent, centroids = out_queue.get()
+        turn_percent, x_pred = out_queue.get()
 
         # Compute the error to the center of the line
         # We want the line to be in the middle of the image
-        # Here we use the second centroid
-        x_pred = centroids[1, 0]
         error = (x_center - x_pred) / max_error_px
 
         # Represent line curve as a number in [0, 1]
