@@ -87,8 +87,6 @@ int main(int argc, char const *argv[])
 	}
 
 	serial_port.Close();
-  // WEIRD STUFF DO NOT REMOVE LINE FOR NOW
-  stoul("1");
   return 0;
 }
 
