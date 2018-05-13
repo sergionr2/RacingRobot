@@ -153,7 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
     parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables CUDA training')
     parser.add_argument('--load_model', help='Start from a saved model', default="", type=str)
-    parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn', 'custom'])
+    parser.add_argument('--model_type', help='Model type: cnn', default="custom", type=str, choices=['cnn', 'custom'])
     parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-3, type=float)
     args = parser.parse_args()
 

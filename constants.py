@@ -17,6 +17,7 @@ ROI = [0, 75, MAX_WIDTH, MAX_HEIGHT - 75]
 FACTOR = 4  # Resize factor
 INPUT_WIDTH = ROI[2] // FACTOR
 INPUT_HEIGHT = ROI[3] // FACTOR
+N_CHANNELS = 3
 SPLIT_SEED = 42  # For train/val/test split
 WEIGHTS_PTH = "cnn_model.pth"  # Path to the trained model
 NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs

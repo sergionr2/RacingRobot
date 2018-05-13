@@ -9,20 +9,33 @@ import argparse
 
 import cv2
 import numpy as np
+import torch as th
+from torch import jit
+from torch.jit import trace
 
-from constants import NUM_OUTPUT, MAX_WIDTH, MAX_HEIGHT
-from .utils import loadLabels, loadNetwork, predict
+from constants import NUM_OUTPUT, MAX_WIDTH, MAX_HEIGHT, INPUT_WIDTH, INPUT_HEIGHT, N_CHANNELS
+from .utils import loadLabels, loadNetwork, predict, preprocessImage
 
 parser = argparse.ArgumentParser(description='Benchmark line detection algorithm')
 parser.add_argument('-n', '--num_iterations', help='Number of iteration', default=1, type=int)
-parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
-parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn', 'custom'])
+parser.add_argument('-w', '--weights', help='Saved weights', default="custom_model_tmp.pth", type=str)
+parser.add_argument('--model_type', help='Model type: cnn', default="custom", type=str, choices=['cnn', 'custom'])
+parser.add_argument('--jit', action='store_true', default=False, help='Use JIT')
+
 args = parser.parse_args()
 
 N_ITER = args.num_iterations
 
 model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
 model = model.to("cpu")
+# 1st way to compile a function
+# model = jit.compile(model.forward, nderivs=1, enabled=args.jit)
+
+# 2nd way to use the JIT
+# Give an example input to compile the model
+# TODO: use real image for Benchmark
+example_input = th.ones((1, N_CHANNELS, INPUT_HEIGHT, INPUT_WIDTH)).to(th.float)
+model = trace(example_input)(model)
 
 time_deltas = []
 for i in range(N_ITER):
