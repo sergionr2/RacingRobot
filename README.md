@@ -1,5 +1,5 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
-Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
+Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
 **Video of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
@@ -276,6 +276,7 @@ Or follow this tutorial:
 # don't forget to set the env variables:
 export NO_CUDA=1
 export NO_DISTRIBUTED=1
+export MAX_JOBS=2
 git clone --recursive https://github.com/pytorch/pytorch
 sudo -EH python setup.py install
 # torchvision is not used yet
