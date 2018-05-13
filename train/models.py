@@ -97,7 +97,6 @@ class CustomNet(nn.Module):
     def __init__(self, num_output=6):
         super(CustomNet, self).__init__()
 
-
         self.model = nn.Sequential(
             nn.Conv2d(3, 20, kernel_size=7, stride=2, padding=1),
             nn.ReLU(inplace=True),
@@ -108,7 +107,7 @@ class CustomNet(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2),
         )
         self.fc = nn.Sequential(
-            nn.Linear(20*4*8, 32),
+            nn.Linear(20 * 4 * 8, 32),
             # nn.Linear(20*9*18, 32),
             nn.ReLU(inplace=True),
             nn.Linear(32, 32),

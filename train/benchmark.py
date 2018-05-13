@@ -22,7 +22,7 @@ args = parser.parse_args()
 N_ITER = args.num_iterations
 
 model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
-model.cpu()
+model = model.to("cpu")
 
 time_deltas = []
 for i in range(N_ITER):

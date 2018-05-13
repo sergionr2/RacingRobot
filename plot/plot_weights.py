@@ -6,7 +6,6 @@ import argparse
 import cv2
 import numpy as np
 import torch as th
-from torch.autograd import Variable
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -73,7 +72,7 @@ if __name__ == '__main__':
     y_true = y_true[permutation]
     images = np.array(images)[permutation]
     model = loadPytorchNetwork(args.weights)
-    y_test, a1, a2 = model.customForward(Variable(th.from_numpy(X)))
+    y_test, a1, a2 = model.customForward(th.from_numpy(X))
     a1, a2, = a1.data.numpy(), a2.data.numpy()
     y_test = y_test.data.numpy()[:, 0]
 

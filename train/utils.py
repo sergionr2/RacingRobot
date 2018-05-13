@@ -5,7 +5,6 @@ import json
 import cv2
 import numpy as np
 import torch as th
-from torch.autograd import Variable
 from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
@@ -51,9 +50,8 @@ def predict(model, image):
     im = preprocessImage(image, INPUT_WIDTH, INPUT_HEIGHT)
     # Re-order channels for pytorch
     im = im.transpose((2, 0, 1)).astype(np.float32)
-    # PyTorch >= 0.4
-    # with th.no_grad():
-    predictions = model(Variable(th.from_numpy(im[None]), volatile=True))[0].data.numpy()
+    with th.no_grad():
+        predictions = model(th.from_numpy(im[None]))[0].data.numpy()
     x, y = transformPrediction(predictions)
     return x, y
 
@@ -62,6 +60,7 @@ def loadNetwork(weights, num_output=6, model_type="cnn"):
     """
     :param weights: (str)
     :param num_output: (int)
+    :param model_type: (str)
     :return: (PyTorch Model)
     """
     if model_type == "cnn":
