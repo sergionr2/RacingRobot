@@ -1,6 +1,8 @@
 """
 File containing all the constants used in the different files
 """
+from __future__ import print_function, division, absolute_import
+
 import numpy as np
 
 # Main Constants
@@ -13,8 +15,8 @@ ROI = [0, 75, MAX_WIDTH, MAX_HEIGHT - 75]
 
 # Training
 FACTOR = 4  # Resize factor
-INPUT_HEIGHT = ROI[3] // FACTOR
 INPUT_WIDTH = ROI[2] // FACTOR
+INPUT_HEIGHT = ROI[3] // FACTOR
 SPLIT_SEED = 42  # For train/val/test split
 WEIGHTS_PTH = "cnn_model.pth"  # Path to the trained model
 NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs

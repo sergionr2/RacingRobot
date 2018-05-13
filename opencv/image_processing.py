@@ -26,21 +26,23 @@ def processImage(image, debug=False):
     if debug:
         return x, y
 
-    if y[1] <= Y_TARGET:
-        y1, y2 = y[1], y[2]
-        x1, x2 = x[1], x[2]
-    else:
-        y1, y2 = y[0], y[1]
-        x1, x2 = x[0], x[1]
+    # if y[1] <= Y_TARGET:
+    #     y1, y2 = y[1], y[2]
+    #     x1, x2 = x[1], x[2]
+    # else:
+    #     y1, y2 = y[0], y[1]
+    #     x1, x2 = x[0], x[1]
+    #
+    # if y2 == y1:
+    #     # TODO: improve this particular case
+    #     x_pred = x[1]
+    # else:
+    #     # x = a * y + b
+    #     a = (x2 - x1) / (y2 - y1)
+    #     b = x1 - a * y1
+    #     x_pred = a * Y_TARGET + b
 
-    if y2 == y1:
-        # TODO: improve this particular case
-        x_pred = x[1]
-    else:
-        # x = a * y + b
-        a = (x2 - x1) / (y2 - y1)
-        b = x1 - a * y1
-        x_pred = a * Y_TARGET + b
+    x_pred = x[1]
     # Linear Regression to fit a line
     # It estimates the line curve
 

@@ -15,11 +15,12 @@ from .utils import loadLabels, loadNetwork, predict
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
 parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
+parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn', 'custom'])
 
 args = parser.parse_args()
 
 current_idx = 0
-model = loadNetwork(args.weights, NUM_OUTPUT)
+model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
 
 train_labels, val_labels, test_labels, labels = loadLabels(args.folder)
 
@@ -46,10 +47,11 @@ while True:
         text = "val"
     elif name in idx_test:
         text = "test"
-    cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
-    # print(current_idx)
     x, y = predict(model, image)
+    # print(current_idx)
+
+    cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
     if labels.get(images[current_idx]) is not None:
         true_labels = np.array(labels[images[current_idx]])

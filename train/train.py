@@ -14,7 +14,7 @@ from torch.autograd import Variable
 
 from constants import NUM_OUTPUT
 from .utils import JsonDataset, loadLabels
-from .models import ConvolutionalNetwork
+from .models import ConvolutionalNetwork, CustomNet
 
 evaluate_print = 1  # Print info every 1 epoch
 VAL_BATCH_SIZE = 64  # Batch size for validation and test data
@@ -55,6 +55,8 @@ def main(folder, num_epochs=100, batchsize=32,
     model_name = "{}_model_tmp".format(model_type)
     if model_type == "cnn":
         model = ConvolutionalNetwork(num_output=NUM_OUTPUT, drop_p=0.0)
+    elif model_type == "custom":
+        model = CustomNet(num_output=NUM_OUTPUT)
     else:
         raise ValueError("Model type not supported")
 
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
     parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables CUDA training')
     parser.add_argument('--load_model', help='Start from a saved model', default="", type=str)
-    parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn'])
+    parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn', 'custom'])
     parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-3, type=float)
     args = parser.parse_args()
 

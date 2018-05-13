@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
 from constants import MAX_WIDTH, MAX_HEIGHT, ROI, INPUT_HEIGHT, INPUT_WIDTH, SPLIT_SEED
-from .models import ConvolutionalNetwork
+from .models import ConvolutionalNetwork, CustomNet
 
 
 def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
@@ -51,18 +51,24 @@ def predict(model, image):
     im = preprocessImage(image, INPUT_WIDTH, INPUT_HEIGHT)
     # Re-order channels for pytorch
     im = im.transpose((2, 0, 1)).astype(np.float32)
+    # PyTorch >= 0.4
+    # with th.no_grad():
     predictions = model(Variable(th.from_numpy(im[None]), volatile=True))[0].data.numpy()
     x, y = transformPrediction(predictions)
     return x, y
 
 
-def loadNetwork(weights, num_output=6):
+def loadNetwork(weights, num_output=6, model_type="cnn"):
     """
     :param weights: (str)
     :param num_output: (int)
     :return: (PyTorch Model)
     """
-    model = ConvolutionalNetwork(num_output=num_output)
+    if model_type == "cnn":
+        model = ConvolutionalNetwork(num_output=num_output)
+    elif model_type == "custom":
+        model = CustomNet(num_output=num_output)
+
     model.load_state_dict(th.load(weights))
     model.eval()
     return model
