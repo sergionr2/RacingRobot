@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 
 from opencv.image_processing import processImage
-from constants import SAVE_EVERY
+from constants import CAMERA_RESOLUTION, RECORD_VIDEO
 
 emptyException = queue.Empty
 fullException = queue.Full
@@ -87,8 +87,6 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                 if self.debug:
                     self.out_queue.put(item=frame, block=False)
                 else:
-                    if self.frame_num % SAVE_EVERY == 0:
-                        cv2.imwrite("debug/{}_{}.jpg".format(experiment_time, self.frame_num), frame)
                     try:
                         # 10 ms per loop
                         # start_time = time.time()
@@ -142,9 +140,14 @@ class Viewer(object):
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue, debug=self.debug)
         self.camera.start_recording(self.analyser, format='bgr')
+        if RECORD_VIDEO:
+            self.camera.start_recording('debug/{}.h264'.format(experiment_time),
+            	                         splitter_port=2, resize=CAMERA_RESOLUTION)
 
     def stop(self):
         self.camera.wait_recording()
+        if RECORD_VIDEO:
+            self.camera.stop_recording(splitter_port=2)
         self.camera.stop_recording()
         self.analyser.stop()
 

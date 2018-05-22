@@ -47,7 +47,7 @@ N_MESSAGES_ALLOWED = 3
 COMMAND_QUEUE_SIZE = 2
 
 # Image Analyser
-SAVE_EVERY = 1000  # Save every 1000 frame to debug folder
+RECORD_VIDEO = True  # Record video to debug folder
 
 # Image Processing
 # Straight line angle
