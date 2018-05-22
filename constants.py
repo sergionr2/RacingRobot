@@ -35,7 +35,7 @@ MIN_SPEED = 20
 # Path Planning
 # TODO: compute curvature of bezier path to regulate speed
 # see https://stackoverflow.com/questions/46762955
-TARGET_POINT = 0.6  # between [0, 1] position on the bezier curve
+TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
 
 # PID Control
 Kp_turn = 50
