@@ -27,8 +27,8 @@ NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 ERROR_MAX = 1.0
-MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 25
+MAX_SPEED_STRAIGHT_LINE = 35  # order between 0 and 100
+MAX_SPEED_SHARP_TURN = 30
 MIN_SPEED = 20
 
 # Path Planning
@@ -39,7 +39,7 @@ TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
 # PID Control
 Kp_turn = 50
 Kp_line = 50
-Kd = 1
+Kd = 4
 Ki = 0
 ALPHA = 1  # alpha of the moving mean for the turn coefficient
 # Main Program
