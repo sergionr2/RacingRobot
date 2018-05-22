@@ -109,16 +109,25 @@ def transformPrediction(y):
     return x, y
 
 
-def loadLabels(folder):
-    if not folder.endswith('/'):
-        folder += '/'
-    labels = json.load(open(folder + 'labels.json'))
+def loadLabels(folders):
+    if not isinstance(folders, list):
+        folders = [folders]
 
-    images = list(labels.keys())
-    images.sort(key=lambda name: int(name.split('.jpg')[0]))
+    labels = {}
+    images = []
+    for folder in folders:
+        if not folder.endswith('/'):
+            folder += '/'
+        tmp_labels = json.load(open(folder + 'labels.json'))
+        tmp_images = list(tmp_labels.keys())
+        tmp_images.sort(key=lambda name: int(name.split('.jpg')[0]))
+        tmp_labels = {"{}/{}".format(folder, name): tmp_labels[name] for name in tmp_images}
+        labels.update(tmp_labels)
+        tmp_images = ["{}/{}".format(folder, name) for name in tmp_images]
+        images += tmp_images
 
     # Split the data into three subsets
-    train_keys, tmp_keys = train_test_split(list(labels.keys()), test_size=0.4, random_state=SPLIT_SEED)
+    train_keys, tmp_keys = train_test_split(images, test_size=0.4, random_state=SPLIT_SEED)
     val_keys, test_keys = train_test_split(tmp_keys, test_size=0.5, random_state=SPLIT_SEED)
 
     train_labels = {key: labels[key] for key in train_keys}
@@ -130,13 +139,11 @@ def loadLabels(folder):
 
 
 class JsonDataset(Dataset):
-    def __init__(self, labels, folder="", preprocess=False, random_flip=0.0, swap=False):
+    def __init__(self, labels, preprocess=False, random_flip=0.0, swap=False):
         self.keys = list(labels.keys())
         self.labels = labels.copy()
-        self.folder = folder
         self.preprocess = preprocess
         self.random_flip = random_flip
-        self.swap = swap
 
     def __getitem__(self, index):
         """
@@ -145,7 +152,7 @@ class JsonDataset(Dataset):
         """
         image = self.keys[index]
         margin_left, margin_top = 0, 0
-        im = cv2.imread(self.folder + image)
+        im = cv2.imread(image)
 
         # Crop the image and normalize it
         if self.preprocess:

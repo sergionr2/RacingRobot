@@ -19,14 +19,11 @@ evaluate_print = 1  # Print info every 1 epoch
 VAL_BATCH_SIZE = 64  # Batch size for validation and test data
 
 
-def main(folder, num_epochs=100, batchsize=32,
+def main(folders, num_epochs=100, batchsize=32,
          learning_rate=0.0001, seed=42, device="cpu", random_flip=0.5,
          model_type="cnn", evaluate_print=1, load_model=""):
 
-    if not folder.endswith('/'):
-        folder += '/'
-
-    train_labels, val_labels, test_labels, _ = loadLabels(folder)
+    train_labels, val_labels, test_labels, _ = loadLabels(folders)
 
     # Seed the random generator
     np.random.seed(seed)
@@ -41,14 +38,14 @@ def main(folder, num_epochs=100, batchsize=32,
     kwargs = {'num_workers': 1, 'pin_memory': False} if device == "cuda" else {}
     # Create data loaders
     train_loader = th.utils.data.DataLoader(
-        JsonDataset(train_labels, preprocess=True, folder=folder, random_flip=random_flip),
+        JsonDataset(train_labels, preprocess=True, random_flip=random_flip),
         batch_size=batchsize, shuffle=True, **kwargs)
 
     # Random flip also for val ?
-    val_loader = th.utils.data.DataLoader(JsonDataset(val_labels, preprocess=True, folder=folder),
+    val_loader = th.utils.data.DataLoader(JsonDataset(val_labels, preprocess=True),
                                           batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
-    test_loader = th.utils.data.DataLoader(JsonDataset(test_labels, preprocess=True, folder=folder),
+    test_loader = th.utils.data.DataLoader(JsonDataset(test_labels, preprocess=True),
                                            batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
     model_name = "{}_model_tmp".format(model_type)
@@ -147,7 +144,7 @@ def main(folder, num_epochs=100, batchsize=32,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train a line detector')
-    parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
+    parser.add_argument('-f', '--folders', help='Training folders', type=str, nargs='+', required=True)
     parser.add_argument('--num_epochs', help='Number of epoch', default=50, type=int)
     parser.add_argument('-bs', '--batchsize', help='Batch size', default=4, type=int)
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
@@ -159,6 +156,6 @@ if __name__ == '__main__':
 
     args.cuda = not args.no_cuda and th.cuda.is_available()
     device = th.device("cuda" if args.cuda else "cpu")
-    main(folder=args.folder, num_epochs=args.num_epochs, batchsize=args.batchsize,
+    main(folders=args.folders, num_epochs=args.num_epochs, batchsize=args.batchsize,
          learning_rate=args.learning_rate, device=device,
          seed=args.seed, load_model=args.load_model, model_type=args.model_type)
