@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import division, print_function, absolute_import
 
 import threading
 import time
@@ -122,13 +122,8 @@ class Viewer(object):
     """
 
     def __init__(self, out_queue, resolution, debug=False, fps=90):
-        self.camera = picamera.PiCamera()
-        # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
-        # TODO: try with mode 6, larger FoV (works only with v2 module)
-        # TODO: put everything in the constructor
-        self.camera.sensor_mode = CAMERA_MODE
-        self.camera.resolution = resolution
-        self.camera.framerate = fps
+        self.camera = picamera.PiCamera(resolution=CAMERA_RESOLUTION, sensor_mode=CAMERA_MODE,
+                                        framerate=fps)
         self.out_queue = out_queue
         # self.camera.zoom = (0.0, 0.0, 1.0, 1.0)
         # self.camera.awb_gains = 1.5

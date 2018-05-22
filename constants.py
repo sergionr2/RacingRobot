@@ -7,7 +7,9 @@ import numpy as np
 
 # Main Constants
 CAMERA_RESOLUTION = (640 // 2, 480 // 2)
-CAMERA_MODE = 6
+# https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
+# mode 4, larger FoV but FPS <= 40
+CAMERA_MODE = 4
 # Regions of interest
 MAX_WIDTH = CAMERA_RESOLUTION[0]
 MAX_HEIGHT = CAMERA_RESOLUTION[1]
@@ -56,7 +58,7 @@ Kd = 4
 Ki = 0
 ALPHA = 1  # alpha of the moving mean for the turn coefficient
 # Main Program
-FPS = 90
+FPS = 40
 N_SECONDS = 3000  # number of seconds before exiting the program
 BAUDRATE = 115200  # Communication with the Arduino
 # Number of messages we can send to the Arduino without receiving an acknowledgment

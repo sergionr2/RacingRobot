@@ -19,7 +19,7 @@ from robust_serial import write_order, Order
 from robust_serial.threads import CommandThread, ListenerThread
 from robust_serial.utils import open_serial_port, CustomQueue
 
-from constants import CAMERA_RESOLUTION, CAMERA_MODE, TELEOP_PORT
+from constants import CAMERA_RESOLUTION, CAMERA_MODE, TELEOP_PORT, FPS
 
 
 emptyException = queue.Empty
@@ -81,9 +81,7 @@ socket.send(b'1')
 print("Connected To Client")
 i = 0
 
-with picamera.PiCamera() as camera:
-    camera.resolution = CAMERA_RESOLUTION
-    camera.sensor_mode = CAMERA_MODE
+with picamera.PiCamera(resolution=CAMERA_RESOLUTION, sensor_mode=CAMERA_MODE, framerate=FPS) as camera:
     if record_video:
         camera.start_recording("{}.h264".format(args.video_file))
 
