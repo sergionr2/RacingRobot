@@ -19,7 +19,8 @@ INPUT_WIDTH = ROI[2] // FACTOR
 INPUT_HEIGHT = ROI[3] // FACTOR
 N_CHANNELS = 3
 SPLIT_SEED = 42  # For train/val/test split
-WEIGHTS_PTH = "cnn_model.pth"  # Path to the trained model
+MODEL_TYPE = "custom"  # Network architecture {cnn or custom}
+WEIGHTS_PTH = MODEL_TYPE + "_model.pth"  # Path to the trained model
 NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs
 Y_TARGET = MAX_HEIGHT // 2
 

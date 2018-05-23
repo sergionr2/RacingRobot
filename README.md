@@ -276,7 +276,6 @@ Or follow this tutorial:
 # don't forget to set the env variables:
 export NO_CUDA=1
 export NO_DISTRIBUTED=1
-export MAX_JOBS=2
 git clone --recursive https://github.com/pytorch/pytorch
 sudo -EH python setup.py install
 # torchvision is not used yet

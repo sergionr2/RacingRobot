@@ -9,11 +9,11 @@ import argparse
 import cv2
 import numpy as np
 
-from constants import REF_ANGLE, MAX_ANGLE, EXIT_KEYS, WEIGHTS_PTH, ROI, NUM_OUTPUT, Y_TARGET
+from constants import REF_ANGLE, MAX_ANGLE, EXIT_KEYS, WEIGHTS_PTH, ROI, NUM_OUTPUT, Y_TARGET, MODEL_TYPE
 from train import loadNetwork, predict
 
 # Load trained model
-model = loadNetwork(WEIGHTS_PTH, NUM_OUTPUT)
+model = loadNetwork(WEIGHTS_PTH, NUM_OUTPUT, MODEL_TYPE)
 
 
 def processImage(image, debug=False):
