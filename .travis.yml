@@ -10,11 +10,11 @@ python:
 # This reportedly works around an issue downloading packages from pypi on
 # travis.  Consider removing this after the underlying issue is fixed.
 # https://github.com/travis-ci/travis-ci/issues/2389
-# sudo: false
+sudo: false
 
 # command to install dependencies
 install:
-  - travis_wait
+  # - travis_wait
   - pip install -r requirements.txt
 # command to run tests
 script:
