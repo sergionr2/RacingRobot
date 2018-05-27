@@ -1,4 +1,7 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
+
+[![Build Status](https://travis-ci.org/araffin/RacingRobot.svg?branch=master)](https://travis-ci.org/araffin/RacingRobot)
+
 Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar.
 Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
