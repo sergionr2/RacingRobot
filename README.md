@@ -1,9 +1,29 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
-Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
+Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar.
+Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
 **Video of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
 [![The racing robot](https://cdn-images-1.medium.com/max/2000/1*UsmiJ4IzXi6U9svKjB22zw.jpeg)](https://www.youtube.com/watch?v=xhI71ZdSh6k)
+
+Table of Contents
+=================
+  * [Detailed Presentation](#detailed-presentation)
+  * [3D Models and Training Data](#3d-models-and-training-data)
+    * [3D Models](#3d-models)
+    * [Training Data](#training-data)
+      * [IronCar and Toulouse Robot Race Datasets](#ironcar-and-toulouse-robot-race-datasets)
+  * [How to run everything ?](#how-to-run-everything-)
+  * [Autonomous mode](#autonomous-mode)
+  * [Remote Control Mode](#remote-control-mode)
+  * [How to train the line detector ?](#how-to-train-the-line-detector-)
+    * [Benchmark](#benchmark)
+  * [Installation](#installation)
+    * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
+    * [From Scratch](#from-scratch)
+    * [Python Packages](#python-packages)
+  * [C++ Extension](#c-extension)
+  * [Contributors](#contributors)
 
 ## Detailed Presentation
 
@@ -26,24 +46,15 @@ Note: the Battery Holder was designed for this [External Battery](https://www.am
 
 ### Training Data
 
-**Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
+#### IronCar and Toulouse Robot Race Datasets
 
-The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
-There are two folders:
-- input_images/ (raw images from remote control)
-- label_regions/ (labeled regions of the input images)
+We release the different videos taken with the on-board camera, along we the labeled data (the labels are in a pickle file) for IronCar and Toulouse Robot Race:
 
-The name of the labeled images is as follow: **"x_center"-"y_center"\_"id".jpg**
+- [Videos](https://drive.google.com/open?id=1VJ46uBZUfxwUVPHGw1p8d6cgHDGervcL)
+- (outdated) [Toulouse Dataset](https://drive.google.com/open?id=1vj7N0aE-eyKg7OY0ZdlkwW2rl51UzwEW)
+- (outdated) [IronCar Dataset](https://drive.google.com/open?id=1FZdXnrO7WAo4A4-repE_dglCc2ZoAJwa)
 
-For example:
-- `0-28_452-453r0.jpg`
-=> center = (0, 28)
-| id = "452-453r0"
-
-- `6-22_691-23sept1506162644_2073r2.jpg`
-=> center = (6, 22)
-| id = "691-23sept1506162644_2073r2"
 
 ## How to run everything ?
 
@@ -71,11 +82,11 @@ python main.py
 2. Connect the raspberry pi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
 3. Launch teleoperation server (it will use the port 5556)
 ```
-python command/python/teleop_server.py
+python teleop/teleop_server.py
 ```
 4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in the code)
 ```
-python command/python/teleop_client.py
+python teleop/teleop_client.py
 ```
 5. Enjoy! You can now control the car with the keyboard.
 
@@ -83,7 +94,7 @@ python command/python/teleop_client.py
 
 1. Record a video in the teleoperation mode:
 ```
-python command/python/teleop_server.py -v my_video
+python teleop/teleop_server.py -v my_video
 ```
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
 ```
@@ -92,27 +103,25 @@ MP4Box -add video.h264 video.mp4
 
 3. Split the video into a sequence of images
 ```
-python -m train.split_video -i video.mp4 --no-display -o path/output/folder
+python -m train.split_video -i video.mp4 --no-display -o path/to/dataset/folder
 ```
 
-4. Label the data using the labeling tool
-```
-python -m train.label_images -i path/to/input/folder -o path/to/output/folder
-```
-To label an image, you have to click on the center of line in the displayed image.
-If the image do not contain any line, or if you want to pass to the next frame, press any key.
+4. Label the data using the labeling tool: [https://github.com/araffin/graph-annotation-tool](https://github.com/araffin/graph-annotation-tool)
+
+
+5. Rename the json file that contains the labels to `labels.json` and put it in the same folder of the dataset (folder with the images)
 
 5. Train the neural network (again please change the paths in the script)
 ```
-python -m train.train -f path/input/folder
+python -m train.train -f path/to/dataset/folder
 ```
-The best model (lowest error on the validation data) will be saved as *mlp_model_tmp.npz*.
+The best model (lowest error on the validation data) will be saved as *cnn_model_tmp.pth*.
 
 
 6. Test the trained neural network
 
 ```
-python -m train.test -f path/input/folder -w mlp_model_tmp
+python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
 ```
 
 ### Benchmark
@@ -126,7 +135,7 @@ python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
 
 #### Recommended : Use an image with everything already installed
 
-0. You need a 32GB micro sd card (warning, all data on that card will be overwritten)
+0. You need a 16GB micro sd card (warning, all data on that card will be overwritten)
 WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://github.com/billw2/rpi-clone) may help)
 
 1. Download the image [here](https://drive.google.com/open?id=1CUmSKOQ7i_XTrsLCRntypK9KcVaVwM4h)
@@ -143,6 +152,7 @@ Installed softwares:
  - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
+
 Camera and ssh are enabled.
 
 

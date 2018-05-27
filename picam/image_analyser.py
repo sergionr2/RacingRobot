@@ -136,7 +136,7 @@ class Viewer(object):
         # self.camera.zoom = (0.0, 0.0, 1.0, 1.0)
         # self.camera.awb_gains = 1.5
         self.camera.awb_mode = 'auto'
-        self.exposure_mode = 'auto'
+        self.camera.exposure_mode = 'auto'
         self.debug = debug
 
     def start(self):

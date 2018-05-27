@@ -44,11 +44,10 @@ cv::Mat b2 = cv::Mat::ones(4, 1, CV_32F).t();
 cv::Mat w3 = cv::Mat::ones(4, 1, CV_32F).t();
 cv::Mat b3 = cv::Mat::ones(1, 1, CV_32F).t();
 
-
 // Regions of interest (ROIs)
-cv::Rect R0(0, 150, MAX_WIDTH, 50);
-cv::Rect R1(0, 125, MAX_WIDTH, 50);
-cv::Rect R2(0, 100, MAX_WIDTH, 50);
+cv::Rect R0(0, 100, MAX_WIDTH, 100);
+cv::Rect R1(0, 75, MAX_WIDTH, 100);
+cv::Rect R2(0, 50, MAX_WIDTH, 100);
 cv::Rect R3(0, 75, MAX_WIDTH, 50);
 cv::Rect R4(0, 50, MAX_WIDTH, 50);
 // ROI used

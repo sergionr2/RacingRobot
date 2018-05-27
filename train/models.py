@@ -1,6 +1,5 @@
 """
 Different neural network architectures for detecting the line
-# TODO: change std of weights initialization
 """
 from __future__ import print_function, division, absolute_import
 
@@ -10,9 +9,8 @@ import torch.nn.functional as F
 
 class MlpNetwork(nn.Module):
     """
-    Dense Neural Net for State Representation Learning (SRL)
-    input shape : 3-channel RGB images of shape (3 x H x W) (to be consistent with CNN network)
-    :param input_dim: (int) 3 x H x H
+    MLP network for detecting the line
+    :param input_dim: (int) 3 x H x W
     :param n_hidden: [int]
     :param drop_p: (float) Dropout proba
     """
@@ -64,27 +62,62 @@ class MlpNetwork(nn.Module):
 
 
 class ConvolutionalNetwork(nn.Module):
-    """
-    Convolutional Neural Network
-    input shape : 3-channel RGB images of shape (3 x H x W)
-    """
-
-    def __init__(self):
+    def __init__(self, drop_p=0.0, num_output=6):
         super(ConvolutionalNetwork, self).__init__()
         self.conv_layers = nn.Sequential(
-
-            # 20x80x3 -> 9x39x64
-            nn.Conv2d(3, 8, kernel_size=3, stride=2, padding=0, bias=False),
-            nn.Conv2d(8, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 20, kernel_size=7, stride=2, padding=3),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
+
+            nn.Conv2d(20, 20, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2)
         )
 
-        self.fc1 = nn.Linear(9 * 39 * 8, 8)
-        self.fc2 = nn.Linear(8, 1)
+        # Factor = 1
+        # self.fc1 = nn.Linear(20 * 20 * 39, 16)
+        # Factor = 2
+        # self.fc1 = nn.Linear(20 * 10 * 19, 16)
+        # Factor = 4
+        self.fc1 = nn.Linear(20 * 5 * 9, 16)
+        self.fc2 = nn.Linear(16, num_output)
+        self.drop_p = drop_p
 
     def forward(self, x):
+        x = F.dropout(x, p=self.drop_p, training=self.training)
         x = self.conv_layers(x)
+        # print(x.shape)
         x = x.view(x.size(0), -1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
+        return x
+
+
+class CustomNet(nn.Module):
+    def __init__(self, num_output=6):
+        super(CustomNet, self).__init__()
+
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 20, kernel_size=7, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            nn.Conv2d(20, 20, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(20 * 4 * 8, 32),
+            # nn.Linear(20*9*18, 32),
+            nn.ReLU(inplace=True),
+            nn.Linear(32, 32),
+            nn.ReLU(inplace=True),
+            nn.Linear(32, num_output)
+        )
+
+    def forward(self, x):
+        x = self.model(x)
+        # print(x.shape)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
         return x

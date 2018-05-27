@@ -1,0 +1,3 @@
+[submodule "teleop/cpp_arduino_serial"]
+	path = teleop/cpp_arduino_serial
+	url = https://github.com/araffin/cpp-arduino-serial.git
