@@ -4,9 +4,8 @@ import pygame
 import rospy
 from pygame.locals import *
 from std_msgs.msg import Int16, Int8
+from robust_serial import Order
 
-import teleop.common as common
-from teleop.common import Order
 from constants import THETA_MIN, THETA_MAX
 
 UP = (1, 0)
@@ -48,20 +47,6 @@ def control(x, theta, control_speed, control_turn):
     else:
         control_turn = target_turn
     return control_speed, control_turn
-
-
-def addToCommandQueue(control_speed, control_turn):
-    """
-    :param control_speed: (float)
-    :param control_turn: (float)
-    :return: (int)
-    """
-    # Send Orders
-    common.command_queue.put((Order.MOTOR, control_speed))
-    t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
-    angle_order = int(THETA_MIN * t + THETA_MAX * (1 - t))
-    common.command_queue.put((Order.SERVO, angle_order))
-    return angle_order
 
 
 def pygameMain():

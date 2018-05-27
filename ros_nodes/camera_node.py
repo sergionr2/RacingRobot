@@ -32,6 +32,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.exit = False
         self.bridge = CvBridge()
         self.image_publisher = image_publisher
+        self.thread = None
         self.start()
 
     def analyse(self, frame):
