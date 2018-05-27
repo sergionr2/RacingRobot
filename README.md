@@ -22,8 +22,8 @@ Table of Contents
         * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
         * [From Scratch](#from-scratch)
         * [Python Packages](#python-packages)
-     * [C   Extension](#c-extension)
-     * [Contributors](#contributors)
+  * [C   Extension](#c-extension)
+  * [Contributors](#contributors)
 
 ## Detailed Presentation
 
