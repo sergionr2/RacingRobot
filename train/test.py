@@ -15,7 +15,7 @@ from .utils import loadLabels, loadNetwork, predict
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
 parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
-parser.add_argument('--model_type', help='Model type: cnn', default="cnn", type=str, choices=['cnn', 'custom'])
+parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str, choices=['cnn', 'custom'])
 
 args = parser.parse_args()
 

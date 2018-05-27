@@ -3,6 +3,7 @@ bin/
 lib/
 .idea/
 __pycache__/
+.pytest_cache/
 *.x
 build/
 tmp/
