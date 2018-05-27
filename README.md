@@ -1,9 +1,29 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
-Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
+Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar.
+Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
 **Video of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
 [![The racing robot](https://cdn-images-1.medium.com/max/2000/1*UsmiJ4IzXi6U9svKjB22zw.jpeg)](https://www.youtube.com/watch?v=xhI71ZdSh6k)
+
+Table of Contents
+=================
+  * [Detailed Presentation](#detailed-presentation)
+  * [3D Models and Training Data](#3d-models-and-training-data)
+     * [3D Models](#3d-models)
+     * [Training Data](#training-data)
+        * [IronCar and Toulouse Robot Race Datasets](#ironcar-and-toulouse-robot-race-datasets)
+  * [How to run everything ?](#how-to-run-everything-)
+  * [Autonomous mode](#autonomous-mode)
+  * [Remote Control Mode](#remote-control-mode)
+  * [How to train the line detector ?](#how-to-train-the-line-detector-)
+     * [Benchmark](#benchmark)
+  * [Installation](#installation)
+        * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
+        * [From Scratch](#from-scratch)
+        * [Python Packages](#python-packages)
+     * [C   Extension](#c-extension)
+     * [Contributors](#contributors)
 
 ## Detailed Presentation
 

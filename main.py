@@ -1,6 +1,7 @@
 """
 Main script for autonomous mode
 It launches all the thread and does the PID control
+use export OMP_NUM_THREADS=2 to improve performances
 """
 from __future__ import division, print_function
 
