@@ -91,7 +91,7 @@ class Viewer(object):
         # self.camera.zoom = (0.0, 0.0, 1.0, 1.0)
         # self.camera.awb_gains = 1.5
         self.camera.awb_mode = 'auto'
-        self.exposure_mode = 'auto'
+        self.camera.exposure_mode = 'auto'
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.image_publisher)
@@ -101,6 +101,7 @@ class Viewer(object):
         self.camera.wait_recording()
         self.camera.stop_recording()
         self.analyser.stop()
+
 
 if __name__ == '__main__':
     image_publisher = rospy.Publisher('/picamera/image', Image, queue_size=10)

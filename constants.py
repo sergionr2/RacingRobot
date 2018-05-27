@@ -41,6 +41,10 @@ ALPHA = 1  # alpha of the moving mean for the turn coefficient
 # Main Program
 FPS = 90
 N_SECONDS = 3000  # number of seconds before exiting the program
+BAUDRATE = 115200  # Communication with the Arduino
+# Number of messages we can send to the Arduino without receiving an acknowledgment
+N_MESSAGES_ALLOWED = 3
+COMMAND_QUEUE_SIZE = 2
 
 # Image Analyser
 SAVE_EVERY = 1000  # Save every 1000 frame to debug folder

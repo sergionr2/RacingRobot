@@ -117,20 +117,21 @@ def sendToServer(socket, control_speed, control_turn):
     return angle_order
 
 
-host = "192.168.12.252"  # Ip of the Raspberry Pi
-# host = "192.168.12.248"
-port = "5556"
-context = zmq.Context()
-socket = context.socket(zmq.PAIR)
-print("Connecting to ... {}".format(host))
-socket.connect("tcp://{}:{}".format(host, port))
+if __name__ == '__main__':
+    host = "192.168.12.252"  # Ip of the Raspberry Pi
+    # host = "192.168.12.248"
+    port = "5556"
+    context = zmq.Context()
+    socket = context.socket(zmq.PAIR)
+    print("Connecting to ... {}".format(host))
+    socket.connect("tcp://{}:{}".format(host, port))
 
-msg = socket.recv()
-print("Connected To Server")
-try:
-    pygameMain()
-except KeyboardInterrupt as e:
-    pass
-finally:
-    socket.send_json((-999, -999))
-    socket.close()
+    msg = socket.recv()
+    print("Connected To Server")
+    try:
+        pygameMain()
+    except KeyboardInterrupt as e:
+        pass
+    finally:
+        socket.send_json((-999, -999))
+        socket.close()

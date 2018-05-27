@@ -6,6 +6,7 @@ from pygame.locals import *
 from std_msgs.msg import Int16, Int8
 
 import teleop.common as common
+from teleop.common import Order
 from constants import THETA_MIN, THETA_MAX
 
 UP = (1, 0)
@@ -20,7 +21,7 @@ MAX_TURN = 45
 STEP_SPEED = 10
 STEP_TURN = 30
 
-TELEOP_RATE = 1 / 60 # 60 fps
+TELEOP_RATE = 1 / 60  # 60 fps
 
 moveBindingsGame = {
     K_UP: UP,
@@ -28,6 +29,7 @@ moveBindingsGame = {
     K_RIGHT: RIGHT,
     K_DOWN: DOWN
 }
+
 
 def control(x, theta, control_speed, control_turn):
     target_speed = MAX_SPEED * x
@@ -46,6 +48,7 @@ def control(x, theta, control_speed, control_turn):
     else:
         control_turn = target_turn
     return control_speed, control_turn
+
 
 def addToCommandQueue(control_speed, control_turn):
     """
@@ -86,9 +89,7 @@ def pygameMain():
         help_2 = 'space key, k : force stop ---  anything else : stop smoothly'
         writeText(window, help_2, 20, 100, small_font)
 
-    x, theta, status, count = 0, 0, 0, 0
     control_speed, control_turn = 0, 0
-    angle_order = 0
     updateScreen(window, control_speed, control_turn)
 
     while not end:
@@ -121,6 +122,7 @@ def pygameMain():
 pub_servo = rospy.Publisher("/arduino/servo", Int16, queue_size=2)
 pub_motor = rospy.Publisher("/arduino/motor", Int8, queue_size=2)
 
+
 def sendToServer(control_speed, control_turn):
     """
     :param control_speed: (float)
@@ -132,6 +134,7 @@ def sendToServer(control_speed, control_turn):
     pub_servo.publish(angle_order)
     pub_motor.publish(control_speed)
     return angle_order
+
 
 if __name__ == '__main__':
     print("Starting Teleop client node")

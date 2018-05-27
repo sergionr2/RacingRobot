@@ -17,16 +17,16 @@ try:
 except ImportError:
     import Queue as queue
 
-import serial
 import numpy as np
 from tqdm import tqdm
+from robust_serial import write_order, Order
+from robust_serial.threads import CommandThread, ListenerThread
+from robust_serial.utils import open_serial_port, CustomQueue
 
-import teleop.common as common
-from teleop.common import is_connected, n_received_semaphore, command_queue, \
-    CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
 from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
-    MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION
+    MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION, \
+    BAUDRATE, N_MESSAGES_ALLOWED, COMMAND_QUEUE_SIZE
 
 emptyException = queue.Empty
 fullException = queue.Full
@@ -51,25 +51,31 @@ ch.setFormatter(formatter)
 log.addHandler(ch)
 
 
-def forceStop():
-    # SEND STOP ORDER at the end
-    common.resetCommandQueue()
-    n_received_semaphore.release()
-    n_received_semaphore.release()
-    common.command_queue.put((Order.MOTOR, 0))
-    common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
-
-
-def mainControl(out_queue, resolution, n_seconds=5):
+def forceStop(command_queue, n_received_semaphore):
     """
-    :param out_queue: (Queue)
-    :param resolution: (int, int)
+    Stop The car
+    :param command_queue: (CustomQueue) Queue for sending orders to the Arduino
+    :param n_received_semaphore: (threading.Semaphore) Semaphore to regulate orders sent to the Arduino
+    """
+    command_queue.clear()
+    n_received_semaphore.release()
+    n_received_semaphore.release()
+    command_queue.put((Order.MOTOR, 0))
+    command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
+
+
+def mainControl(command_queue, n_received_semaphore, out_queue, resolution, n_seconds=5):
+    """
+    :param command_queue: (CustomQueue) Queue for sending orders to the Arduino
+    :param n_received_semaphore: (threading.Semaphore) Semaphore to regulate orders sent to the Arduino
+    :param out_queue: (Queue) Output of image processing
+    :param resolution: (int, int) Camera Resolution
     :param n_seconds: (int) number of seconds to keep this script alive
     """
     # Moving mean for line curve estimation
     mean_h = 0
     start_time = time.time()
-    error, errorD, errorI = 0, 0, 0
+    error, error_d, error_i = 0, 0, 0
     last_error = 0
     # Neutral Angle
     theta_init = (THETA_MAX + THETA_MIN) / 2
@@ -129,15 +135,15 @@ def mainControl(out_queue, resolution, n_seconds=5):
         # Reduce speed if we have a high error
         speed_order = t * MIN_SPEED + (1 - t) * v_max
 
-        errorD = error - last_error
+        error_d = error - last_error
         # Update derivative error
         last_error = error
 
         # PID Control
         dt = time.time() - last_time
-        u_angle = Kp * error + Kd * (errorD / dt) + Ki * (errorI * dt)
+        u_angle = Kp * error + Kd * (error_d / dt) + Ki * (error_i * dt)
         # Update integral error
-        errorI += error
+        error_i += error
         last_time = time.time()
 
         angle_order = theta_init - u_angle
@@ -145,21 +151,21 @@ def mainControl(out_queue, resolution, n_seconds=5):
 
         # Send orders to Arduino
         try:
-            common.command_queue.put_nowait((Order.MOTOR, int(speed_order)))
-            common.command_queue.put_nowait((Order.SERVO, angle_order))
+            command_queue.put_nowait((Order.MOTOR, int(speed_order)))
+            command_queue.put_nowait((Order.SERVO, angle_order))
         except fullException:
             n_full += 1
             # print("Command queue is full")
         n_total += 1
 
         # Logging
-        log.debug("Error={:.2f} errorD={:.2f} errorI={:.2f}".format(error, errorD, errorI))
+        log.debug("Error={:.2f} error_d={:.2f} error_i={:.2f}".format(error, error_d, error_i))
         log.debug("Turn percent={:.2f} x_pred={:.2f}".format(turn_percent, x_pred))
         log.debug("v_max={:.2f} mean_h={:.2f}".format(v_max, mean_h))
         log.debug("speed={:.2f} angle={:.2f}".format(speed_order, angle_order))
 
     # SEND STOP ORDER at the end
-    forceStop()
+    forceStop(command_queue, n_received_semaphore)
     # Make sure STOP order is sent
     time.sleep(0.2)
     pbar.close()
@@ -168,17 +174,18 @@ def mainControl(out_queue, resolution, n_seconds=5):
 
 
 if __name__ == '__main__':
+    serial_file = None
     try:
         # Open serial port (for communication with Arduino)
-        serial_port = get_serial_ports()[0]
-        serial_file = serial.Serial(port=serial_port, baudrate=BAUDRATE, timeout=0, writeTimeout=0)
+        serial_file = open_serial_port(baudrate=BAUDRATE)
     except Exception as e:
         raise e
 
+    is_connected = False
     # Initialize communication with Arduino
     while not is_connected:
         log.info("Waiting for arduino...")
-        sendOrder(serial_file, Order.HELLO.value)
+        write_order(serial_file, Order.HELLO)
         bytes_array = bytearray(serial_file.read(1))
         if not bytes_array:
             time.sleep(2)
@@ -205,15 +212,23 @@ if __name__ == '__main__':
     # Event to notify threads that they should terminate
     exit_event = threading.Event()
 
+    # Communication with the Arduino
+    # Create Command queue for sending orders
+    command_queue = CustomQueue(COMMAND_QUEUE_SIZE)
+    n_received_semaphore = threading.Semaphore(N_MESSAGES_ALLOWED)
+    # Lock for accessing serial file (to avoid reading and writing at the same time)
+    serial_lock = threading.Lock()
+
     log.info("Starting Communication Threads")
     # Threads for arduino communication
-    threads = [CommandThread(serial_file, command_queue, exit_event),
-               ListenerThread(serial_file, exit_event), image_thread]
-    for t in threads:
-        t.start()
+    threads = [CommandThread(serial_file, command_queue, exit_event, n_received_semaphore, serial_lock),
+               ListenerThread(serial_file, exit_event, n_received_semaphore, serial_lock)]
+    for thread in threads:
+        thread.start()
 
     log.info("Starting Control Thread")
-    mainControl(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
+    mainControl(command_queue, n_received_semaphore, out_queue,
+                resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
 
     # End the threads
     exit_event.set()
@@ -223,5 +238,5 @@ if __name__ == '__main__':
     with exit_condition:
         exit_condition.notify_all()
 
-    for t in threads:
-        t.join()
+    for thread in threads:
+        thread.join()

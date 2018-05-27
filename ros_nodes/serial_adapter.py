@@ -16,9 +16,11 @@ def servoCallback(data):
     servo_order = np.clip(servo_order, 0, 180)
     common.command_queue.put((Order.SERVO, servo_order))
 
+
 def motorCallback(data):
     speed = data.data
     common.command_queue.put((Order.MOTOR, speed))
+
 
 def listener():
     rospy.init_node('serial_adapter', anonymous=True)
@@ -26,6 +28,7 @@ def listener():
     rospy.Subscriber("arduino/servo", Int16, servoCallback, queue_size=2)
     rospy.Subscriber("arduino/motor", Int8, motorCallback, queue_size=2)
     rospy.spin()
+
 
 def forceStop():
     # SEND STOP ORDER at the end
