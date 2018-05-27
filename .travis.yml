@@ -7,15 +7,10 @@ python:
   - "3.5"
   - "3.6"
 
-# This reportedly works around an issue downloading packages from pypi on
-# travis.  Consider removing this after the underlying issue is fixed.
-# https://github.com/travis-ci/travis-ci/issues/2389
-sudo: false
-
 # command to install dependencies
 install:
   # - travis_wait
-  - pip install -r requirements.txt
+  - pip install -q -r requirements.txt
 # command to run tests
 script:
   - ./run_test.sh # or py.test for Python versions 3.5 and below
