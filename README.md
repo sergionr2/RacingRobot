@@ -82,11 +82,11 @@ python main.py
 2. Connect the raspberry pi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
 3. Launch teleoperation server (it will use the port 5556)
 ```
-python command/python/teleop_server.py
+python teleop/teleop_server.py
 ```
 4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in the code)
 ```
-python command/python/teleop_client.py
+python teleop/teleop_client.py
 ```
 5. Enjoy! You can now control the car with the keyboard.
 
@@ -94,7 +94,7 @@ python command/python/teleop_client.py
 
 1. Record a video in the teleoperation mode:
 ```
-python command/python/teleop_server.py -v my_video
+python teleop/teleop_server.py -v my_video
 ```
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
 ```

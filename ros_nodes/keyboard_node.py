@@ -1,14 +1,11 @@
 from __future__ import print_function, with_statement, division
 
+import pygame
 import rospy
+from pygame.locals import *
 from std_msgs.msg import Int16, Int8
 
-import zmq
-import pygame
-from pygame.locals import *
-
-import command.python.common as common
-
+import teleop.common as common
 from constants import THETA_MIN, THETA_MAX
 
 UP = (1, 0)

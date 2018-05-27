@@ -1,16 +1,15 @@
+import threading
+import time
+
+import numpy as np
 import rospy
+import serial
 from std_msgs.msg import Int16, Int8
 
-import time
-import threading
-
-import serial
-import numpy as np
-
-import command.python.common as common
-
-from command.python.common import is_connected, n_received_semaphore, command_queue, \
+import teleop.common as common
+from teleop.common import is_connected, n_received_semaphore, command_queue, \
     CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
+
 
 def servoCallback(data):
     servo_order = data.data

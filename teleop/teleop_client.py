@@ -2,7 +2,51 @@ from __future__ import print_function, with_statement, division
 
 import zmq
 
-from teleop import *
+import pygame
+from pygame.locals import *
+
+
+UP = (1, 0)
+LEFT = (0, 1)
+RIGHT = (0, -1)
+DOWN = (-1, 0)
+STOP = (0, 0)
+KEY_CODE_SPACE = 32
+
+MAX_SPEED = 30
+MAX_TURN = 45
+THETA_MIN = 70
+THETA_MAX = 150
+STEP_SPEED = 10
+STEP_TURN = 30
+
+TELEOP_RATE = 1 / 60  # 60 fps
+
+moveBindingsGame = {
+    K_UP: UP,
+    K_LEFT: LEFT,
+    K_RIGHT: RIGHT,
+    K_DOWN: DOWN
+}
+
+
+def control(x, theta, control_speed, control_turn):
+    target_speed = MAX_SPEED * x
+    target_turn = MAX_TURN * theta
+    if target_speed > control_speed:
+        control_speed = min(target_speed, control_speed + STEP_SPEED)
+    elif target_speed < control_speed:
+        control_speed = max(target_speed, control_speed - STEP_SPEED)
+    else:
+        control_speed = target_speed
+
+    if target_turn > control_turn:
+        control_turn = min(target_turn, control_turn + STEP_TURN)
+    elif target_turn < control_turn:
+        control_turn = max(target_turn, control_turn - STEP_TURN)
+    else:
+        control_turn = target_turn
+    return control_speed, control_turn
 
 
 def pygameMain():
@@ -30,9 +74,7 @@ def pygameMain():
         help_2 = 'space key, k : force stop ---  anything else : stop smoothly'
         writeText(window, help_2, 20, 100, small_font)
 
-    x, theta, status, count = 0, 0, 0, 0
     control_speed, control_turn = 0, 0
-    angle_order = 0
     updateScreen(window, control_speed, control_turn)
 
     while not end:

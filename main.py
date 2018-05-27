@@ -7,8 +7,8 @@ from __future__ import division, print_function
 
 import logging
 import signal
-import time
 import threading
+import time
 from datetime import datetime
 
 # Python 2/3 support
@@ -21,8 +21,8 @@ import serial
 import numpy as np
 from tqdm import tqdm
 
-import command.python.common as common
-from command.python.common import is_connected, n_received_semaphore, command_queue, \
+import teleop.common as common
+from teleop.common import is_connected, n_received_semaphore, command_queue, \
     CommandThread, ListenerThread, sendOrder, Order, get_serial_ports, BAUDRATE
 from picam.image_analyser import ImageProcessingThread, Viewer
 from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
@@ -60,7 +60,7 @@ def forceStop():
     common.command_queue.put((Order.SERVO, int((THETA_MIN + THETA_MAX) / 2)))
 
 
-def main_control(out_queue, resolution, n_seconds=5):
+def mainControl(out_queue, resolution, n_seconds=5):
     """
     :param out_queue: (Queue)
     :param resolution: (int, int)
@@ -213,7 +213,7 @@ if __name__ == '__main__':
         t.start()
 
     log.info("Starting Control Thread")
-    main_control(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
+    mainControl(out_queue, resolution=CAMERA_RESOLUTION, n_seconds=N_SECONDS)
 
     # End the threads
     exit_event.set()
