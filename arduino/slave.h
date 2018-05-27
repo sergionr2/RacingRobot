@@ -1,96 +1,93 @@
-#ifndef SLAVE_H
-#define SLAVE_H
+// Code using Robust Arduino Serial Protocol: https://github.com/araffin/arduino-robust-serial
+
+#ifndef ARDUINO_SLAVE_H
+#define ARDUINO_SLAVE_H
 
 /*!
- * \file slave.h
- * \authors Antonin RAFFIN
- * \date June 2017
- * \brief Code to communicate with the master and send orders to motors
+ * \brief Send updated motors orders to the two motors (servomotor + motor)
  */
+void update_motors_orders();
 
-
-void pidControl();
+/*!
+ * Stop the car (set the speed to 0)
+ */
 void stop();
-int convertOrderToPWM(float speedOrder);
+
+/*!
+ * \brief Convert a speed order (in percentage of max speed)
+ * into a pwm order (between 0 and 255)
+ * \param motor_speed speed order in percentage of max speed
+ * \return the speed order in pwm
+ */
+int convert_to_pwm(float motor_speed);
 
 /*!
  * \brief Read one byte from the serial and cast it to an Order
  * \return the order received
  */
-Order readOrder();
+Order read_order();
 
 /*!
  * \brief Wait until there are enough bytes in the buffer
- * \param nbOfBytes the number of bytes
+ * \param num_bytes the number of bytes
  * \param timeout (ms) The timeout, time after which we release the lock
  * even if there are not enough bytes
  */
-void waitForBytes(int nbOfBytes, unsigned long timeout);
+void wait_for_bytes(int num_bytes, unsigned long timeout);
 
 /*!
  * \brief Read signed bytes and put them in a buffer
  * \param buffer an array of bytes
  * \param n number of bytes to read
  */
-void readSignedBytes(int8_t* buffer, size_t n);
+void read_signed_bytes(int8_t* buffer, size_t n);
 
 /*!
-* \brief Read signed bytes and put them in a buffer
-* \param buffer an array of unsigned bytes
-* \param n number of bytes to read
-*/
-void readBytes(uint8_t* buffer, size_t n);
-
-/*!
- * \brief Read one byte from the serial and convert it to an int
- * \return the decoded int
+ * \brief Read one byte from a serial port and convert it to a 8 bits int
+ * \return the decoded number
  */
-int8_t readOneByteIntFromSerial();
+int8_t read_i8();
 
 /*!
- * \brief Read two bytes from the serial and convert it to an int
- * \return the decoded int
+ * \brief Read two bytes from a serial port and convert it to a 16 bits int
+ * \return the decoded number
  */
-int16_t readTwoBytesIntFromSerial();
+int16_t read_i16();
 
 
 /*!
- * \brief Read four bytes from the serial and convert it to an long
- * \return the decoded int
+ * \brief Read four bytes from a serial port and convert it to a 32 bits int
+ * \return the decoded number
  */
-long readFourBytesIntFromSerial();
+int32_t read_i32();
 
 /*!
- * \brief Send one order (one byte) to the other arduino
- * \param myOrder type of order
- * \param debugging whether we should send it to the SerialDebugObject
+ * \brief Send one order (one byte)
+ * \param order type of order
  */
-void sendOrder(enum Order myOrder);
+void write_order(enum Order order);
 
 /*!
- * \brief Send an int of one byte (between -127 and 127)
- * \param myInt an int of one byte
- * \param debugging whether we should send it to the SerialDebugObject
+ * \brief Write one byte int to serial port (between -127 and 127)
+ * \param num an int of one byte
  */
-void sendOneByteInt(int8_t myInt);
+void write_i8(int8_t num);
 
 /*!
  * \brief Send a two bytes signed int via the serial
- * \param nb the number to send (max: (2**16/2 -1) = 32767)
- * \param debugging whether we should send it to the SerialDebugObject
+ * \param num the number to send (max: (2**16/2 -1) = 32767)
  */
-void sendTwoBytesInt(int nb);
+void write_i16(int16_t num);
 
 /*!
  * \brief Send a four bytes signed int (long) via the serial
- * \param nb the number to send (−2,147,483,647, +2,147,483,647)
- * \param debugging whether we should send it to the SerialDebugObject
+ * \param num the number to send (−2,147,483,647, +2,147,483,647)
  */
-void sendFourBytesInt(long nb);
+void write_i32(int32_t num);
 
 /*!
  * \brief Listen the serial and decode the message received
  */
-void getMessageFromSerial();
+void get_messages_from_serial();
 
 #endif

@@ -5,12 +5,13 @@
 #define MOTOR_PIN 3
 #define DIRECTION_PIN 4
 #define SERVOMOTOR_PIN 6
-#define START_PIN 12
+// Initial angle of the servomotor
 #define INITIAL_THETA 110
+// Min and max values for motors
 #define THETA_MIN 60
 #define THETA_MAX 150
 #define SPEED_MAX 100
-
+// If DEBUG is set to true, the arduino will send back all the received messages
 #define DEBUG false
 
 #endif
