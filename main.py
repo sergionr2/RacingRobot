@@ -222,7 +222,7 @@ if __name__ == '__main__':
     log.info("Starting Communication Threads")
     # Threads for arduino communication
     threads = [CommandThread(serial_file, command_queue, exit_event, n_received_semaphore, serial_lock),
-               ListenerThread(serial_file, exit_event, n_received_semaphore, serial_lock)]
+               ListenerThread(serial_file, exit_event, n_received_semaphore, serial_lock), image_thread]
     for thread in threads:
         thread.start()
 
