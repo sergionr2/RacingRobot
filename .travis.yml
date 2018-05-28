@@ -3,16 +3,17 @@ os:
   - linux
 python:
   - "2.7"
-  # - "3.4"
-  # - "3.5"
-  # - "3.6"
+  - "3.5"
+  - "3.6"
 
 # command to install dependencies
 install:
-  - pip install opencv-python 
-  - pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp27-cp27mu-linux_x86_64.whl
+  - pip install opencv-python
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp27-cp27mu-linux_x86_64.whl; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp36-cp36m-linux_x86_64.whl; fi
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - chmod +x run_tests.sh
+  # - chmod +x run_tests.sh
   - ./run_tests.sh # or py.test for Python versions 3.5 and below
