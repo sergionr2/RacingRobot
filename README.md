@@ -61,7 +61,7 @@ We release the different videos taken with the on-board camera, along we the lab
 
 ## How to run everything ?
 
-For installation, see section **Installation**.
+For installation, see section **[Installation](#installation)**.
 
 ## Autonomous mode
 
