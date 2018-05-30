@@ -94,11 +94,9 @@ while True:
 
     cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
-    if video is None:
-        if labels.get(images[current_idx]) is not None:
-            true_labels = np.array(labels[images[current_idx]])
-        else:
-            true_labels = None
+    true_labels = None
+    if video is None and labels.get(images[current_idx]) is not None:
+        true_labels = np.array(labels[images[current_idx]])
 
     for i in range(len(path) - 1):
         cv2.line(image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]), color=(0, 0, int(0.8 * 255)),
