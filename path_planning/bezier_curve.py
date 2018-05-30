@@ -17,7 +17,7 @@ def computeControlPoints(x, y, add_current_pos=True):
     :param add_current_pos: (bool)
     """
     control_points = np.concatenate((x[None].T, y[None].T), axis=1)
-    
+
     if add_current_pos:
         current_position = np.array([MAX_WIDTH // 2, MAX_HEIGHT]).reshape(1, -1)
         control_points = np.concatenate((current_position, control_points))

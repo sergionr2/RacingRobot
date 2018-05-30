@@ -32,6 +32,11 @@ MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 25
 MIN_SPEED = 20
 
+# Path Planning
+# TODO: compute curvature of bezier path to regulate speed
+# see https://stackoverflow.com/questions/46762955
+TARGET_POINT = 0.6  # between [0, 1] position on the bezier curve
+
 # PID Control
 Kp_turn = 50
 Kp_line = 50
