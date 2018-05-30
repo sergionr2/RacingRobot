@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, SPACE_KEY, EXIT_KEYS
-from opencv.image_processing import processImage
+from image_processing.image_processing import processImage
 
 # Pressing the space bar, it plays the video
 playing_video = False
