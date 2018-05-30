@@ -20,7 +20,6 @@ Table of Contents
   * [Autonomous mode](#autonomous-mode)
   * [Remote Control Mode](#remote-control-mode)
   * [How to train the line detector ?](#how-to-train-the-line-detector-)
-    * [Benchmark](#benchmark)
   * [Installation](#installation)
     * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
     * [From Scratch](#from-scratch)
@@ -125,13 +124,6 @@ The best model (lowest error on the validation data) will be saved as *cnn_model
 
 ```
 python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
-```
-
-### Benchmark
-
-For profiling 5000 iterations of image processing:
-```
-python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
 ```
 
 ## Installation
@@ -287,7 +279,7 @@ pip install torch-0.4.0a0+b23fa21-cp27-cp27mu-linux_armv7l.whl
 ```
 
 Or follow this tutorial:
-[PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+[PyTorch on the Raspberry Pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
 
 0. Make sure you have at least 3 Go of Swap. (see link above)
 
@@ -307,7 +299,7 @@ sudo -H pip install torchvision
 
 ### C++ Extension
 
-Please read [opencv/c_extension/README.md](https://github.com/sergionr2/RacingRobot/tree/master/opencv/c_extension) for more information.
+Please read [image_processing/c_extension/README.md](https://github.com/sergionr2/RacingRobot/tree/master/image_processing/c_extension) for more information.
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez

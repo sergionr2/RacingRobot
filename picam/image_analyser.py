@@ -10,9 +10,8 @@ except ImportError:
 
 import picamera.array
 import cv2
-import numpy as np
 
-from opencv.image_processing import processImage
+from image_processing.image_processing import processImage
 from constants import CAMERA_RESOLUTION, RECORD_VIDEO
 
 emptyException = queue.Empty
@@ -63,6 +62,7 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
         self.exit = False
         self.out_queue = out_queue
         self.debug = debug
+        self.thread = None
         self.start()
 
     def analyse(self, frame):
@@ -136,13 +136,14 @@ class Viewer(object):
         self.camera.awb_mode = 'auto'
         self.camera.exposure_mode = 'auto'
         self.debug = debug
+        self.analyser = None
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue, debug=self.debug)
         self.camera.start_recording(self.analyser, format='bgr')
         if RECORD_VIDEO:
             self.camera.start_recording('debug/{}.h264'.format(experiment_time),
-            	                         splitter_port=2, resize=CAMERA_RESOLUTION)
+                                        splitter_port=2, resize=CAMERA_RESOLUTION)
 
     def stop(self):
         self.camera.wait_recording()

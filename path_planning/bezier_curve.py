@@ -9,6 +9,7 @@ import numpy as np
 
 from constants import MAX_WIDTH, MAX_HEIGHT
 
+
 def computeControlPoints(x, y, add_current_pos=True):
     """
     The image processing predicts (x, y) points belonging to the line
@@ -23,6 +24,7 @@ def computeControlPoints(x, y, add_current_pos=True):
         control_points = np.concatenate((current_position, control_points))
 
     return control_points
+
 
 def calcBezierPath(control_points, n_points=100):
     """
@@ -43,7 +45,7 @@ def bernsteinPoly(n, i, t):
     :param i: (int)
     :param t: (float)
     """
-    return scipy.special.comb(n, i) * t**i * (1 - t)**(n - i)
+    return scipy.special.comb(n, i) * t ** i * (1 - t) ** (n - i)
 
 
 def bezier(t, control_points):
