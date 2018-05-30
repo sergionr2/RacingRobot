@@ -22,7 +22,6 @@ SPLIT_SEED = 42  # For train/val/test split
 MODEL_TYPE = "custom"  # Network architecture {cnn or custom}
 WEIGHTS_PTH = MODEL_TYPE + "_model.pth"  # Path to the trained model
 NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs
-Y_TARGET = MAX_HEIGHT // 2
 
 # Direction and speed
 THETA_MIN = 70  # value in [0, 255] sent to the servo
@@ -31,6 +30,11 @@ ERROR_MAX = 1.0
 MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 25
 MIN_SPEED = 20
+
+# Path Planning
+# TODO: compute curvature of bezier path to regulate speed
+# see https://stackoverflow.com/questions/46762955
+TARGET_POINT = 0.6  # between [0, 1] position on the bezier curve
 
 # PID Control
 Kp_turn = 50

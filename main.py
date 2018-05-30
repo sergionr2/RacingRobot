@@ -107,11 +107,11 @@ def mainControl(command_queue, n_received_semaphore, out_queue, resolution, n_se
             last_time_update = time.time()
 
         # Output of image processing
-        turn_percent, x_pred = out_queue.get()
+        turn_percent, x_target = out_queue.get()
 
         # Compute the error to the center of the line
         # We want the line to be in the middle of the image
-        error = (x_center - x_pred) / max_error_px
+        error = (x_center - x_target) / max_error_px
 
         # Represent line curve as a number in [0, 1]
         # h = 0 -> straight line
@@ -160,7 +160,7 @@ def mainControl(command_queue, n_received_semaphore, out_queue, resolution, n_se
 
         # Logging
         log.debug("Error={:.2f} error_d={:.2f} error_i={:.2f}".format(error, error_d, error_i))
-        log.debug("Turn percent={:.2f} x_pred={:.2f}".format(turn_percent, x_pred))
+        log.debug("Turn percent={:.2f} x_target={:.2f}".format(turn_percent, x_target))
         log.debug("v_max={:.2f} mean_h={:.2f}".format(v_max, mean_h))
         log.debug("speed={:.2f} angle={:.2f}".format(speed_order, angle_order))
 
