@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT
-from path_planning.bezier_curve import calcBezierPath
+from path_planning.bezier_curve import calcBezierPath, computeControlPoints
 from .utils import loadLabels, loadNetwork, predict
 
 parser = argparse.ArgumentParser(description='Test a line detector')
@@ -52,9 +52,7 @@ while True:
     x, y = predict(model, image)
     # print(current_idx)
     # Show bezier path
-    start_position = np.array([image.shape[1] // 2, image.shape[0]]).reshape(1, -1)
-    control_points = np.concatenate((x[None].T, y[None].T), axis=1)
-    control_points = np.concatenate((start_position, control_points))
+    control_points = computeControlPoints(x, y, add_current_pos=True)
     path = calcBezierPath(control_points).astype(np.int32)
 
     cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
