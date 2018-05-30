@@ -14,40 +14,76 @@ from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bez
 from .utils import loadLabels, loadNetwork, predict
 
 parser = argparse.ArgumentParser(description='Test a line detector')
-parser.add_argument('-f', '--folder', help='Training folder', type=str, required=True)
+parser.add_argument('-i', '--input_video', help='Input Video', default="", type=str)
+parser.add_argument('-f', '--folder', help='Dataset folder', default="", type=str)
 parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
-parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str, choices=['cnn', 'custom'])
+parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str,
+                    choices=['cnn', 'custom'])
 
 args = parser.parse_args()
 
-current_idx = 0
+assert args.folder != "" or args.input_video != "", "You must specify a video or dataset for testing"
+
+video = None
+if args.input_video != "":
+    assert os.path.isfile(args.input_video), "Invalid path to input video"
+    image_zero_index = cv2.CAP_PROP_POS_FRAMES
+    frame_count = cv2.CAP_PROP_FRAME_COUNT
+    video = cv2.VideoCapture(args.input_video)
+
 model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
 
-train_labels, val_labels, test_labels, labels = loadLabels(args.folder)
-
-images = list(labels.keys())
-# TODO: add support for folders without labels
-if True:
+labels, train_labels, val_labels, test_labels = {}, {}, {}, {}
+if video is None:
+    if os.path.isfile("{}/labels.json".format(args.folder)):
+        train_labels, val_labels, test_labels, labels = loadLabels(args.folder)
+        if False:
+            images = list(labels.keys())
     images = [f for f in os.listdir(args.folder) if f.endswith('.jpg')]
-    # labels = {}
+    images.sort(key=lambda name: int(name.split('.jpg')[0]))
 
-images.sort(key=lambda name: int(name.split('.jpg')[0]))
+    idx_val = set(val_labels.keys())
+    idx_test = set(test_labels.keys())
+    n_frames = len(images)
+    current_idx = 0
+else:
+    if not video.isOpened():
+        print("Error opening video, check your opencv version")
+        exit()
+    current_idx = video.get(image_zero_index)
+    n_frames = int(video.get(frame_count))
 
-idx_val = set(val_labels.keys())
-idx_test = set(test_labels.keys())
+print("{} frames".format(n_frames))
 
-# TODO: compute val and test error
+if n_frames <= 0:
+    print("Not enough frame, check your path")
+    exit()
+
+# TODO: compute val/test error
 
 while True:
-    name = images[current_idx]
-    image = cv2.imread('{}/{}'.format(args.folder, images[current_idx]))
-    # image = cv2.flip(image, 1)
-    # Image from train/validation/test set ?
-    text = "train"
-    if name in idx_val:
-        text = "val"
-    elif name in idx_test:
-        text = "test"
+    if video is not None:
+        while True:
+            flag, image = video.read()
+            if flag:
+                break
+            else:
+                # The next frame is not ready, so we try to read it again
+                video.set(image_zero_index, current_idx - 1)
+                cv2.waitKey(1000)
+                continue
+        text = ""
+        name = str(current_idx)
+    else:
+        name = images[current_idx]
+        image = cv2.imread('{}/{}'.format(args.folder, images[current_idx]))
+        # image = cv2.flip(image, 1)
+        # Image from train/validation/test set ?
+        text = "train"
+        if name in idx_val:
+            text = "val"
+        elif name in idx_test:
+            text = "test"
 
     x, y = predict(model, image)
     # print(current_idx)
@@ -65,7 +101,7 @@ while True:
 
     for i in range(len(path) - 1):
         cv2.line(image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]), color=(0, 0, int(0.8 * 255)),
-                         thickness=3)
+                 thickness=3)
     # Show Target point
     cv2.circle(image, tuple(target), radius=10, color=(0, 0, int(0.9 * 255)), thickness=1, lineType=8, shift=0)
 
@@ -89,4 +125,9 @@ while True:
         break
     elif key in [LEFT_KEY, RIGHT_KEY]:
         current_idx += 1 if key == RIGHT_KEY else -1
-        current_idx = np.clip(current_idx, 0, len(images) - 1)
+        current_idx = np.clip(current_idx, 0, n_frames - 1)
+    if video is not None:
+        video.set(image_zero_index, current_idx)
+
+if video is not None:
+    video.release()

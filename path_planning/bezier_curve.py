@@ -4,6 +4,8 @@ Path Planning with Bezier curve
 Original Author: Atsushi Sakai(@Atsushi_twi)
 From https://github.com/AtsushiSakai/PythonRobotics
 """
+from __future__ import division, print_function
+
 import scipy.special
 import numpy as np
 
