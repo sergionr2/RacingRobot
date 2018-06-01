@@ -9,7 +9,12 @@ from __future__ import division, print_function
 import scipy.special
 import numpy as np
 
-from constants import MAX_WIDTH, MAX_HEIGHT
+import matplotlib.pyplot as plt
+import math
+
+show_animation = True
+
+# from constants import MAX_WIDTH, MAX_HEIGHT
 
 
 def computeControlPoints(x, y, add_current_pos=True):
@@ -63,3 +68,97 @@ def bezier(t, control_points):
     """
     n = len(control_points) - 1
     return np.sum([bernsteinPoly(n, i, t) * control_points[i] for i in range(n + 1)], axis=0)
+
+
+def coeffDerivative(control_points):
+    assert len(control_points) == 4
+    P = control_points
+    return 3 * np.array([
+        P[1] - P[0],
+        P[2] - P[1],
+        P[3] - P[2]
+    ])
+
+def coeffSecondDerivative(control_points):
+    assert len(control_points) == 3
+    P = control_points
+    return 2 * np.array([
+        P[1] - P[0],
+        P[2] - P[1],
+    ])
+
+def bezierIthOrderWeights(control_points, degree):
+    # https://pomax.github.io/bezierinfo/#derivatives
+    W = {0: control_points}
+    for i in range(degree):
+        n = len(W[i])
+        W[i + 1] = np.array([(n-1) * (W[i][j+1] - W[i][j]) for j in range(n - 1)])
+    return W
+
+def curvature(dx, dy, ddx, ddy):
+    return (dx*ddy - dy*ddx) / (dx**2 + dy**2)**(3/2)
+
+def tangent(dx, dy):
+    d = np.linalg.norm(dx + dy, 2)
+    return np.array([dx, dy]) / 2
+
+def calc_4point_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
+    D = math.sqrt((sx - ex)**2 + (sy - ey)**2) / offset
+    cp = np.array(
+        [[sx, sy],
+         [sx + D * math.cos(syaw), sy + D * math.sin(syaw)],
+         [ex - D * math.cos(eyaw), ey - D * math.sin(eyaw)],
+         [ex, ey]])
+
+    return cp
+
+def main():
+    start_x = 5.0  # [m]
+    start_y = 1.0  # [m]
+    start_yaw = math.radians(180.0)  # [rad]
+
+    end_x = -6.0  # [m]
+    end_y = -3.0  # [m]
+    end_yaw = math.radians(-45.0)  # [rad]
+    offset = 2
+
+    cp = calc_4point_bezier_path(
+        start_x, start_y, start_yaw, end_x, end_y, end_yaw, offset)
+    P = calcBezierPath(cp)
+
+    t = 0.8
+    n_cp = bezierIthOrderWeights(cp, 2)
+    point = bezier(t, cp)
+    dt = bezier(t, n_cp[1])
+    ddt = bezier(t, n_cp[2])
+    cu = curvature(dt[0], dt[1], ddt[0], ddt[1])
+    # Normalize derivative
+    dt /= np.linalg.norm(dt, 2)
+    tangent = np.array([point, point + dt])
+    normal = np.array([point, point + [- dt[1], dt[0]]])
+
+    if cu != 0:
+        r = 1 / cu
+    else:
+        r = np.inf
+
+    curvature_center = point + np.array([- dt[1], dt[0]]) * r
+    circle = plt.Circle(tuple(curvature_center), r, color=(0, 0.8, 0.8), fill=False, linewidth=1)
+
+    fig, ax = plt.subplots()
+
+    if show_animation:
+        ax.plot(P.T[0], P.T[1], label="Bezier Path")
+        ax.plot(cp.T[0], cp.T[1], '--o', label="Control Points")
+        ax.plot(*bezier(t, cp), '--o', label="Target Point")
+        ax.plot(tangent[:, 0], tangent[:, 1], label="Tangent")
+        ax.plot(normal[:, 0], normal[:, 1], label="Normal")
+        ax.add_artist(circle)
+        ax.legend()
+        ax.axis("equal")
+        ax.grid(True)
+        plt.show()
+
+
+if __name__ == '__main__':
+    main()
