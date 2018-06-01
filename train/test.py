@@ -15,14 +15,14 @@ from .utils import loadLabels, loadNetwork, predict
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-i', '--input_video', help='Input Video', default="", type=str)
-parser.add_argument('-f', '--folder', help='Dataset folder', default="", type=str)
+parser.add_argument('-f', '--folders', help='Dataset folders', nargs='+', default=[""], type=str)
 parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
 parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str,
                     choices=['cnn', 'custom'])
 
 args = parser.parse_args()
 
-assert args.folder != "" or args.input_video != "", "You must specify a video or dataset for testing"
+assert args.folders[0] != "" or args.input_video != "", "You must specify a video or dataset for testing"
 
 video = None
 if args.input_video != "":
@@ -34,13 +34,18 @@ if args.input_video != "":
 model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
 
 labels, train_labels, val_labels, test_labels = {}, {}, {}, {}
+images = None
 if video is None:
-    if os.path.isfile("{}/labels.json".format(args.folder)):
-        train_labels, val_labels, test_labels, labels = loadLabels(args.folder)
+    if os.path.isfile("{}/labels.json".format(args.folders[0])):
+        train_labels, val_labels, test_labels, labels = loadLabels(args.folders)
         if False:
             images = list(labels.keys())
-    images = [f for f in os.listdir(args.folder) if f.endswith('.jpg')]
-    images.sort(key=lambda name: int(name.split('.jpg')[0]))
+    if images is None:
+        images = []
+        for folder in args.folders:
+            tmp_images = ["{}/{}".format(folder, f) for f in os.listdir(folder) if f.endswith('.jpg')]
+            tmp_images.sort(key=lambda name: int(name.split('.jpg')[0].split('/')[-1]))
+            images += tmp_images
 
     idx_val = set(val_labels.keys())
     idx_test = set(test_labels.keys())
@@ -75,14 +80,14 @@ while True:
         text = ""
         name = str(current_idx)
     else:
-        name = images[current_idx]
-        image = cv2.imread('{}/{}'.format(args.folder, images[current_idx]))
+        path = images[current_idx]
+        image = cv2.imread(path)
         # image = cv2.flip(image, 1)
         # Image from train/validation/test set ?
         text = "train"
-        if name in idx_val:
+        if path in idx_val:
             text = "val"
-        elif name in idx_test:
+        elif path in idx_test:
             text = "test"
 
     x, y = predict(model, image)
