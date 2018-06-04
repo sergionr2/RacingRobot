@@ -102,6 +102,29 @@ def tangent(dx, dy):
     d = np.linalg.norm(dx + dy, 2)
     return np.array([dx, dy]) / 2
 
+def calcYaw(dx, dy):
+    """
+    calc yaw
+    """
+    return math.atan2(dy, dx)
+
+def calcTrajectory(control_points, n_points=100):
+    cp = control_points
+    path = calcBezierPath(control_points, 100)
+    n_cp = bezierIthOrderWeights(cp, 2)
+
+    rx, ry, ryaw, rk = [], [], [], []
+    for t in np.linspace(0, 1, n_points):
+        ix, iy = bezier(t, cp)
+        dx, dy = bezier(t, n_cp[1])
+        ddx, ddy = bezier(t, n_cp[2])
+        rx.append(ix)
+        ry.append(iy)
+        ryaw.append(calcYaw(dx, dy))
+        rk.append(curvature(dx, dy, ddx, ddy))
+
+    return rx, ry, ryaw, rk
+
 def calc_4point_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
     D = math.sqrt((sx - ex)**2 + (sy - ey)**2) / offset
     cp = np.array(
@@ -125,6 +148,7 @@ def main():
     cp = calc_4point_bezier_path(
         start_x, start_y, start_yaw, end_x, end_y, end_yaw, offset)
     P = calcBezierPath(cp)
+    rx, ry, ryaw, rk = calcTrajectory(cp, 100)
 
     t = 0.8
     n_cp = bezierIthOrderWeights(cp, 2)
@@ -148,7 +172,7 @@ def main():
     fig, ax = plt.subplots()
 
     if show_animation:
-        ax.plot(P.T[0], P.T[1], label="Bezier Path")
+        ax.plot(rx, ry, label="Bezier Path")
         ax.plot(cp.T[0], cp.T[1], '--o', label="Control Points")
         ax.plot(*bezier(t, cp), '--o', label="Target Point")
         ax.plot(tangent[:, 0], tangent[:, 1], label="Tangent")

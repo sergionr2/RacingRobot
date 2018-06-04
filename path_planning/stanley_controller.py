@@ -12,6 +12,7 @@ import math
 import matplotlib.pyplot as plt
 
 import cubic_spline_planner
+from bezier_curve import calcTrajectory, calc_4point_bezier_path
 
 
 k = 0.5  # control gain
@@ -99,18 +100,32 @@ def calc_target_index(state, cx, cy):
 
 def main():
     #  target course
-    ax = [0.0, 100.0, 100.0, 50.0, 60.0]
-    ay = [0.0, 0.0, -30.0, -20.0, 0.0]
+    # ax = [0.0, 100.0, 100.0, 50.0, 60.0]
+    # ay = [0.0, 0.0, -30.0, -20.0, 0.0]
+    #
+    # cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
+    #     ax, ay, ds=0.1)
 
-    cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
-        ax, ay, ds=0.1)
+    start_x = 5.0  # [m]
+    start_y = 1.0  # [m]
+    start_yaw = math.radians(180.0)  # [rad]
+
+    end_x = -6.0  # [m]
+    end_y = -3.0  # [m]
+    end_yaw = math.radians(-45.0)  # [rad]
+    offset = 2
+
+    cp = calc_4point_bezier_path(
+        start_x, start_y, start_yaw, end_x, end_y, end_yaw, offset)
+
+    cx, cy, cyaw, ck = calcTrajectory(cp, 200)
 
     target_speed = 30.0 / 3.6  # [m/s]
 
     T = 100.0  # max simulation time
 
     # initial state
-    state = State(x=-0.0, y=5.0, yaw=math.radians(20.0), v=0.0)
+    state = State(x=5, y=1.0, yaw=math.radians(-180.0), v=0.0)
 
     lastIndex = len(cx) - 1
     time = 0.0
