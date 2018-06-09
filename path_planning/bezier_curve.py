@@ -10,11 +10,11 @@ import scipy.special
 import numpy as np
 
 import matplotlib.pyplot as plt
-import math
+
+from constants import MAX_WIDTH, MAX_HEIGHT
 
 show_animation = True
-
-# from constants import MAX_WIDTH, MAX_HEIGHT
+demo_cp = np.array([[5., 1.], [ -2.77817459, 1.], [-11.5, -4.5], [ -6., -10.]])
 
 
 def computeControlPoints(x, y, add_current_pos=True):
@@ -69,28 +69,10 @@ def bezier(t, control_points):
     n = len(control_points) - 1
     return np.sum([bernsteinPoly(n, i, t) * control_points[i] for i in range(n + 1)], axis=0)
 
-
-def coeffDerivative(control_points):
-    assert len(control_points) == 4
-    P = control_points
-    return 3 * np.array([
-        P[1] - P[0],
-        P[2] - P[1],
-        P[3] - P[2]
-    ])
-
-def coeffSecondDerivative(control_points):
-    assert len(control_points) == 3
-    P = control_points
-    return 2 * np.array([
-        P[1] - P[0],
-        P[2] - P[1],
-    ])
-
-def bezierIthOrderWeights(control_points, degree):
+def bezierDerivativesControlPoints(control_points, n_derivatives):
     # https://pomax.github.io/bezierinfo/#derivatives
     W = {0: control_points}
-    for i in range(degree):
+    for i in range(n_derivatives):
         n = len(W[i])
         W[i + 1] = np.array([(n-1) * (W[i][j+1] - W[i][j]) for j in range(n - 1)])
     return W
@@ -106,18 +88,18 @@ def calcYaw(dx, dy):
     """
     calc yaw
     """
-    return math.atan2(dy, dx)
+    return np.arctan2(dy, dx)
 
 def calcTrajectory(control_points, n_points=100):
     cp = control_points
     path = calcBezierPath(control_points, 100)
-    n_cp = bezierIthOrderWeights(cp, 2)
+    derivatives_cp = bezierDerivativesControlPoints(cp, 2)
 
     rx, ry, ryaw, rk = [], [], [], []
     for t in np.linspace(0, 1, n_points):
         ix, iy = bezier(t, cp)
-        dx, dy = bezier(t, n_cp[1])
-        ddx, ddy = bezier(t, n_cp[2])
+        dx, dy = bezier(t, derivatives_cp[1])
+        ddx, ddy = bezier(t, derivatives_cp[2])
         rx.append(ix)
         ry.append(iy)
         ryaw.append(calcYaw(dx, dy))
@@ -125,36 +107,17 @@ def calcTrajectory(control_points, n_points=100):
 
     return rx, ry, ryaw, rk
 
-def calc_4point_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
-    D = math.sqrt((sx - ex)**2 + (sy - ey)**2) / offset
-    cp = np.array(
-        [[sx, sy],
-         [sx + D * math.cos(syaw), sy + D * math.sin(syaw)],
-         [ex - D * math.cos(eyaw), ey - D * math.sin(eyaw)],
-         [ex, ey]])
-
-    return cp
 
 def main():
-    start_x = 5.0  # [m]
-    start_y = 1.0  # [m]
-    start_yaw = math.radians(180.0)  # [rad]
-
-    end_x = -6.0  # [m]
-    end_y = -3.0  # [m]
-    end_yaw = math.radians(-45.0)  # [rad]
-    offset = 2
-
-    cp = calc_4point_bezier_path(
-        start_x, start_y, start_yaw, end_x, end_y, end_yaw, offset)
+    cp = demo_cp
     P = calcBezierPath(cp)
     rx, ry, ryaw, rk = calcTrajectory(cp, 100)
 
     t = 0.8
-    n_cp = bezierIthOrderWeights(cp, 2)
+    derivatives_cp = bezierDerivativesControlPoints(cp, 2)
     point = bezier(t, cp)
-    dt = bezier(t, n_cp[1])
-    ddt = bezier(t, n_cp[2])
+    dt = bezier(t, derivatives_cp[1])
+    ddt = bezier(t, derivatives_cp[2])
     cu = curvature(dt[0], dt[1], ddt[0], ddt[1])
     # Normalize derivative
     dt /= np.linalg.norm(dt, 2)

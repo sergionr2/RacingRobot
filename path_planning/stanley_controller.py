@@ -8,90 +8,86 @@ From https://github.com/AtsushiSakai/PythonRobotics
 from __future__ import division, print_function
 
 import sys
-import math
+
+import numpy as np
 import matplotlib.pyplot as plt
 
-import cubic_spline_planner
-from bezier_curve import calcTrajectory, calc_4point_bezier_path
+from .bezier_curve import calcTrajectory, demo_cp
 
 
-k = 0.5  # control gain
+k = 1  # control gain
 Kp = 1.0  # speed propotional gain
-dt = 0.1  # [s] time difference
-L = 2.9  # [m] Wheel base of vehicle
-max_steer = math.radians(30.0)  # [rad] max steering angle
+dt = 0.05  # [s] time difference
+L = 1.5  # [m] Wheel base of vehicle
+max_steer = np.radians(20.0)  # [rad] max steering angle
 
 show_animation = True
 
 
-class State:
+class State(object):
     def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
+        super(State, self).__init__()
         self.x = x
         self.y = y
         self.yaw = yaw
         self.v = v
 
 
-def update(state, a, delta):
+def updateState(state, acceleration, delta):
+    delta = np.clip(delta, -max_steer, max_steer)
 
-    if delta >= max_steer:
-        delta = max_steer
-    elif delta <= -max_steer:
-        delta = -max_steer
-
-    state.x = state.x + state.v * math.cos(state.yaw) * dt
-    state.y = state.y + state.v * math.sin(state.yaw) * dt
-    state.yaw = state.yaw + state.v / L * math.tan(delta) * dt
-    state.yaw = pi_2_pi(state.yaw)
-    state.v = state.v + a * dt
+    state.x += state.v * np.cos(state.yaw) * dt
+    state.y += state.v * np.sin(state.yaw) * dt
+    state.yaw += state.v / L * np.tan(delta) * dt
+    state.yaw = normalizeAngle(state.yaw)
+    state.v += acceleration * dt
 
     return state
 
 
-def PIDControl(target, current):
+def speedControl(target, current):
     a = Kp * (target - current)
-
     return a
 
 
-def stanley_control(state, cx, cy, cyaw, pind):
+def stanleyControl(state, cx, cy, cyaw, pind):
 
-    ind, efa = calc_target_index(state, cx, cy)
+    ind, efa = calcTargetIndex(state, cx, cy)
 
     if pind >= ind:
         ind = pind
 
-    theta_e = pi_2_pi(cyaw[ind] - state.yaw)
-    theta_d = math.atan2(k * efa, state.v)
+    theta_e = normalizeAngle(cyaw[ind] - state.yaw)
+    theta_d = np.arctan2(k * efa, state.v)
     delta = theta_e + theta_d
 
     return delta, ind
 
 
-def pi_2_pi(angle):
-    while (angle > math.pi):
-        angle = angle - 2.0 * math.pi
+def normalizeAngle(angle):
+    while angle > np.pi:
+        angle -= 2.0 * np.pi
 
-    while (angle < -math.pi):
-        angle = angle + 2.0 * math.pi
+    while angle < -np.pi:
+        angle += 2.0 * np.pi
 
     return angle
 
 
-def calc_target_index(state, cx, cy):
+def calcTargetIndex(state, cx, cy):
 
-    # calc frant axle position
-    fx = state.x + L * math.cos(state.yaw)
-    fy = state.y + L * math.sin(state.yaw)
+    # calc front axle position
+    fx = state.x + L * np.cos(state.yaw)
+    fy = state.y + L * np.sin(state.yaw)
 
     # search nearest point index
     dx = [fx - icx for icx in cx]
     dy = [fy - icy for icy in cy]
-    d = [math.sqrt(idx ** 2 + idy ** 2) for (idx, idy) in zip(dx, dy)]
+    d = [np.sqrt(idx ** 2 + idy ** 2) for (idx, idy) in zip(dx, dy)]
     mind = min(d)
     ind = d.index(mind)
 
-    tyaw = pi_2_pi(math.atan2(fy - cy[ind], fx - cx[ind]) - state.yaw)
+    tyaw = normalizeAngle(np.arctan2(fy - cy[ind], fx - cx[ind]) - state.yaw)
     if tyaw > 0.0:
         mind = - mind
 
@@ -99,25 +95,7 @@ def calc_target_index(state, cx, cy):
 
 
 def main():
-    #  target course
-    # ax = [0.0, 100.0, 100.0, 50.0, 60.0]
-    # ay = [0.0, 0.0, -30.0, -20.0, 0.0]
-    #
-    # cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
-    #     ax, ay, ds=0.1)
-
-    start_x = 5.0  # [m]
-    start_y = 1.0  # [m]
-    start_yaw = math.radians(180.0)  # [rad]
-
-    end_x = -6.0  # [m]
-    end_y = -3.0  # [m]
-    end_yaw = math.radians(-45.0)  # [rad]
-    offset = 2
-
-    cp = calc_4point_bezier_path(
-        start_x, start_y, start_yaw, end_x, end_y, end_yaw, offset)
-
+    cp = demo_cp
     cx, cy, cyaw, ck = calcTrajectory(cp, 200)
 
     target_speed = 30.0 / 3.6  # [m/s]
@@ -125,7 +103,7 @@ def main():
     T = 100.0  # max simulation time
 
     # initial state
-    state = State(x=5, y=1.0, yaw=math.radians(-180.0), v=0.0)
+    state = State(x=5, y=1.0, yaw=np.radians(-180.0), v=0)
 
     lastIndex = len(cx) - 1
     time = 0.0
@@ -134,12 +112,13 @@ def main():
     yaw = [state.yaw]
     v = [state.v]
     t = [0.0]
-    target_ind, mind = calc_target_index(state, cx, cy)
+    target_ind, mind = calcTargetIndex(state, cx, cy)
 
     while T >= time and lastIndex > target_ind:
-        ai = PIDControl(target_speed, state.v)
-        di, target_ind = stanley_control(state, cx, cy, cyaw, target_ind)
-        state = update(state, ai, di)
+        # Compute Acceleration
+        ai = speedControl(target_speed, state.v)
+        di, target_ind = stanleyControl(state, cx, cy, cyaw, target_ind)
+        state = updateState(state, ai, di)
 
         time = time + dt
 
