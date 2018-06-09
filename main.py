@@ -23,7 +23,7 @@ from robust_serial import write_order, Order
 from robust_serial.threads import CommandThread, ListenerThread
 from robust_serial.utils import open_serial_port, CustomQueue
 
-from picam.image_analyser import ImageProcessingThread, Viewer
+from image_processing.picamera_threads import ImageProcessingThread, Viewer
 from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
     MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION, \
     BAUDRATE, N_MESSAGES_ALLOWED, COMMAND_QUEUE_SIZE
