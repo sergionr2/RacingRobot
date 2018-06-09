@@ -297,10 +297,6 @@ sudo -EH python setup.py install
 sudo -H pip install torchvision
 ```
 
-### C++ Extension
-
-Please read [image_processing/c_extension/README.md](https://github.com/sergionr2/RacingRobot/tree/master/image_processing/c_extension) for more information.
-
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez
 - Antonin Raffin
