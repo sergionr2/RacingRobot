@@ -134,12 +134,17 @@ def loadLabels(folders):
     val_labels = {key: labels[key] for key in val_keys}
     test_labels = {key: labels[key] for key in test_keys}
 
-    print("{} images".format(len(labels)))
+    print("{} labels".format(len(labels)))
     return train_labels, val_labels, test_labels, labels
 
 
 class JsonDataset(Dataset):
-    def __init__(self, labels, preprocess=False, random_flip=0.0, swap=False):
+    """
+    :param labels: (dict)
+    :param preprocess: (bool)
+    :param random_flip: (float) probability of flipping the image
+    """
+    def __init__(self, labels, preprocess=False, random_flip=0.0):
         self.keys = list(labels.keys())
         self.labels = labels.copy()
         self.preprocess = preprocess
@@ -159,14 +164,17 @@ class JsonDataset(Dataset):
             margin_left, margin_top, _, _ = ROI
             im = preprocessImage(im, INPUT_WIDTH, INPUT_HEIGHT)
 
+        # Normalize labels
         labels = np.array(self.labels[image]).astype(np.float32)
         labels[:, 0] = (labels[:, 0] - margin_left) / MAX_WIDTH
         labels[:, 1] = (labels[:, 1] - margin_top) / MAX_HEIGHT
 
+        # Randomly flip the image to augment the dataset
         if np.random.random() < self.random_flip:
             im = cv2.flip(im, 1)
             labels[:, 0] = 1 - labels[:, 0]
-        # Predict 6 points
+
+        # 3 points -> 6 values to predict
         y = labels.flatten().astype(np.float32)
 
         # swap color axis because
@@ -178,20 +186,34 @@ class JsonDataset(Dataset):
     def __len__(self):
         return len(self.keys)
 
+def computeLossWithDataLoader(model, labels, batchsize, shuffle=False):
+    dataloader = th.utils.data.DataLoader(JsonDataset(labels, preprocess=True),
+                                            batch_size=batchsize, shuffle=shuffle)
 
-def computeMSE(y_test, y_true, indices):
+    loss_fn = th.nn.MSELoss(size_average=False)
+    total_loss = 0
+    with th.no_grad():
+        for inputs, targets in dataloader:
+            predictions = model(inputs)
+            loss = loss_fn(predictions, targets)
+            total_loss += loss.item()
+    return total_loss
+
+
+def computeMSE(model, train_labels, val_labels, test_labels, batchsize=32):
     """
     Compute Mean Square Error
     and print its value for the different sets
-    :param y_test: (numpy 1D array)
+    :param train_labels: (dict)
     :param y_true: (numpy 1D array)
     :param indices: [[int]] Indices of the different subsets
     """
-    idx_train, idx_val, idx_test = indices
-    # MSE Loss
-    error = np.square(y_test - y_true)
+    model.eval()
+    error_train = computeLossWithDataLoader(model, train_labels, batchsize)
+    error_val = computeLossWithDataLoader(model, val_labels, batchsize)
+    error_test = computeLossWithDataLoader(model, test_labels, batchsize)
 
-    print('Train error={:.6f}'.format(np.mean(error[idx_train])))
-    print('Val error={:.6f}'.format(np.mean(error[idx_val])))
-    print('Test error={:.6f}'.format(np.mean(error[idx_test])))
-    print('Total error={:.6f}'.format(np.mean(error)))
+    print('Train error={:.6f}'.format(error_train))
+    print('Val error={:.6f}'.format(error_val))
+    print('Test error={:.6f}'.format(error_test))
+    print('Total error={:.6f}'.format((error_train + error_val + error_test) / 3))

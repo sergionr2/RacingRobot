@@ -15,7 +15,7 @@ class MlpNetwork(nn.Module):
     :param drop_p: (float) Dropout proba
     """
 
-    def __init__(self, input_dim, n_hidden=None, drop_p=0.0):
+    def __init__(self, input_dim, num_output=6, n_hidden=None, drop_p=0.0):
         super(MlpNetwork, self).__init__()
         if n_hidden is None:
             n_layer1 = 20
@@ -24,7 +24,7 @@ class MlpNetwork(nn.Module):
             n_layer1, n_layer2 = n_hidden
         self.fc1 = nn.Linear(input_dim, n_layer1)
         self.fc2 = nn.Linear(n_layer1, n_layer2)
-        self.fc3 = nn.Linear(n_layer2, 1)
+        self.fc3 = nn.Linear(n_layer2, num_output)
         self.drop_p = drop_p
         self.activation_fn = F.relu
         self._initializeWeights()
@@ -49,16 +49,6 @@ class MlpNetwork(nn.Module):
         x = self.activation_fn(self.fc2(x))
         x = self.activation_fn(self.fc3(x))
         return x
-
-    def customForward(self, x):
-        """
-        Return intermediate results
-        """
-        x = x.view(x.size(0), -1)
-        x1 = self.activation_fn(self.fc1(x))
-        x2 = self.activation_fn(self.fc2(x1))
-        x = self.activation_fn(self.fc3(x2))
-        return x, x1, x2
 
 
 class ConvolutionalNetwork(nn.Module):

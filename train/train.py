@@ -21,7 +21,19 @@ VAL_BATCH_SIZE = 64  # Batch size for validation and test data
 
 def main(folders, num_epochs=100, batchsize=32,
          learning_rate=0.0001, seed=42, device="cpu", random_flip=0.5,
-         model_type="cnn", evaluate_print=1, load_model=""):
+         model_type="custom", evaluate_print=1, saved_model_path=""):
+    """
+    :param folders: ([str])
+    :param num_epochs: (int)
+    :param batchsize: (int)
+    :param learning_rate: (float)
+    :param seed: (int)
+    :param device: (str)
+    :param random_flip: (float)
+    :param model_type: (str)
+    :param evaluate_print: (int)
+    :param saved_model_path: (str)
+    """
 
     train_labels, val_labels, test_labels, _ = loadLabels(folders)
 
@@ -49,12 +61,18 @@ def main(folders, num_epochs=100, batchsize=32,
                                            batch_size=VAL_BATCH_SIZE, shuffle=False, **kwargs)
 
     model_name = "{}_model_tmp".format(model_type)
+    print("Trained model will be saved as {}".format(model_name))
+
     if model_type == "cnn":
         model = ConvolutionalNetwork(num_output=NUM_OUTPUT, drop_p=0.0)
     elif model_type == "custom":
         model = CustomNet(num_output=NUM_OUTPUT)
     else:
         raise ValueError("Model type not supported")
+
+    if saved_model_path != "":
+        print("Loading saved model {}".format(saved_model_path))
+        model.load_state_dict(th.load(saved_model_path))
 
     model = model.to(device)
 
@@ -158,4 +176,4 @@ if __name__ == '__main__':
     device = th.device("cuda" if args.cuda else "cpu")
     main(folders=args.folders, num_epochs=args.num_epochs, batchsize=args.batchsize,
          learning_rate=args.learning_rate, device=device,
-         seed=args.seed, load_model=args.load_model, model_type=args.model_type)
+         seed=args.seed, saved_model_path=args.load_model, model_type=args.model_type)

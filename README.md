@@ -105,7 +105,7 @@ MP4Box -add video.h264 video.mp4
 
 3. Split the video into a sequence of images
 ```
-python -m train.split_video -i video.mp4 --no-display -o path/to/dataset/folder
+python -m train.split_video -i video.mp4 -o path/to/dataset/folder
 ```
 
 4. Label the data using the labeling tool: [https://github.com/araffin/graph-annotation-tool](https://github.com/araffin/graph-annotation-tool)

@@ -14,11 +14,12 @@ import matplotlib.pyplot as plt
 from constants import MAX_WIDTH, MAX_HEIGHT
 
 show_animation = True
-demo_cp = np.array([[5., 1.], [-2.77817459, 1.], [-11.5, -4.5], [-6., -10.]])
+demo_cp = np.array([[5., 1.], [-2.78, 1.], [-11.5, -4.5], [-6., -10.]])
 
 
 def computeControlPoints(x, y, add_current_pos=True):
     """
+    Compute the control points for creating bezier path
     The image processing predicts (x, y) points belonging to the line
     :param x: (numpy array)
     :param y: (numpy array)
@@ -71,7 +72,15 @@ def bezier(t, control_points):
 
 
 def bezierDerivativesControlPoints(control_points, n_derivatives):
-    # https://pomax.github.io/bezierinfo/#derivatives
+    """
+    Compute control points of the successive derivatives
+    of a given bezier curve
+    https://pomax.github.io/bezierinfo/#derivatives
+    :param control_points: (numpy array)
+    :param n_derivatives: (int)
+    ex: n_derivatives=2 -> compute control_points for first and second derivatives
+    :return: ([numpy array])
+    """
     W = {0: control_points}
     for i in range(n_derivatives):
         n = len(W[i])
@@ -80,11 +89,22 @@ def bezierDerivativesControlPoints(control_points, n_derivatives):
 
 
 def curvature(dx, dy, ddx, ddy):
+    """
+    Compute curvature at one point
+    given first and second derivatives
+    :param dx: (float) First derivative along x axis
+    :param dy: (float)
+    :param ddx: (float) Second derivative along x axis
+    :param ddy: (float)
+    :return: (float)
+    """
     return (dx * ddy - dy * ddx) / (dx ** 2 + dy ** 2) ** (3 / 2)
 
 
 def calcYaw(dx, dy):
     """
+    Compute the yaw angle given the derivative
+    at one point on the curve
     :param dx: (float)
     :param dy: (float)
     :return: (float)
@@ -93,6 +113,12 @@ def calcYaw(dx, dy):
 
 
 def calcTrajectory(control_points, n_points=100):
+    """
+    Compute bezier path along with derivative and curvature
+    :param control_points: (numpy array)
+    :param n_points: (int)
+    :return: ([float], [float], [float], [float])
+    """
     cp = control_points
     derivatives_cp = bezierDerivativesControlPoints(cp, 2)
 

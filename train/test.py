@@ -5,13 +5,14 @@ from __future__ import print_function, division, absolute_import
 
 import argparse
 import os
+import sys
 
 import cv2
 import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT, MODEL_TYPE, WEIGHTS_PTH
 from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier
-from .utils import loadLabels, loadNetwork, predict
+from .utils import loadLabels, loadNetwork, predict, computeMSE
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-i', '--input_video', help='Input Video', default="", type=str)
@@ -35,6 +36,8 @@ model = loadNetwork(args.weights, NUM_OUTPUT, args.model_type)
 
 labels, train_labels, val_labels, test_labels = {}, {}, {}, {}
 images = None
+
+# Load images from a folder
 if video is None:
     if os.path.isfile("{}/labels.json".format(args.folders[0])):
         train_labels, val_labels, test_labels, labels = loadLabels(args.folders)
@@ -52,9 +55,10 @@ if video is None:
     n_frames = len(images)
     current_idx = 0
 else:
+    # Load video
     if not video.isOpened():
-        print("Error opening video, check your opencv version")
-        exit()
+        print("Error opening video, check your opencv version (you may need to compile it from source)")
+        sys.exit(1)
     current_idx = video.get(image_zero_index)
     n_frames = int(video.get(frame_count))
 
@@ -62,9 +66,10 @@ print("{} frames".format(n_frames))
 
 if n_frames <= 0:
     print("Not enough frame, check your path")
-    exit()
+    sys.exit(1)
 
-# TODO: compute val/test error
+if len(train_labels) > 0:
+    computeMSE(model, train_labels, val_labels, test_labels, batchsize=16)
 
 while True:
     if video is not None:
