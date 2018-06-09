@@ -12,7 +12,7 @@ import picamera.array
 import cv2
 
 from image_processing.image_processing import processImage
-from constants import CAMERA_RESOLUTION, RECORD_VIDEO
+from constants import CAMERA_RESOLUTION, RECORD_VIDEO, CAMERA_MODE
 
 emptyException = queue.Empty
 fullException = queue.Full
@@ -88,7 +88,6 @@ class RGBAnalyser(picamera.array.PiRGBAnalysis):
                     self.out_queue.put(item=frame, block=False)
                 else:
                     try:
-                        # 10 ms per loop
                         # start_time = time.time()
                         turn_percent, centroids = processImage(frame)
                         # times.append(time.time() - start_time)
@@ -126,9 +125,8 @@ class Viewer(object):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
         # TODO: try with mode 6, larger FoV (works only with v2 module)
-        self.camera.sensor_mode = 6
+        self.camera.sensor_mode = CAMERA_MODE
         self.camera.resolution = resolution
-        print(self.camera.resolution)
         self.camera.framerate = fps
         self.out_queue = out_queue
         # self.camera.zoom = (0.0, 0.0, 1.0, 1.0)
@@ -137,6 +135,7 @@ class Viewer(object):
         self.camera.exposure_mode = 'auto'
         self.debug = debug
         self.analyser = None
+        print(self.camera.resolution)
 
     def start(self):
         self.analyser = RGBAnalyser(self.camera, self.out_queue, debug=self.debug)
@@ -151,22 +150,3 @@ class Viewer(object):
             self.camera.stop_recording(splitter_port=2)
         self.camera.stop_recording()
         self.analyser.stop()
-
-
-if __name__ == '__main__':
-    out_queue = queue.Queue()
-    condition_lock = threading.Lock()
-    exit_condition = threading.Condition(condition_lock)
-    resolution = (640 // 2, 480 // 2)
-    image_thread = ImageProcessingThread(Viewer(out_queue, resolution, debug=True), exit_condition)
-    image_thread.start()
-    time.sleep(5)
-    # End the thread
-    with exit_condition:
-        exit_condition.notify_all()
-    image_thread.join()
-    i = 0
-    while not out_queue.empty():
-        print("picam/build/{}.jpg".format(i))
-        cv2.imwrite("picam/build/{}.jpg".format(i), out_queue.get())
-        i += 1

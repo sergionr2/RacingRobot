@@ -7,11 +7,15 @@ import numpy as np
 
 # Main Constants
 CAMERA_RESOLUTION = (640 // 2, 480 // 2)
+CAMERA_MODE = 6
 # Regions of interest
 MAX_WIDTH = CAMERA_RESOLUTION[0]
 MAX_HEIGHT = CAMERA_RESOLUTION[1]
 # r = [margin_left, margin_top, width, height]
 ROI = [0, 75, MAX_WIDTH, MAX_HEIGHT - 75]
+
+# Image Analyser
+RECORD_VIDEO = True  # Record video to debug folder
 
 # Training
 FACTOR = 4  # Resize factor
@@ -50,14 +54,15 @@ BAUDRATE = 115200  # Communication with the Arduino
 N_MESSAGES_ALLOWED = 3
 COMMAND_QUEUE_SIZE = 2
 
-# Image Analyser
-RECORD_VIDEO = True  # Record video to debug folder
-
 # Image Processing
 # Straight line angle
 REF_ANGLE = - np.pi / 2
 # Max turn angle
 MAX_ANGLE = np.pi / 4  # 2 * np.pi / 3
+
+# Teleoperation
+TELEOP_PORT = "5556"
+RASPBERRY_IP = "192.168.12.252"
 
 
 # Arrow keys

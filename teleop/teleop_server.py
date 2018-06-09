@@ -19,14 +19,16 @@ from robust_serial import write_order, Order
 from robust_serial.threads import CommandThread, ListenerThread
 from robust_serial.utils import open_serial_port, CustomQueue
 
+from constants import CAMERA_RESOLUTION, CAMERA_MODE, TELEOP_PORT
+
+
 emptyException = queue.Empty
 fullException = queue.Full
 
 # Listen to port 5556
-port = "5556"
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
-socket.bind("tcp://*:{}".format(port))
+socket.bind("tcp://*:{}".format(TELEOP_PORT))
 
 parser = argparse.ArgumentParser(description='Teleoperation server')
 parser.add_argument('-v', '--video_file', help='Video filename', default="", type=str)
@@ -80,7 +82,8 @@ print("Connected To Client")
 i = 0
 
 with picamera.PiCamera() as camera:
-    camera.resolution = (640 // 2, 480 // 2)
+    camera.resolution = CAMERA_RESOLUTION
+    camera.sensor_mode = CAMERA_MODE
     if record_video:
         camera.start_recording("{}.h264".format(args.video_file))
 

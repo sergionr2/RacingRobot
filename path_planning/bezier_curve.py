@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from constants import MAX_WIDTH, MAX_HEIGHT
 
 show_animation = True
-demo_cp = np.array([[5., 1.], [ -2.77817459, 1.], [-11.5, -4.5], [ -6., -10.]])
+demo_cp = np.array([[5., 1.], [-2.77817459, 1.], [-11.5, -4.5], [-6., -10.]])
 
 
 def computeControlPoints(x, y, add_current_pos=True):
@@ -69,30 +69,31 @@ def bezier(t, control_points):
     n = len(control_points) - 1
     return np.sum([bernsteinPoly(n, i, t) * control_points[i] for i in range(n + 1)], axis=0)
 
+
 def bezierDerivativesControlPoints(control_points, n_derivatives):
     # https://pomax.github.io/bezierinfo/#derivatives
     W = {0: control_points}
     for i in range(n_derivatives):
         n = len(W[i])
-        W[i + 1] = np.array([(n-1) * (W[i][j+1] - W[i][j]) for j in range(n - 1)])
+        W[i + 1] = np.array([(n - 1) * (W[i][j + 1] - W[i][j]) for j in range(n - 1)])
     return W
 
-def curvature(dx, dy, ddx, ddy):
-    return (dx*ddy - dy*ddx) / (dx**2 + dy**2)**(3/2)
 
-def tangent(dx, dy):
-    d = np.linalg.norm(dx + dy, 2)
-    return np.array([dx, dy]) / 2
+def curvature(dx, dy, ddx, ddy):
+    return (dx * ddy - dy * ddx) / (dx ** 2 + dy ** 2) ** (3 / 2)
+
 
 def calcYaw(dx, dy):
     """
-    calc yaw
+    :param dx: (float)
+    :param dy: (float)
+    :return: (float)
     """
     return np.arctan2(dy, dx)
 
+
 def calcTrajectory(control_points, n_points=100):
     cp = control_points
-    path = calcBezierPath(control_points, 100)
     derivatives_cp = bezierDerivativesControlPoints(cp, 2)
 
     rx, ry, ryaw, rk = [], [], [], []
@@ -110,7 +111,6 @@ def calcTrajectory(control_points, n_points=100):
 
 def main():
     cp = demo_cp
-    P = calcBezierPath(cp)
     rx, ry, ryaw, rk = calcTrajectory(cp, 100)
 
     t = 0.8

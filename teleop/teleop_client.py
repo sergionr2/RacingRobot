@@ -1,9 +1,10 @@
 from __future__ import print_function, with_statement, division
 
 import zmq
-
 import pygame
 from pygame.locals import *
+
+from constants import RASPBERRY_IP, TELEOP_PORT
 
 
 UP = (1, 0)
@@ -118,13 +119,10 @@ def sendToServer(socket, control_speed, control_turn):
 
 
 if __name__ == '__main__':
-    host = "192.168.12.252"  # Ip of the Raspberry Pi
-    # host = "192.168.12.248"
-    port = "5556"
     context = zmq.Context()
     socket = context.socket(zmq.PAIR)
-    print("Connecting to ... {}".format(host))
-    socket.connect("tcp://{}:{}".format(host, port))
+    print("Connecting to ... {}".format(RASPBERRY_IP))
+    socket.connect("tcp://{}:{}".format(RASPBERRY_IP, TELEOP_PORT))
 
     msg = socket.recv()
     print("Connected To Server")
