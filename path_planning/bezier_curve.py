@@ -8,13 +8,12 @@ from __future__ import division, print_function
 
 import scipy.special
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 from constants import MAX_WIDTH, MAX_HEIGHT
 
 show_animation = True
-demo_cp = np.array([[5., 1.], [-2.78, 1.], [-11.5, -4.5], [-6., -10.]])
+demo_cp = np.array([[5., 1.], [-2.78, 1.], [-11.5, -4.5], [-6., -8.]])
 
 
 def computeControlPoints(x, y, add_current_pos=True):

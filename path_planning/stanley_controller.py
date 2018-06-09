@@ -12,13 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .bezier_curve import calcTrajectory, demo_cp
+from constants import K_STANLEY_CONTROL, CAR_LENGTH, MAX_STEERING_ANGLE
 
-# Control gain (compromise between smooth control and precise track following)
-k_control = 1
-Kp_speed = 1.0  # speed propotional gain
+Kp_speed = 5  # speed propotional gain
 dt = 0.05  # [s] time difference
-L = 1.5  # [m] Wheel base of vehicle
-max_steer = np.radians(20.0)  # [rad] max steering angle
 
 show_animation = True
 
@@ -36,11 +33,11 @@ class State(object):
         :param acceleration: (float) Speed control
         :param delta: (float) Steering control
         """
-        delta = np.clip(delta, -max_steer, max_steer)
+        delta = np.clip(delta, -MAX_STEERING_ANGLE, MAX_STEERING_ANGLE)
 
         self.x += self.v * np.cos(self.yaw) * dt
         self.y += self.v * np.sin(self.yaw) * dt
-        self.yaw += self.v / L * np.tan(delta) * dt
+        self.yaw += self.v / CAR_LENGTH * np.tan(delta) * dt
         self.yaw = normalizeAngle(self.yaw)
         self.v += acceleration * dt
 
@@ -52,6 +49,7 @@ def stanleyControl(state, cx, cy, cyaw, last_target_idx):
     :param cy: [float]
     :param cyaw: [float]
     :param last_target_idx: (int)
+    :return: (float, float, float)
     """
     # Cross track error
     current_target_idx, error_front_axle = calcTargetIndex(state, cx, cy)
@@ -62,11 +60,11 @@ def stanleyControl(state, cx, cy, cyaw, last_target_idx):
     # theta_e corrects the heading error
     theta_e = normalizeAngle(cyaw[current_target_idx] - state.yaw)
     # theta_d corrects the cross track error
-    theta_d = np.arctan2(k_control * error_front_axle, state.v)
+    theta_d = np.arctan2(K_STANLEY_CONTROL * error_front_axle, state.v)
     # Steering control
     delta = theta_e + theta_d
 
-    return delta, current_target_idx
+    return delta, current_target_idx, error_front_axle
 
 
 def normalizeAngle(angle):
@@ -91,8 +89,8 @@ def calcTargetIndex(state, cx, cy):
     :return: (int, float)
     """
     # Calc front axle position
-    fx = state.x + L * np.cos(state.yaw)
-    fy = state.y + L * np.sin(state.yaw)
+    fx = state.x + CAR_LENGTH * np.cos(state.yaw)
+    fy = state.y + CAR_LENGTH * np.sin(state.yaw)
 
     # Search nearest point index
     dx = [fx - icx for icx in cx]
@@ -110,7 +108,7 @@ def calcTargetIndex(state, cx, cy):
 
 def main():
     cp = demo_cp
-    cx, cy, cyaw, ck = calcTrajectory(cp, n_points=50)
+    cx, cy, cyaw, ck = calcTrajectory(cp, n_points=200)
 
     target_speed = 30.0 / 3.6  # [m/s]
     max_simulation_time = 100.0
@@ -125,13 +123,32 @@ def main():
     yaw = [state.yaw]
     v = [state.v]
     t = [0.0]
-    target_idx, error_front_axle = calcTargetIndex(state, cx, cy)
+    cross_track_errors = []
+    curvatures = []
+    target_idx, _ = calcTargetIndex(state, cx, cy)
+    max_speed = target_speed
+    min_speed = 15 / 3.6
+    max_radius = 40
+    min_radius = 5
 
     while max_simulation_time >= current_t and last_idx > target_idx:
         # Compute Acceleration
         acceleration = Kp_speed * (target_speed - state.v)
-        delta, target_idx = stanleyControl(state, cx, cy, cyaw, target_idx)
+        delta, target_idx, cross_track_error = stanleyControl(state, cx, cy, cyaw, target_idx)
         state.update(acceleration, delta)
+        cross_track_errors.append(cross_track_error)
+        if ck[target_idx] > 0:
+            current_radius = 1 / ck[target_idx]
+        else:
+            current_radius = np.inf
+
+        h = 1 - (np.clip(current_radius, min_radius, max_radius) - min_radius) / (max_radius - min_radius)
+        # print(current_radius, h)
+        target_speed = h * min_speed + (1 - h) * max_speed
+        # print(h, target_speed)
+
+        curvatures.append(current_radius)
+        # print("Curvature Radius", 1 / ck[target_idx], "Cross Track Error", cross_track_error)
 
         current_t += dt
 
@@ -151,9 +168,6 @@ def main():
             plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
             plt.pause(0.001)
 
-    # Test
-    assert last_idx >= target_idx, "Cannot goal"
-
     if show_animation:
         plt.plot(cx, cy, ".r", label="course")
         plt.plot(x, y, "-b", label="trajectory")
@@ -163,11 +177,18 @@ def main():
         plt.axis("equal")
         plt.grid(True)
 
-        flg, ax = plt.subplots(1)
+        _, ax1 = plt.subplots(1)
         plt.plot(t, [iv * 3.6 for iv in v], "-r")
         plt.xlabel("Time[s]")
         plt.ylabel("Speed[km/h]")
         plt.grid(True)
+
+        fig, ax2 = plt.subplots(1)
+        plt.plot(t[1:], cross_track_errors, "-r", label="cross_track_error")
+        plt.plot(t[1:], curvatures, "-b", label="curvature radius")
+        plt.xlabel("Time[s]")
+        plt.grid(True)
+        plt.legend()
         plt.show()
 
 

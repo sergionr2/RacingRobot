@@ -40,6 +40,13 @@ MIN_SPEED = 20
 # see https://stackoverflow.com/questions/46762955
 TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
 
+# Stanley Steering Control params
+# Control gain (compromise between smooth control
+# and precise track following)
+K_STANLEY_CONTROL = 1
+CAR_LENGTH = 1.5  # [m] Wheel base of vehicle
+MAX_STEERING_ANGLE = np.radians(20.0)  # [rad]
+
 # PID Control
 Kp_turn = 50
 Kp_line = 50
