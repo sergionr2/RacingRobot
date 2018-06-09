@@ -6,7 +6,7 @@ from .common import *
 from train.utils import preprocessImage, loadNetwork, predict
 from constants import *
 
-test_image = 234 * np.ones((*CAMERA_RESOLUTION, 3), dtype=np.uint8)
+test_image = 234 * np.ones((MAX_WIDTH, MAX_HEIGHT, 3), dtype=np.uint8)
 
 def testPreprocessing():
     image = preprocessImage(test_image, INPUT_WIDTH, INPUT_HEIGHT)
