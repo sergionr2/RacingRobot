@@ -96,7 +96,7 @@ python -m teleop.teleop_client
 
 1. Record a video in the teleoperation mode:
 ```
-python teleop/teleop_server.py -v my_video
+python -m teleop.teleop_server -v my_video
 ```
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
 ```
@@ -120,7 +120,7 @@ python -m train.train -f path/to/dataset/folder
 The best model (lowest error on the validation data) will be saved as *cnn_model_tmp.pth*.
 
 
-6. Test the trained neural network
+6. Test the trained neural network (you can use `-i` option to test it on a video)
 
 ```
 python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
@@ -295,6 +295,15 @@ git clone --recursive https://github.com/pytorch/pytorch
 sudo -EH python setup.py install
 # torchvision is not used yet
 sudo -H pip install torchvision
+```
+
+OpenCV with Anaconda, compiling from source:
+```
+cmake -DPYTHON_EXECUTABLE=/home/ỳour_name/anaconda3/bin/python3 \
+-DPYTHON_INCLUDE=/home/ỳour_name/anaconda3/include \
+-DPYTHON_LIBRARY=/home/ỳour_name/anaconda3/lib/libpython3.6m.so \
+-DPYTHON_PACKAGES_PATH=/home/ỳour_name/anaconda3/lib/python3.6/site-packages \
+-DPYTHON_NUMPY_INCLUDE_DIR=/home/ỳour_name/anaconda3/lib/python3.6/site-packages/core/include -DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DBUILD_opencv_java=OFF -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
 ```
 
 ### Contributors

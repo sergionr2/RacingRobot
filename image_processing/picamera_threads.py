@@ -125,6 +125,7 @@ class Viewer(object):
         self.camera = picamera.PiCamera()
         # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
         # TODO: try with mode 6, larger FoV (works only with v2 module)
+        # TODO: put everything in the constructor
         self.camera.sensor_mode = CAMERA_MODE
         self.camera.resolution = resolution
         self.camera.framerate = fps

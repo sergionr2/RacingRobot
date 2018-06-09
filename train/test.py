@@ -9,15 +9,15 @@ import os
 import cv2
 import numpy as np
 
-from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT
+from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT, MODEL_TYPE, WEIGHTS_PTH
 from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier
 from .utils import loadLabels, loadNetwork, predict
 
 parser = argparse.ArgumentParser(description='Test a line detector')
 parser.add_argument('-i', '--input_video', help='Input Video', default="", type=str)
 parser.add_argument('-f', '--folders', help='Dataset folders', nargs='+', default=[""], type=str)
-parser.add_argument('-w', '--weights', help='Saved weights', default="cnn_model_tmp.pth", type=str)
-parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str,
+parser.add_argument('-w', '--weights', help='Saved weights', default=WEIGHTS_PTH, type=str)
+parser.add_argument('--model_type', help='Model type: {cnn, custom}', default=MODEL_TYPE, type=str,
                     choices=['cnn', 'custom'])
 
 args = parser.parse_args()
@@ -104,10 +104,11 @@ while True:
         true_labels = np.array(labels[images[current_idx]])
 
     for i in range(len(path) - 1):
-        cv2.line(image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]), color=(0, 0, int(0.8 * 255)),
-                 thickness=3)
+        cv2.line(image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]),
+                color=(0, 0, int(0.8 * 255)), thickness=3)
     # Show Target point
-    cv2.circle(image, tuple(target), radius=10, color=(0, 0, int(0.9 * 255)), thickness=1, lineType=8, shift=0)
+    cv2.circle(image, tuple(target), radius=10, color=(0, 0, int(0.9 * 255)),
+               thickness=1, lineType=8, shift=0)
 
     # Draw prediction and label
     for i in range(len(x) - 1):
@@ -115,8 +116,7 @@ while True:
                  thickness=3)
         if true_labels is not None:
             cv2.line(image, (true_labels[i, 0], true_labels[i, 1]), (true_labels[i + 1, 0], true_labels[i + 1, 1]),
-                     color=(104, 168, 85),
-                     thickness=3)
+                     color=(104, 168, 85), thickness=3)
     cv2.imshow('Prediction', image)
 
     # r = ROI
