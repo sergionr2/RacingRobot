@@ -24,7 +24,6 @@ Table of Contents
     * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
     * [From Scratch](#from-scratch)
     * [Python Packages](#python-packages)
-  * [C++ Extension](#c-extension)
   * [Contributors](#contributors)
 
 ## Detailed Presentation
@@ -71,7 +70,7 @@ make
 make upload
 ```
 
-1. Launch the main script on the Raspberry Pi, it will try to follow a black&white line.
+1. Launch the main script on the Raspberry Pi, it will try to follow a line.
 All useful constants can be found in `constants.py`.
 ```
 python main.py
@@ -144,11 +143,11 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
+ - all the dependencies for that project (OpenCV >= 3, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
 
-Camera and ssh are enabled.
+Camera and SSH are enabled.
 
 
 2. Identify the name of your sd card using:
@@ -168,7 +167,7 @@ gunzip --stdout ubuntu_ros_racing_robot.img.gz | sudo dd bs=4M of=/dev/mmcblk0
 ```
 
 4. Enjoy!
-The current project is located in `RacingRobot/`. There is also a ROS version of the remote control in `catkin_ws/src/`.
+The current project is located in `RacingRobot/`.
 
 
 If you want to back up an image of a raspberry pi:
@@ -192,7 +191,7 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 
 - Arduino 1.0.5
 - [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile)
-- OpenCV 3.1
+- OpenCV >= 3
 - libserial-dev (apt-get)
 - Python 2 or 3
 
@@ -214,33 +213,31 @@ sudo ldconfig
 ```
 
 #### Python Packages
-All the required packages can be found in `requirements.txt`
+All the required packages can be found in `requirements.txt`, install them using:
 
-PySerial
 ```
-sudo pip install pyserial
+pip install -r requirements.txt
+```
+
+In short:
+-  PySerial
+- TQDM (for progressbar)
+- [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip) (for teleoperation)
+- Enum support (for Python 2)
+- ZeroMQ (for teleoperation)
+- Pytorch (you have to compile it from source for the RPI)
+- scikit-learn
+
+```
+pip install pyserial tqdm pygame enum34 scikit-learn
+```
+
+Note: for using the serial port, you need to change current user permissions:
+```
 # Add user to dialout group to have the right to write on the serial port
 sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
-
-TQDM (for progressbar)
-```
-pip install tqdm
-```
-
-[PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
-For teleoperation
-```
-pip install pygame
-```
-
-Enum for python 2
-```
-pip install enum34
-```
-
-[Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
 ZeroMQ (Message Passing with sockets) for remote control mode
 ```
@@ -261,7 +258,7 @@ pip install pyzmq
 Additional python dev-dependencies for training the neural network:
 On your laptop:
 ```
-pip install http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
+pip install pytorch
 pip install torchvision
 
 pip install sklearn # or sudo apt-get install python-sklearn
@@ -296,6 +293,8 @@ sudo -EH python setup.py install
 # torchvision is not used yet
 sudo -H pip install torchvision
 ```
+
+[Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
 OpenCV with Anaconda, compiling from source:
 ```

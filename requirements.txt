@@ -11,4 +11,3 @@ six==1.11.0
 sklearn==0.0
 torchvision==0.2.1
 tqdm==4.19.5
-zmq==0.0.0
