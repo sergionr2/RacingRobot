@@ -22,4 +22,5 @@ render/
 *.pth
 *.so
 .coverage*
+coverage.xml
 datasets/
