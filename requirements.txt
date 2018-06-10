@@ -1,4 +1,5 @@
 enum34==1.1.6
+matplotlib==2.2.2
 numpy==1.13.3
 pygame==1.9.3
 pytest==3.4.2
