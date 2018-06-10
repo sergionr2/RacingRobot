@@ -35,3 +35,9 @@ def testTestScript():
     args = ['-f', DATASET, '--model_type', MODEL_TYPE, '-w', WEIGHTS_PTH, '--no-display']
     ok = subprocess.call(['python', '-m', 'train.test'] + args)
     assertEq(ok, 0)
+
+
+def testBenchmarkScript():
+    args = ['-n', '1', '--model_type', MODEL_TYPE, '-w', WEIGHTS_PTH]
+    ok = subprocess.call(['python', '-m', 'train.benchmark'] + args)
+    assertEq(ok, 0)
