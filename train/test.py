@@ -21,6 +21,7 @@ parser.add_argument('-w', '--weights', help='Saved weights', default=WEIGHTS_PTH
 parser.add_argument('--model_type', help='Model type: {cnn, custom}', default=MODEL_TYPE, type=str,
                     choices=['cnn', 'custom'])
 parser.add_argument('--no-display', action='store_true', default=False, help='Compute only mse')
+parser.add_argument('--no-mse', action='store_true', default=False, help='Do not compute mse')
 
 args = parser.parse_args()
 
@@ -69,7 +70,7 @@ if n_frames <= 0:  # pragma: no cover
     print("Not enough frame, check your path")
     sys.exit(1)
 
-if len(train_labels) > 0:
+if len(train_labels) > 0 and not args.no_mse:
     computeMSE(model, train_labels, val_labels, test_labels, batchsize=16)
     if args.no_display:
         sys.exit(0)

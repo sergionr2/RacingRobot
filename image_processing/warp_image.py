@@ -35,7 +35,7 @@ new_height, new_width = height + ty, int(width * 1.5) + tx
 M = cv2.getPerspectiveTransform(pts1, pts2)
 
 
-def imshow(im, y=None, delta=None, name=""):
+def imshow(im, y=None, delta=None, name=""):  # pragma: no cover
     plt.figure(name)
     # BGR to RGB
     plt.imshow(im[:, :, ::-1])
@@ -46,7 +46,7 @@ def imshow(im, y=None, delta=None, name=""):
     plt.grid(True)
 
 
-def showTransform(image, y, delta):
+def showTransform(image, y, delta):  # pragma: no cover
     im = image.copy()
     for (cx, cy) in pts1:
         cv2.circle(im, (int(cx), int(cy)), 8, (0, 255, 0), -1)
@@ -56,13 +56,15 @@ def showTransform(image, y, delta):
 if __name__ == '__main__':  # pragma: no cover
     parser = argparse.ArgumentParser(description='Transform image to have a top down view')
     parser.add_argument('-i', '--input_image', help='Input image', type=str, required=True)
+    parser.add_argument('--no-display', action='store_true', default=False, help='Do not display plots (for tests)')
     args = parser.parse_args()
 
     image = cv2.imread(args.input_image)
     assert image is not None, "Could not read image"
     orignal_image = image.copy()
     warp = cv2.warpPerspective(orignal_image, np.dot(T, M), (new_width, new_height))
-    imshow(image, name="original")
-    showTransform(image, y, delta)
-    imshow(warp, name="warped")
-    plt.show()
+    if not args.no_display:
+        imshow(image, name="original")
+        showTransform(image, y, delta)
+        imshow(warp, name="warped")
+        plt.show()

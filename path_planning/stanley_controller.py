@@ -8,6 +8,8 @@ From https://github.com/AtsushiSakai/PythonRobotics
 """
 from __future__ import division, print_function
 
+import argparse
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -17,8 +19,6 @@ from constants import K_STANLEY_CONTROL, CAR_LENGTH, MAX_STEERING_ANGLE,\
 
 Kp_speed = 5  # speed propotional gain
 dt = 0.05  # [s] time difference
-
-show_animation = True
 
 
 class State(object):
@@ -107,7 +107,7 @@ def calcTargetIndex(state, cx, cy):
     return target_idx, error_front_axle
 
 
-def main():
+def main(show_animation):
     cp = demo_cp
     cx, cy, cyaw, ck = calcTrajectory(cp, n_points=200)
 
@@ -192,4 +192,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Test a line detector')
+    parser.add_argument('--no-display', action='store_true', default=False, help='Do not display plots (for tests)')
+    args = parser.parse_args()
+    main(not args.no_display)

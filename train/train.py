@@ -11,9 +11,9 @@ import torch as th
 import torch.utils.data
 import torch.nn as nn
 
-from constants import NUM_OUTPUT
+from constants import NUM_OUTPUT, INPUT_WIDTH, INPUT_HEIGHT, N_CHANNELS
 from .utils import JsonDataset, loadLabels
-from .models import ConvolutionalNetwork, CustomNet
+from .models import ConvolutionalNetwork, CustomNet, MlpNetwork
 
 evaluate_print = 1  # Print info every 1 epoch
 VAL_BATCH_SIZE = 64  # Batch size for validation and test data
@@ -67,6 +67,8 @@ def main(folders, num_epochs=100, batchsize=32,
         model = ConvolutionalNetwork(num_output=NUM_OUTPUT, drop_p=0.0)
     elif model_type == "custom":
         model = CustomNet(num_output=NUM_OUTPUT)
+    elif model_type == "mlp":
+        model = MlpNetwork(INPUT_WIDTH * INPUT_HEIGHT * N_CHANNELS, num_output=NUM_OUTPUT)
     else:
         raise ValueError("Model type not supported")
 
@@ -168,7 +170,8 @@ if __name__ == '__main__':
     parser.add_argument('--seed', help='Random Seed', default=42, type=int)
     parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables CUDA training')
     parser.add_argument('--load_model', help='Start from a saved model', default="", type=str)
-    parser.add_argument('--model_type', help='Model type: {cnn, custom}', default="custom", type=str, choices=['cnn', 'custom'])
+    parser.add_argument('--model_type', help='Model type: {cnn, custom, mlp}', default="custom",
+                        type=str, choices=['cnn', 'custom', 'mlp'])
     parser.add_argument('-lr', '--learning_rate', help='Learning rate', default=1e-3, type=float)
     args = parser.parse_args()
 

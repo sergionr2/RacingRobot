@@ -1,4 +1,5 @@
 [run]
+branch = False
 omit =
     tests/*
     # ROS nodes are python 2 only

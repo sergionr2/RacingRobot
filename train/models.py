@@ -11,20 +11,14 @@ class MlpNetwork(nn.Module):
     """
     MLP network for detecting the line
     :param input_dim: (int) 3 x H x W
-    :param n_hidden: [int]
     :param drop_p: (float) Dropout proba
     """
 
-    def __init__(self, input_dim, num_output=6, n_hidden=None, drop_p=0.0):
+    def __init__(self, input_dim, num_output=6, drop_p=0.0):
         super(MlpNetwork, self).__init__()
-        if n_hidden is None:
-            n_layer1 = 20
-            n_layer2 = 4
-        else:
-            n_layer1, n_layer2 = n_hidden
-        self.fc1 = nn.Linear(input_dim, n_layer1)
-        self.fc2 = nn.Linear(n_layer1, n_layer2)
-        self.fc3 = nn.Linear(n_layer2, num_output)
+        self.fc1 = nn.Linear(input_dim, 20)
+        self.fc2 = nn.Linear(20, 4)
+        self.fc3 = nn.Linear(4, num_output)
         self.drop_p = drop_p
         self.activation_fn = F.relu
         self._initializeWeights()

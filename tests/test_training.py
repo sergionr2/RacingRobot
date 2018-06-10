@@ -14,7 +14,7 @@ training_args = list(map(str, training_args))
 
 
 def testTrain():
-    for model_type in ['custom', 'cnn']:
+    for model_type in ['custom', 'cnn', 'mlp']:
         args = training_args + ['--model_type', model_type]
         ok = subprocess.call(['python', '-m', 'train.train'] + args)
         assertEq(ok, 0)

@@ -190,7 +190,7 @@ def computeLossWithDataLoader(model, labels, batchsize, shuffle=False):
     dataloader = th.utils.data.DataLoader(JsonDataset(labels, preprocess=True),
                                             batch_size=batchsize, shuffle=shuffle)
 
-    loss_fn = th.nn.MSELoss(size_average=False)
+    loss_fn = th.nn.MSELoss(size_average=True)
     total_loss = 0
     with th.no_grad():
         for inputs, targets in dataloader:

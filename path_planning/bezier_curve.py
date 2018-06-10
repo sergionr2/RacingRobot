@@ -6,13 +6,14 @@ From https://github.com/AtsushiSakai/PythonRobotics
 """
 from __future__ import division, print_function
 
+import argparse
+
 import scipy.special
 import numpy as np
 import matplotlib.pyplot as plt
 
 from constants import MAX_WIDTH, MAX_HEIGHT
 
-show_animation = True
 demo_cp = np.array([[5., 1.], [-2.78, 1.], [-11.5, -4.5], [-6., -8.]])
 
 
@@ -134,7 +135,7 @@ def calcTrajectory(control_points, n_points=100):
     return rx, ry, ryaw, rk
 
 
-def main():
+def main(show_animation):
     cp = demo_cp
     rx, ry, ryaw, rk = calcTrajectory(cp, 100)
 
@@ -174,4 +175,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Test a line detector')
+    parser.add_argument('--no-display', action='store_true', default=False, help='Do not display plots (for tests)')
+    args = parser.parse_args()
+    main(not args.no_display)
