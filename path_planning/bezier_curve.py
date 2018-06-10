@@ -159,9 +159,9 @@ def main(show_animation):
     curvature_center = point + np.array([- dt[1], dt[0]]) * r
     circle = plt.Circle(tuple(curvature_center), r, color=(0, 0.8, 0.8), fill=False, linewidth=1)
 
-    fig, ax = plt.subplots()
 
     if show_animation:  # pragma: no cover
+        fig, ax = plt.subplots()
         ax.plot(rx, ry, label="Bezier Path")
         ax.plot(cp.T[0], cp.T[1], '--o', label="Control Points")
         ax.plot(x_target, y_target, '--o', label="Target Point")
