@@ -1,2 +1,2 @@
 #!/bin/bash
-pytest tests/
+pytest --cov-config .coveragerc --cov-report html --cov-report term --cov=. tests/

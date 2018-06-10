@@ -30,7 +30,6 @@ NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs
 # Direction and speed
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
-ERROR_MAX = 1.0
 MAX_SPEED_STRAIGHT_LINE = 35  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 30
 MIN_SPEED = 20
@@ -45,7 +44,10 @@ TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
 # and precise track following)
 K_STANLEY_CONTROL = 1
 CAR_LENGTH = 1.5  # [m] Wheel base of vehicle
-MAX_STEERING_ANGLE = np.radians(20.0)  # [rad]
+MAX_STEERING_ANGLE = np.radians(25.0)  # [rad]
+# Radius of curvature
+MIN_RADIUS = 5  # Below this value, we consider to be in a sharp turn
+MAX_RADIUS = 40  # Above this value, we consider to be in a straight line
 
 # PID Control
 Kp_turn = 50

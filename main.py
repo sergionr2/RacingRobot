@@ -24,7 +24,7 @@ from robust_serial.threads import CommandThread, ListenerThread
 from robust_serial.utils import open_serial_port, CustomQueue
 
 from image_processing.picamera_threads import ImageProcessingThread, Viewer
-from constants import THETA_MIN, THETA_MAX, ERROR_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
+from constants import THETA_MIN, THETA_MAX, MAX_SPEED_SHARP_TURN, MAX_SPEED_STRAIGHT_LINE, \
     MIN_SPEED, Kp_turn, Kp_line, Kd, Ki, FPS, N_SECONDS, ALPHA, CAMERA_RESOLUTION, \
     BAUDRATE, N_MESSAGES_ALLOWED, COMMAND_QUEUE_SIZE
 
@@ -131,7 +131,7 @@ def mainControl(command_queue, n_received_semaphore, out_queue, resolution, n_se
         # Represent error as a number in [0, 1]
         # t = 0 -> no error, we are perfectly on the line
         # t = 1 -> maximal error
-        t = np.clip(error / float(ERROR_MAX), 0, 1)
+        t = np.clip(error, 0, 1)
         # Reduce speed if we have a high error
         speed_order = t * MIN_SPEED + (1 - t) * v_max
 

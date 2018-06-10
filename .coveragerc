@@ -1,0 +1,6 @@
+[run]
+omit =
+    tests/*
+
+[html]
+directory = debug/coverage/

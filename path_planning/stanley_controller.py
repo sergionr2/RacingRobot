@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .bezier_curve import calcTrajectory, demo_cp
-from constants import K_STANLEY_CONTROL, CAR_LENGTH, MAX_STEERING_ANGLE
+from constants import K_STANLEY_CONTROL, CAR_LENGTH, MAX_STEERING_ANGLE,\
+                    MAX_SPEED_STRAIGHT_LINE, MIN_SPEED, MIN_RADIUS, MAX_RADIUS
 
 Kp_speed = 5  # speed propotional gain
 dt = 0.05  # [s] time difference
@@ -110,7 +111,7 @@ def main():
     cp = demo_cp
     cx, cy, cyaw, ck = calcTrajectory(cp, n_points=200)
 
-    target_speed = 30.0 / 3.6  # [m/s]
+    target_speed = MAX_SPEED_STRAIGHT_LINE / 3.6  # [m/s]
     max_simulation_time = 100.0
 
     # initial state
@@ -127,7 +128,6 @@ def main():
     curvatures = []
     target_idx, _ = calcTargetIndex(state, cx, cy)
     max_speed = target_speed
-    min_speed = 15 / 3.6
     max_radius = 40
     min_radius = 5
 
@@ -142,13 +142,10 @@ def main():
         else:
             current_radius = np.inf
 
-        h = 1 - (np.clip(current_radius, min_radius, max_radius) - min_radius) / (max_radius - min_radius)
-        # print(current_radius, h)
-        target_speed = h * min_speed + (1 - h) * max_speed
-        # print(h, target_speed)
+        h = 1 - (np.clip(current_radius, MIN_RADIUS, MAX_RADIUS) - MIN_RADIUS) / (MAX_RADIUS - MIN_RADIUS)
+        target_speed = h * MIN_SPEED / 3.6 + (1 - h) * MAX_SPEED_STRAIGHT_LINE / 3.6
 
         curvatures.append(current_radius)
-        # print("Curvature Radius", 1 / ck[target_idx], "Cross Track Error", cross_track_error)
 
         current_t += dt
 
@@ -162,6 +159,8 @@ def main():
             plt.cla()
             plt.plot(cx, cy, ".r", label="course")
             plt.plot(x, y, "-b", label="trajectory")
+            plt.arrow(state.x, state.y, np.cos(state.yaw), np.sin(state.yaw),
+                      fc="r", ec="k", head_width=0.5, head_length=0.5)
             plt.plot(cx[target_idx], cy[target_idx], "xg", label="target")
             plt.axis("equal")
             plt.grid(True)

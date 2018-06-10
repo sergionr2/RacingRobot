@@ -139,6 +139,7 @@ def main():
     rx, ry, ryaw, rk = calcTrajectory(cp, 100)
 
     t = 0.8
+    x_target, y_target = bezier(t, cp)
     derivatives_cp = bezierDerivativesControlPoints(cp, 2)
     point = bezier(t, cp)
     dt = bezier(t, derivatives_cp[1])
@@ -162,7 +163,7 @@ def main():
     if show_animation:
         ax.plot(rx, ry, label="Bezier Path")
         ax.plot(cp.T[0], cp.T[1], '--o', label="Control Points")
-        ax.plot(*bezier(t, cp), '--o', label="Target Point")
+        ax.plot(x_target, y_target, '--o', label="Target Point")
         ax.plot(tangent[:, 0], tangent[:, 1], label="Tangent")
         ax.plot(normal[:, 0], normal[:, 1], label="Normal")
         ax.add_artist(circle)
