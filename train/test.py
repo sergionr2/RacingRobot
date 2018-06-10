@@ -20,6 +20,7 @@ parser.add_argument('-f', '--folders', help='Dataset folders', nargs='+', defaul
 parser.add_argument('-w', '--weights', help='Saved weights', default=WEIGHTS_PTH, type=str)
 parser.add_argument('--model_type', help='Model type: {cnn, custom}', default=MODEL_TYPE, type=str,
                     choices=['cnn', 'custom'])
+parser.add_argument('--no-display', action='store_true', default=False, help='Compute only mse')
 
 args = parser.parse_args()
 
@@ -70,6 +71,8 @@ if n_frames <= 0:
 
 if len(train_labels) > 0:
     computeMSE(model, train_labels, val_labels, test_labels, batchsize=16)
+    if args.no_display:
+        sys.exit(0)
 
 while True:
     if video is not None:
@@ -110,7 +113,7 @@ while True:
 
     for i in range(len(path) - 1):
         cv2.line(image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]),
-                color=(0, 0, int(0.8 * 255)), thickness=3)
+                 color=(0, 0, int(0.8 * 255)), thickness=3)
     # Show Target point
     cv2.circle(image, tuple(target), radius=10, color=(0, 0, int(0.9 * 255)),
                thickness=1, lineType=8, shift=0)

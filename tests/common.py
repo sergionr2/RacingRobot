@@ -5,8 +5,10 @@ DATASET = 'datasets/test_dataset'
 SEED = 0
 BATCHSIZE = 4
 
+
 def assertEq(left, right):
     assert left == right, "{} != {}".format(left, right)
+
 
 def assertNeq(left, right):
     assert left != right, "{} == {}".format(left, right)
