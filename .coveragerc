@@ -1,6 +1,21 @@
 [run]
 omit =
     tests/*
+    # ROS nodes are python 2 only
+    ros_nodes/*
+    # Files that require the picamera package
+    # Only available on the Raspberry Pi
+    main.py
+    teleop/teleop_server.py
+    image_processing/picamera_threads.py
+    # Teleop client requires a X-server
+    teleop/teleop_client.py
+    # Needs an input video
+    train/split_video.py
+
+[report]
+exclude_lines =
+    pragma: no cover
 
 [html]
 directory = debug/coverage/

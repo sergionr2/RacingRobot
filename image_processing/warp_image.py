@@ -53,7 +53,7 @@ def showTransform(image, y, delta):
     imshow(im, y, delta, name="transform")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     parser = argparse.ArgumentParser(description='Transform image to have a top down view')
     parser.add_argument('-i', '--input_image', help='Input image', type=str, required=True)
     args = parser.parse_args()

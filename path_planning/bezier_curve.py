@@ -160,7 +160,7 @@ def main():
 
     fig, ax = plt.subplots()
 
-    if show_animation:
+    if show_animation:  # pragma: no cover
         ax.plot(rx, ry, label="Bezier Path")
         ax.plot(cp.T[0], cp.T[1], '--o', label="Control Points")
         ax.plot(x_target, y_target, '--o', label="Target Point")

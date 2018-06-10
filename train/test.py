@@ -27,7 +27,7 @@ args = parser.parse_args()
 assert args.folders[0] != "" or args.input_video != "", "You must specify a video or dataset for testing"
 
 video = None
-if args.input_video != "":
+if args.input_video != "":  # pragma: no cover
     assert os.path.isfile(args.input_video), "Invalid path to input video"
     image_zero_index = cv2.CAP_PROP_POS_FRAMES
     frame_count = cv2.CAP_PROP_FRAME_COUNT
@@ -55,9 +55,9 @@ if video is None:
     idx_test = set(test_labels.keys())
     n_frames = len(images)
     current_idx = 0
-else:
+else: # pragma: no cover
     # Load video
-    if not video.isOpened():
+    if not video.isOpened():  # pragma: no cover
         print("Error opening video, check your opencv version (you may need to compile it from source)")
         sys.exit(1)
     current_idx = video.get(image_zero_index)
@@ -65,7 +65,7 @@ else:
 
 print("{} frames".format(n_frames))
 
-if n_frames <= 0:
+if n_frames <= 0:  # pragma: no cover
     print("Not enough frame, check your path")
     sys.exit(1)
 
@@ -74,7 +74,7 @@ if len(train_labels) > 0:
     if args.no_display:
         sys.exit(0)
 
-while True:
+while True:  # pragma: no cover
     if video is not None:
         while True:
             flag, image = video.read()
@@ -141,5 +141,5 @@ while True:
     if video is not None:
         video.set(image_zero_index, current_idx)
 
-if video is not None:
+if video is not None:  # pragma: no cover
     video.release()

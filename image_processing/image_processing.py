@@ -42,7 +42,7 @@ def processImage(image, debug=False):
         # Linear regression using least squares method
         # x = m*y + b -> y = 1/m * x - b/m if m != 0
         A = np.vstack([y, np.ones(len(y))]).T
-        m, b = np.linalg.lstsq(A, x)[0]
+        m, b = np.linalg.lstsq(A, x, rcond=-1)[0]
 
         # Compute the angle between the reference and the fitted line
         track_angle = np.arctan(1 / m)

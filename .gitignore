@@ -21,5 +21,5 @@ render/
 *.pkl
 *.pth
 *.so
-.coverage
+.coverage*
 datasets/

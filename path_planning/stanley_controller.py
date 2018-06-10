@@ -155,7 +155,7 @@ def main():
         v.append(state.v)
         t.append(current_t)
 
-        if show_animation:
+        if show_animation:  # pragma: no cover
             plt.cla()
             plt.plot(cx, cy, ".r", label="course")
             plt.plot(x, y, "-b", label="trajectory")
@@ -167,7 +167,7 @@ def main():
             plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
             plt.pause(0.001)
 
-    if show_animation:
+    if show_animation:  # pragma: no cover
         plt.plot(cx, cy, ".r", label="course")
         plt.plot(x, y, "-b", label="trajectory")
         plt.legend()
