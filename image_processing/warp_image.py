@@ -7,17 +7,13 @@ import matplotlib.pyplot as plt
 from constants import MAX_WIDTH, MAX_HEIGHT
 
 # Transform Parameters
-y = 90
-a = 0.75
-delta = (MAX_HEIGHT - y) * a
-
-height, width = 500, 320
+height, width = 1200, 800
 # Orignal and transformed keypoints
 pts1 = np.float32(
-    [[delta, y],
-     [MAX_WIDTH - delta, y],
-     [0, MAX_HEIGHT],
-     [MAX_WIDTH, MAX_HEIGHT]])
+    [[103, 93],
+     [222, 95],
+     [6, 130],
+     [310, 128]])
 
 pts2 = np.float32(
     [[0, 0],
@@ -26,31 +22,27 @@ pts2 = np.float32(
      [width, height]])
 
 # Translation Matrix
-tx, ty = 300, 500
+tx, ty = 0, 0
 T = np.float32([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
 
-new_height, new_width = height + ty, int(width * 1.5) + tx
+new_height, new_width = int(height * 1) + ty + 300, int(width * 1.2) + tx
 
 # calculate the perspective transform matrix
 M = cv2.getPerspectiveTransform(pts1, pts2)
 
 
-def imshow(im, y=None, delta=None, name=""):  # pragma: no cover
+def imshow(im, name=""):  # pragma: no cover
     plt.figure(name)
     # BGR to RGB
     plt.imshow(im[:, :, ::-1])
-    if y is not None:
-        plt.plot([0, delta], [MAX_HEIGHT, y])
-        plt.plot([MAX_WIDTH, MAX_WIDTH - delta], [MAX_HEIGHT, y])
-        plt.plot([delta, MAX_WIDTH - delta], [y, y])
     plt.grid(True)
 
 
-def showTransform(image, y, delta):  # pragma: no cover
+def showTransform(image):  # pragma: no cover
     im = image.copy()
     for (cx, cy) in pts1:
         cv2.circle(im, (int(cx), int(cy)), 8, (0, 255, 0), -1)
-    imshow(im, y, delta, name="transform")
+    imshow(im, name="transform")
 
 
 if __name__ == '__main__':  # pragma: no cover
@@ -65,6 +57,6 @@ if __name__ == '__main__':  # pragma: no cover
     warp = cv2.warpPerspective(orignal_image, np.dot(T, M), (new_width, new_height))
     if not args.no_display:
         imshow(image, name="original")
-        showTransform(image, y, delta)
+        showTransform(image)
         imshow(warp, name="warped")
         plt.show()
