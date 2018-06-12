@@ -23,12 +23,12 @@ pts2 = np.float32(
 
 # Translation Matrix
 tx, ty = 0, 0
-T = np.float32([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
+translation_matrix = np.float32([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
 
 new_height, new_width = int(height * 1) + ty + 300, int(width * 1.2) + tx
 
 # calculate the perspective transform matrix
-M = cv2.getPerspectiveTransform(pts1, pts2)
+transform_matrix = cv2.getPerspectiveTransform(pts1, pts2)
 
 
 def imshow(im, name=""):  # pragma: no cover
@@ -44,6 +44,9 @@ def showTransform(image):  # pragma: no cover
         cv2.circle(im, (int(cx), int(cy)), 8, (0, 255, 0), -1)
     imshow(im, name="transform")
 
+def warpImage(image):
+    # TODO: transform only points
+    return cv2.warpPerspective(image, np.dot(translation_matrix, transform_matrix), (new_width, new_height))
 
 if __name__ == '__main__':  # pragma: no cover
     parser = argparse.ArgumentParser(description='Transform image to have a top down view')
@@ -54,7 +57,7 @@ if __name__ == '__main__':  # pragma: no cover
     image = cv2.imread(args.input_image)
     assert image is not None, "Could not read image"
     orignal_image = image.copy()
-    warp = cv2.warpPerspective(orignal_image, np.dot(T, M), (new_width, new_height))
+    warp = cv2.warpPerspective(orignal_image, np.dot(translation_matrix, transform_matrix), (new_width, new_height))
     if not args.no_display:
         imshow(image, name="original")
         showTransform(image)

@@ -12,6 +12,7 @@ import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT, MODEL_TYPE, WEIGHTS_PTH
 from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier
+from image_processing.warp_image import warpImage
 from .utils import loadLabels, loadNetwork, predict, computeMSE
 
 parser = argparse.ArgumentParser(description='Test a line detector')
@@ -102,7 +103,7 @@ while True:  # pragma: no cover
     x, y = predict(model, image)
     # print(current_idx)
     # Compute bezier path
-    control_points = computeControlPoints(x, y, add_current_pos=True)
+    control_points = computeControlPoints(x, y, add_current_pos=False)
     target = bezier(TARGET_POINT, control_points).astype(np.int32)
     path = calcBezierPath(control_points).astype(np.int32)
 
@@ -128,6 +129,9 @@ while True:  # pragma: no cover
                      color=(104, 168, 85), thickness=3)
     cv2.imshow('Prediction', image)
 
+    # warped_image = warpImage(image)
+    # warped_image = cv2.resize(warped_image, (warped_image.shape[1]//2, warped_image.shape[0]//2), interpolation=cv2.INTER_LINEAR)
+    # cv2.imshow('Warped image', warped_image)
     # r = ROI
     # im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
     # cv2.imshow('Crop', im_cropped)
