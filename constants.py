@@ -5,7 +5,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 
-# Main Constants
+# Camera Constants
 CAMERA_RESOLUTION = (640 // 2, 480 // 2)
 # https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes
 # mode 4, larger FoV but FPS <= 40
@@ -37,16 +37,14 @@ MAX_SPEED_SHARP_TURN = 30
 MIN_SPEED = 20
 
 # Path Planning
-# TODO: compute curvature of bezier path to regulate speed
-# see https://stackoverflow.com/questions/46762955
 TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
 
 # Stanley Steering Control params
 # Control gain (compromise between smooth control
 # and precise track following)
 K_STANLEY_CONTROL = 1
-CAR_LENGTH = 1.5  # [m] Wheel base of vehicle
-MAX_STEERING_ANGLE = np.radians(25.0)  # [rad]
+CAR_LENGTH = 300  # Wheel base of vehicle (in the warped pixel space)
+MAX_STEERING_ANGLE = np.radians(30.0)  # [rad]
 # Radius of curvature
 MIN_RADIUS = 5  # Below this value, we consider to be in a sharp turn
 MAX_RADIUS = 40  # Above this value, we consider to be in a straight line

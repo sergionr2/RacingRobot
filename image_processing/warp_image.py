@@ -44,6 +44,7 @@ def showTransform(image):  # pragma: no cover
         cv2.circle(im, (int(cx), int(cy)), 8, (0, 255, 0), -1)
     imshow(im, name="transform")
 
+
 def transformPoints(x, y):
     points = []
     for i in range(len(x)):

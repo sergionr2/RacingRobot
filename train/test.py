@@ -11,7 +11,9 @@ import cv2
 import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT, MODEL_TYPE, WEIGHTS_PTH
-from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier
+from constants import MAX_WIDTH, MAX_HEIGHT
+from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier, calcTrajectory
+from path_planning.stanley_controller import stanleyControl, State, calcTargetIndex
 from image_processing.warp_image import warpImage, transformPoints
 from .utils import loadLabels, loadNetwork, predict, computeMSE
 
@@ -105,7 +107,7 @@ while True:  # pragma: no cover
 
     # print(current_idx)
     # Compute bezier path
-    control_points = computeControlPoints(x, y, add_current_pos=False)
+    control_points = computeControlPoints(x, y, add_current_pos=True)
     target = bezier(TARGET_POINT, control_points).astype(np.int32)
     path = calcBezierPath(control_points).astype(np.int32)
 
@@ -141,7 +143,25 @@ while True:  # pragma: no cover
         cv2.line(warped_image, (points[i, 0], points[i, 1]), (points[i + 1, 0], points[i + 1, 1]), color=(176, 114, 76),
                  thickness=10)
 
-    path = calcBezierPath(points).astype(np.int32)
+
+    path = calcBezierPath(points, n_points=10).astype(np.int32)
+
+    cp = transformPoints(x, y)
+    cp[:, 1] *= -1
+    current_pos = transformPoints([MAX_WIDTH/2], [MAX_HEIGHT])[0]
+    # TODO: compute v in the pixel space
+    state = State(x=current_pos[0], y=-current_pos[1], yaw=np.radians(90.0), v=10)
+    cx, cy, cyaw, ck = calcTrajectory(cp, n_points=10)
+    target_idx, _ = calcTargetIndex(state, cx, cy)
+    target = (int(cx[target_idx]), - int(cy[target_idx]))
+
+    delta, _, cross_track_error = stanleyControl(state, cx, cy, cyaw, target_idx)
+    # print(delta, cross_track_error)
+
+    # Target
+    cv2.circle(warped_image, target, radius=50, color=(0, 0, int(0.9 * 255)),
+               thickness=10, lineType=8, shift=0)
+
     # Draw bezier curve
     for i in range(len(path) - 1):
         cv2.line(warped_image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]),
