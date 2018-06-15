@@ -132,7 +132,7 @@ python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
 #### Recommended : Use an image with everything already installed
 
 0. You need a 16GB micro sd card (warning, all data on that card will be overwritten)
-WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://github.com/billw2/rpi-clone) may help)
+WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://softwarebakery.com/shrinking-images-on-linux) and [repo](https://github.com/billw2/rpi-clone) may help)
 
 1. Download the image [here](https://drive.google.com/open?id=1CUmSKOQ7i_XTrsLCRntypK9KcVaVwM4h)
 

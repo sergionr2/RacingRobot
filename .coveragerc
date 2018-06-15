@@ -13,6 +13,7 @@ omit =
     teleop/teleop_client.py
     # Needs an input video
     train/split_video.py
+    train/convert_video.py
 
 [report]
 exclude_lines =
