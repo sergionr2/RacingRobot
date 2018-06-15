@@ -17,7 +17,7 @@ from constants import MAX_WIDTH, MAX_HEIGHT
 demo_cp = np.array([[5., 1.], [-2.78, 1.], [-11.5, -4.5], [-6., -8.]])
 
 
-def computeControlPoints(x, y, add_current_pos=True):
+def computeControlPoints(x, y, add_current_pos=False):
     """
     Compute the control points for creating bezier path
     The image processing predicts (x, y) points belonging to the line

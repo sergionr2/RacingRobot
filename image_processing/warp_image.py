@@ -25,11 +25,11 @@ pts2 = np.float32(
 tx, ty = 0, 0
 translation_matrix = np.float32([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
 
-new_height, new_width = int(height * 1) + ty + 300, int(width * 1.2) + tx
+new_height, new_width = int(height * 1) + ty + 600, int(width * 1.2) + tx
 
 # calculate the perspective transform matrix
 transform_matrix = cv2.getPerspectiveTransform(pts1, pts2)
-
+complete_transform = np.dot(translation_matrix, transform_matrix)
 
 def imshow(im, name=""):  # pragma: no cover
     plt.figure(name)
@@ -44,9 +44,27 @@ def showTransform(image):  # pragma: no cover
         cv2.circle(im, (int(cx), int(cy)), 8, (0, 255, 0), -1)
     imshow(im, name="transform")
 
+def transformPoints(x, y):
+    points = []
+    for i in range(len(x)):
+        point = transformPoint(np.array([x[i], y[i], 1]))
+        scale = point[2]
+        point = point / scale
+        points.append(point[:2])
+    return np.array(points)
+
+
+def transformPoint(point):
+    """
+    :param points: (numpy array)
+    :return: (numpy array)
+    """
+    return np.matmul(complete_transform, point)
+
+
 def warpImage(image):
     # TODO: transform only points
-    return cv2.warpPerspective(image, np.dot(translation_matrix, transform_matrix), (new_width, new_height))
+    return cv2.warpPerspective(image, complete_transform, (new_width, new_height))
 
 if __name__ == '__main__':  # pragma: no cover
     parser = argparse.ArgumentParser(description='Transform image to have a top down view')

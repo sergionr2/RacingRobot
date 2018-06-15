@@ -12,7 +12,7 @@ import numpy as np
 
 from constants import RIGHT_KEY, LEFT_KEY, EXIT_KEYS, ROI, NUM_OUTPUT, TARGET_POINT, MODEL_TYPE, WEIGHTS_PTH
 from path_planning.bezier_curve import calcBezierPath, computeControlPoints, bezier
-from image_processing.warp_image import warpImage
+from image_processing.warp_image import warpImage, transformPoints
 from .utils import loadLabels, loadNetwork, predict, computeMSE
 
 parser = argparse.ArgumentParser(description='Test a line detector')
@@ -101,12 +101,15 @@ while True:  # pragma: no cover
             text = "test"
 
     x, y = predict(model, image)
+    points = transformPoints(x, y).astype(np.int32)
+
     # print(current_idx)
     # Compute bezier path
     control_points = computeControlPoints(x, y, add_current_pos=False)
     target = bezier(TARGET_POINT, control_points).astype(np.int32)
     path = calcBezierPath(control_points).astype(np.int32)
 
+    orignal_image = image.copy()
     cv2.putText(image, text, (0, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
 
     true_labels = None
@@ -129,9 +132,23 @@ while True:  # pragma: no cover
                      color=(104, 168, 85), thickness=3)
     cv2.imshow('Prediction', image)
 
-    # warped_image = warpImage(image)
-    # warped_image = cv2.resize(warped_image, (warped_image.shape[1]//2, warped_image.shape[0]//2), interpolation=cv2.INTER_LINEAR)
-    # cv2.imshow('Warped image', warped_image)
+    # Draw prediction on warped image
+    warped_image = warpImage(orignal_image)
+    for i in range(len(points)):
+        cv2.circle(warped_image, (points[i, 0], points[i, 1]), radius=50, color=(int(0.9 * 255), 0, 0),
+                   thickness=10, lineType=8, shift=0)
+    for i in range(len(x) - 1):
+        cv2.line(warped_image, (points[i, 0], points[i, 1]), (points[i + 1, 0], points[i + 1, 1]), color=(176, 114, 76),
+                 thickness=10)
+
+    path = calcBezierPath(points).astype(np.int32)
+    # Draw bezier curve
+    for i in range(len(path) - 1):
+        cv2.line(warped_image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]),
+                 color=(0, 0, int(0.8 * 255)), thickness=10)
+
+    warped_image = cv2.resize(warped_image, (warped_image.shape[1]//2, warped_image.shape[0]//2), interpolation=cv2.INTER_LINEAR)
+    cv2.imshow('Warped image', warped_image)
     # r = ROI
     # im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
     # cv2.imshow('Crop', im_cropped)
