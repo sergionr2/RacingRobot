@@ -32,14 +32,14 @@ NUM_OUTPUT = 6  # Predict 3 points -> 6 outputs
 # Direction and speed
 THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
-MAX_SPEED_STRAIGHT_LINE = 35  # order between 0 and 100
-MAX_SPEED_SHARP_TURN = 30
+MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
+MAX_SPEED_SHARP_TURN = 25
 MIN_SPEED = 20
 
 # Path Planning
 # TODO: compute curvature of bezier path to regulate speed
 # see https://stackoverflow.com/questions/46762955
-TARGET_POINT = 0.8  # between [0, 1] position on the bezier curve
+TARGET_POINT = 0.5 # between [0, 1] position on the bezier curve
 
 # Stanley Steering Control params
 # Control gain (compromise between smooth control
