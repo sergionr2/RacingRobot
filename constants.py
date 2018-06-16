@@ -34,7 +34,7 @@ THETA_MIN = 70  # value in [0, 255] sent to the servo
 THETA_MAX = 150
 MAX_SPEED_STRAIGHT_LINE = 30  # order between 0 and 100
 MAX_SPEED_SHARP_TURN = 25
-MIN_SPEED = 20
+MIN_SPEED = 25
 
 # Path Planning
 # TODO: compute curvature of bezier path to regulate speed
@@ -52,8 +52,8 @@ MIN_RADIUS = 5  # Below this value, we consider to be in a sharp turn
 MAX_RADIUS = 40  # Above this value, we consider to be in a straight line
 
 # PID Control
-Kp_turn = 50
-Kp_line = 50
+Kp_turn = 65
+Kp_line = 65
 Kd = 4
 Ki = 0
 ALPHA = 1  # alpha of the moving mean for the turn coefficient
