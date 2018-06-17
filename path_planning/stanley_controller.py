@@ -17,8 +17,8 @@ from .bezier_curve import calcTrajectory, demo_cp
 from constants import K_STANLEY_CONTROL, CAR_LENGTH, MAX_STEERING_ANGLE,\
                     MAX_SPEED_STRAIGHT_LINE, MIN_SPEED, MIN_RADIUS, MAX_RADIUS
 
-Kp_speed = 5  # speed propotional gain
-dt = 0.05  # [s] time difference
+Kp_speed = 0.1  # speed propotional gain
+dt = 1  # [s] time difference
 
 
 class State(object):
@@ -108,14 +108,14 @@ def calcTargetIndex(state, cx, cy):
 
 
 def main(show_animation):
-    cp = demo_cp
+    cp = demo_cp * 100
     cx, cy, cyaw, ck = calcTrajectory(cp, n_points=200)
 
-    target_speed = MAX_SPEED_STRAIGHT_LINE / 3.6  # [m/s]
+    target_speed = MAX_SPEED_STRAIGHT_LINE
     max_simulation_time = 100.0
 
     # initial state
-    state = State(x=10, y=5.0, yaw=np.radians(-180.0), v=0)
+    state = State(x=100, y=50, yaw=np.radians(-180.0), v=0)
 
     last_idx = len(cx) - 1
     current_t = 0.0
@@ -143,7 +143,7 @@ def main(show_animation):
             current_radius = np.inf
 
         h = 1 - (np.clip(current_radius, MIN_RADIUS, MAX_RADIUS) - MIN_RADIUS) / (MAX_RADIUS - MIN_RADIUS)
-        target_speed = h * MIN_SPEED / 3.6 + (1 - h) * MAX_SPEED_STRAIGHT_LINE / 3.6
+        target_speed = h * MIN_SPEED + (1 - h) * MAX_SPEED_STRAIGHT_LINE
 
         curvatures.append(current_radius)
 
@@ -164,7 +164,7 @@ def main(show_animation):
             plt.plot(cx[target_idx], cy[target_idx], "xg", label="target")
             plt.axis("equal")
             plt.grid(True)
-            plt.title("Speed[km/h]:" + str(state.v * 3.6)[:4])
+            plt.title("Speed[km/h]:" + str(state.v)[:4])
             plt.pause(0.001)
 
     if show_animation:  # pragma: no cover
@@ -177,7 +177,7 @@ def main(show_animation):
         plt.grid(True)
 
         _, ax1 = plt.subplots(1)
-        plt.plot(t, [iv * 3.6 for iv in v], "-r")
+        plt.plot(t, [iv for iv in v], "-r")
         plt.xlabel("Time[s]")
         plt.ylabel("Speed[km/h]")
         plt.grid(True)

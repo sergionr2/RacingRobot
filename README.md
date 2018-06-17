@@ -222,7 +222,7 @@ pip install -r requirements.txt
 ```
 
 In short:
--  PySerial
+- PySerial
 - TQDM (for progressbar)
 - [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip) (for teleoperation)
 - Enum support (for Python 2)

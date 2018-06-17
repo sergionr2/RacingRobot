@@ -7,6 +7,7 @@ import argparse
 
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 from constants import RIGHT_KEY, LEFT_KEY, ENTER_KEY, EXIT_KEYS
 
@@ -35,6 +36,9 @@ cap = cv2.VideoCapture(video_file)
 current_idx = cap.get(image_zero_index)
 n_frames = int(cap.get(frame_count))
 print("{} frames".format(n_frames))
+
+# Progress Bar
+pbar = tqdm(total=n_frames)
 
 while True:
     # Read next frame
@@ -66,6 +70,9 @@ while True:
         # Save image
         path = '{}/{}.jpg'.format(output_folder, int(current_idx))
         cv2.imwrite(path, original_img)
-        print("Saved {}".format(int(current_idx)))
+        # print("Saved {}".format(int(current_idx)))
+    pbar.update(1)
 
     cap.set(image_zero_index, current_idx)
+
+pbar.close()
