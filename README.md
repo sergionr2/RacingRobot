@@ -1,9 +1,32 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
-Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
+
+[![Build Status](https://travis-ci.com/sergionr2/RacingRobot.svg?branch=master)](https://travis-ci.com/sergionr2/RacingRobot)
+[![codecov](https://codecov.io/gh/sergionr2/RacingRobot/branch/master/graph/badge.svg)](https://codecov.io/gh/sergionr2/RacingRobot)
+
+
+Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar.
+Medium article: [https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63](https://medium.com/@araffin/autonomous-racing-robot-with-an-arduino-a-raspberry-pi-and-a-pi-camera-3e72819e1e63)
 
 **Video of the car**: [https://www.youtube.com/watch?v=xhI71ZdSh6k](https://www.youtube.com/watch?v=xhI71ZdSh6k)
 
 [![The racing robot](https://cdn-images-1.medium.com/max/2000/1*UsmiJ4IzXi6U9svKjB22zw.jpeg)](https://www.youtube.com/watch?v=xhI71ZdSh6k)
+
+Table of Contents
+=================
+  * [Detailed Presentation](#detailed-presentation)
+  * [3D Models and Training Data](#3d-models-and-training-data)
+    * [3D Models](#3d-models)
+    * [Training Data](#training-data)
+      * [IronCar and Toulouse Robot Race Datasets](#ironcar-and-toulouse-robot-race-datasets)
+  * [How to run everything ?](#how-to-run-everything-)
+  * [Autonomous mode](#autonomous-mode)
+  * [Remote Control Mode](#remote-control-mode)
+  * [How to train the line detector ?](#how-to-train-the-line-detector-)
+  * [Installation](#installation)
+    * [Recommended : Use an image with everything already installed](#recommended--use-an-image-with-everything-already-installed)
+    * [From Scratch](#from-scratch)
+    * [Python Packages](#python-packages)
+  * [Contributors](#contributors)
 
 ## Detailed Presentation
 
@@ -26,28 +49,19 @@ Note: the Battery Holder was designed for this [External Battery](https://www.am
 
 ### Training Data
 
-**Outdated** (you have to use convert_old_format.py to use current code, now labels of training images are in a pickle file)
+#### IronCar and Toulouse Robot Race Datasets
 
-The training data (7600+ labeled images) can be downloaded [here](https://www.dropbox.com/s/24x9b6kob5c5847/training_data.zip?dl=0)
 
-There are two folders:
-- input_images/ (raw images from remote control)
-- label_regions/ (labeled regions of the input images)
+We release the different videos taken with the on-board camera, along we the labeled data (the labels are in a pickle file) for IronCar and Toulouse Robot Race:
 
-The name of the labeled images is as follow: **"x_center"-"y_center"\_"id".jpg**
+- [Videos](https://drive.google.com/open?id=1VJ46uBZUfxwUVPHGw1p8d6cgHDGervcL)
+- (outdated) [Toulouse Dataset](https://drive.google.com/open?id=1vj7N0aE-eyKg7OY0ZdlkwW2rl51UzwEW)
+- (outdated) [IronCar Dataset](https://drive.google.com/open?id=1FZdXnrO7WAo4A4-repE_dglCc2ZoAJwa)
 
-For example:
-- `0-28_452-453r0.jpg`
-=> center = (0, 28)
-| id = "452-453r0"
-
-- `6-22_691-23sept1506162644_2073r2.jpg`
-=> center = (6, 22)
-| id = "691-23sept1506162644_2073r2"
 
 ## How to run everything ?
 
-For installation, see section **Installation**.
+For installation, see section **[Installation](#installation)**.
 
 ## Autonomous mode
 
@@ -58,7 +72,7 @@ make
 make upload
 ```
 
-1. Launch the main script on the Raspberry Pi, it will try to follow a black&white line.
+1. Launch the main script on the Raspberry Pi, it will try to follow a line.
 All useful constants can be found in `constants.py`.
 ```
 python main.py
@@ -71,11 +85,11 @@ python main.py
 2. Connect the raspberry pi to this network ([Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md))
 3. Launch teleoperation server (it will use the port 5556)
 ```
-python command/python/teleop_server.py
+python -m teleop.teleop_server
 ```
-4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in the code)
+4. Launch teleoperation client on your computer (you have to edit the raspberry pi `IP` in `constants.py`)
 ```
-python command/python/teleop_client.py
+python -m teleop.teleop_client
 ```
 5. Enjoy! You can now control the car with the keyboard.
 
@@ -83,7 +97,7 @@ python command/python/teleop_client.py
 
 1. Record a video in the teleoperation mode:
 ```
-python command/python/teleop_server.py -v my_video
+python -m teleop.teleop_server -v my_video
 ```
 2. Convert the recorded video from h264 to mp4 using ffmpeg or [MP4Box](https://gpac.wp.imt.fr/mp4box/)
 ```
@@ -92,42 +106,33 @@ MP4Box -add video.h264 video.mp4
 
 3. Split the video into a sequence of images
 ```
-python -m train.split_video -i video.mp4 --no-display -o path/output/folder
+python -m train.split_video -i video.mp4 -o path/to/dataset/folder
 ```
 
-4. Label the data using the labeling tool
-```
-python -m train.label_images -i path/to/input/folder -o path/to/output/folder
-```
-To label an image, you have to click on the center of line in the displayed image.
-If the image do not contain any line, or if you want to pass to the next frame, press any key.
+4. Label the data using the labeling tool: [https://github.com/araffin/graph-annotation-tool](https://github.com/araffin/graph-annotation-tool)
+
+
+5. Rename the json file that contains the labels to `labels.json` and put it in the same folder of the dataset (folder with the images)
 
 5. Train the neural network (again please change the paths in the script)
 ```
-python -m train.train -f path/input/folder
+python -m train.train -f path/to/dataset/folder
 ```
-The best model (lowest error on the validation data) will be saved as *mlp_model_tmp.npz*.
+The best model (lowest error on the validation data) will be saved as *cnn_model_tmp.pth*.
 
 
-6. Test the trained neural network
+6. Test the trained neural network (you can use `-i` option to test it on a video)
 
 ```
-python -m train.test -f path/input/folder -w mlp_model_tmp
-```
-
-### Benchmark
-
-For profiling 5000 iterations of image processing:
-```
-python -m opencv.benchmark -i path/to/input/image.jpg -n 5000
+python -m train.test -f path/to/dataset/folder -w cnn_model_tmp.pth
 ```
 
 ## Installation
 
 #### Recommended : Use an image with everything already installed
 
-0. You need a 32GB micro sd card (warning, all data on that card will be overwritten)
-WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://github.com/billw2/rpi-clone) may help)
+0. You need a 16GB micro sd card (warning, all data on that card will be overwritten)
+WARNING: for a smaller sd card, you need to resize the image before writing it (this [link](https://softwarebakery.com/shrinking-images-on-linux) and [repo](https://github.com/billw2/rpi-clone) may help)
 
 1. Download the image [here](https://drive.google.com/open?id=1CUmSKOQ7i_XTrsLCRntypK9KcVaVwM4h)
 
@@ -140,10 +145,11 @@ OS: [Ubuntu MATE 16.04](https://ubuntu-mate.org/raspberry-pi/) for raspberry pi
 
 
 Installed softwares:
- - all the dependencies for that project (OpenCV >= 3.1, PyTorch, ...)
+ - all the dependencies for that project (OpenCV >= 3, PyTorch, ...)
  - the current project (in the folder RacingRobot/)
  - ROS Kinetic
-Camera and ssh are enabled.
+
+Camera and SSH are enabled.
 
 
 2. Identify the name of your sd card using:
@@ -163,7 +169,7 @@ gunzip --stdout ubuntu_ros_racing_robot.img.gz | sudo dd bs=4M of=/dev/mmcblk0
 ```
 
 4. Enjoy!
-The current project is located in `RacingRobot/`. There is also a ROS version of the remote control in `catkin_ws/src/`.
+The current project is located in `RacingRobot/`.
 
 
 If you want to back up an image of a raspberry pi:
@@ -187,7 +193,7 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 
 - Arduino 1.0.5
 - [Arduino-Makefile](https://github.com/sudar/Arduino-Makefile)
-- OpenCV 3.1
+- OpenCV >= 3
 - libserial-dev (apt-get)
 - Python 2 or 3
 
@@ -209,33 +215,31 @@ sudo ldconfig
 ```
 
 #### Python Packages
-All the required packages can be found in `requirements.txt`
+All the required packages can be found in `requirements.txt`, install them using:
 
-PySerial
 ```
-sudo pip install pyserial
+pip install -r requirements.txt
+```
+
+In short:
+- PySerial
+- TQDM (for progressbar)
+- [PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip) (for teleoperation)
+- Enum support (for Python 2)
+- ZeroMQ (for teleoperation)
+- Pytorch (you have to compile it from source for the RPI)
+- scikit-learn
+
+```
+pip install pyserial tqdm pygame enum34 scikit-learn
+```
+
+Note: for using the serial port, you need to change current user permissions:
+```
 # Add user to dialout group to have the right to write on the serial port
 sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
-
-TQDM (for progressbar)
-```
-pip install tqdm
-```
-
-[PyGame](http://www.pygame.org/wiki/CompileUbuntu#Installing%20pygame%20with%20pip)
-For teleoperation
-```
-pip install pygame
-```
-
-Enum for python 2
-```
-pip install enum34
-```
-
-[Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
 ZeroMQ (Message Passing with sockets) for remote control mode
 ```
@@ -256,7 +260,7 @@ pip install pyzmq
 Additional python dev-dependencies for training the neural network:
 On your laptop:
 ```
-pip install http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
+pip install pytorch
 pip install torchvision
 
 pip install sklearn # or sudo apt-get install python-sklearn
@@ -274,7 +278,7 @@ pip install torch-0.4.0a0+b23fa21-cp27-cp27mu-linux_armv7l.whl
 ```
 
 Or follow this tutorial:
-[PyTorch on the raspberry pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
+[PyTorch on the Raspberry Pi](http://book.duckietown.org/fall2017/duckiebook/pytorch_install.html)
 
 0. Make sure you have at least 3 Go of Swap. (see link above)
 
@@ -292,9 +296,16 @@ sudo -EH python setup.py install
 sudo -H pip install torchvision
 ```
 
-### C++ Extension
+[Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
-Please read [opencv/c_extension/README.md](https://github.com/sergionr2/RacingRobot/tree/master/opencv/c_extension) for more information.
+OpenCV with Anaconda, compiling from source:
+```
+cmake -DPYTHON_EXECUTABLE=/home/ỳour_name/anaconda3/bin/python3 \
+-DPYTHON_INCLUDE=/home/ỳour_name/anaconda3/include \
+-DPYTHON_LIBRARY=/home/ỳour_name/anaconda3/lib/libpython3.6m.so \
+-DPYTHON_PACKAGES_PATH=/home/ỳour_name/anaconda3/lib/python3.6/site-packages \
+-DPYTHON_NUMPY_INCLUDE_DIR=/home/ỳour_name/anaconda3/lib/python3.6/site-packages/core/include -DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DBUILD_opencv_java=OFF -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
+```
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez

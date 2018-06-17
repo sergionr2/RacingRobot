@@ -1,12 +1,11 @@
 from __future__ import print_function, with_statement, division
 
+import zmq
 import pygame
-import rospy
 from pygame.locals import *
-from std_msgs.msg import Int16, Int8
-from robust_serial import Order
 
-from constants import THETA_MIN, THETA_MAX
+from constants import RASPBERRY_IP, TELEOP_PORT
+
 
 UP = (1, 0)
 LEFT = (0, 1)
@@ -15,8 +14,10 @@ DOWN = (-1, 0)
 STOP = (0, 0)
 KEY_CODE_SPACE = 32
 
-MAX_SPEED = 50
+MAX_SPEED = 30
 MAX_TURN = 45
+THETA_MIN = 70
+THETA_MAX = 150
 STEP_SPEED = 10
 STEP_TURN = 30
 
@@ -92,7 +93,7 @@ def pygameMain():
 
         control_speed, control_turn = control(x, theta, control_speed, control_turn)
         # Send Orders
-        angle_order = sendToServer(control_speed, control_turn)
+        angle_order = sendToServer(socket, control_speed, control_turn)
 
         updateScreen(window, control_speed, angle_order)
 
@@ -104,28 +105,31 @@ def pygameMain():
         pygame.time.Clock().tick(1 / TELEOP_RATE)
 
 
-pub_servo = rospy.Publisher("/arduino/servo", Int16, queue_size=2)
-pub_motor = rospy.Publisher("/arduino/motor", Int8, queue_size=2)
-
-
-def sendToServer(control_speed, control_turn):
+def sendToServer(socket, control_speed, control_turn):
     """
+    :param socket: (zmq socket object)
     :param control_speed: (float)
     :param control_turn: (float)
     """
     # Send Orders
     t = (control_turn + MAX_TURN) / (2 * MAX_TURN)
     angle_order = int(THETA_MIN * t + THETA_MAX * (1 - t))
-    pub_servo.publish(angle_order)
-    pub_motor.publish(control_speed)
+    socket.send_json((control_speed, angle_order))
     return angle_order
 
 
 if __name__ == '__main__':
-    print("Starting Teleop client node")
-    rospy.init_node('teleop_client', anonymous=True)
+    context = zmq.Context()
+    socket = context.socket(zmq.PAIR)
+    print("Connecting to ... {}".format(RASPBERRY_IP))
+    socket.connect("tcp://{}:{}".format(RASPBERRY_IP, TELEOP_PORT))
+
+    msg = socket.recv()
+    print("Connected To Server")
     try:
         pygameMain()
-        # rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
+    except KeyboardInterrupt as e:
+        pass
+    finally:
+        socket.send_json((-999, -999))
+        socket.close()
