@@ -166,6 +166,7 @@ class JsonDataset(Dataset):
 
         # Normalize labels
         labels = np.array(self.labels[image]).astype(np.float32)
+        assert len(labels) == 3, "Error with label of image {}".format(image)
         labels[:, 0] = (labels[:, 0] - margin_left) / MAX_WIDTH
         labels[:, 1] = (labels[:, 1] - margin_top) / MAX_HEIGHT
 

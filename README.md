@@ -1,7 +1,7 @@
 # Autonomous Racing Robot With an Arduino, a Raspberry Pi and a Pi Camera
 
-[![Build Status](https://travis-ci.com/sergionr2/RacingRobot.svg?branch=line-pred)](https://travis-ci.com/sergionr2/RacingRobot)
-[![codecov](https://codecov.io/gh/sergionr2/RacingRobot/branch/line-pred/graph/badge.svg)](https://codecov.io/gh/sergionr2/RacingRobot)
+[![Build Status](https://travis-ci.com/sergionr2/RacingRobot.svg?branch=master)](https://travis-ci.com/sergionr2/RacingRobot)
+[![codecov](https://codecov.io/gh/sergionr2/RacingRobot/branch/master/graph/badge.svg)](https://codecov.io/gh/sergionr2/RacingRobot)
 
 
 Autonomous toy racing car. CAMaleon team at the Toulouse Robot Race 2017. Humbavision team at IronCar.
