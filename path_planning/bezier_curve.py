@@ -150,11 +150,8 @@ def main(show_animation):
     dt /= np.linalg.norm(dt, 2)
     tangent = np.array([point, point + dt])
     normal = np.array([point, point + [- dt[1], dt[0]]])
-
-    if cu != 0:
-        r = 1 / cu
-    else:
-        r = np.inf
+    # Radius of curvature
+    r = 1 / cu
 
     curvature_center = point + np.array([- dt[1], dt[0]]) * r
     circle = plt.Circle(tuple(curvature_center), r, color=(0, 0.8, 0.8), fill=False, linewidth=1)

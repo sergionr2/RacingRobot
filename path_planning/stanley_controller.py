@@ -137,10 +137,7 @@ def main(show_animation):
         delta, target_idx, cross_track_error = stanleyControl(state, cx, cy, cyaw, target_idx)
         state.update(acceleration, delta)
         cross_track_errors.append(cross_track_error)
-        if ck[target_idx] > 0:
-            current_radius = 1 / ck[target_idx]
-        else:
-            current_radius = np.inf
+        current_radius = 1 / ck[target_idx]
 
         h = 1 - (np.clip(current_radius, MIN_RADIUS, MAX_RADIUS) - MIN_RADIUS) / (MAX_RADIUS - MIN_RADIUS)
         target_speed = h * MIN_SPEED + (1 - h) * MAX_SPEED_STRAIGHT_LINE

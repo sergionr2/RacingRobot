@@ -215,7 +215,7 @@ sudo ldconfig
 ```
 
 #### Python Packages
-All the required packages can be found in `requirements.txt`, install them using:
+All the required packages (except pytorch) can be found in `requirements.txt`, install them using:
 
 ```
 pip install -r requirements.txt

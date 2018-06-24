@@ -8,12 +8,12 @@ import torch as th
 from torch.utils.data import Dataset
 from sklearn.model_selection import train_test_split
 
-from constants import MAX_WIDTH, MAX_HEIGHT, ROI, INPUT_HEIGHT, INPUT_WIDTH, SPLIT_SEED
-from .models import ConvolutionalNetwork, CustomNet
+from constants import MAX_WIDTH, MAX_HEIGHT, ROI, INPUT_HEIGHT, INPUT_WIDTH, SPLIT_SEED, N_CHANNELS
+from .models import ConvolutionalNetwork, CustomNet, MlpNetwork
 
 
 def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
-                       n_batch, method='cosine'):
+                       n_batch, method='cosine', decay_rate=0.7):
     """
     :param optimizer: (PyTorch Optimizer object)
     :param epoch: (int)
@@ -21,14 +21,15 @@ def adjustLearningRate(optimizer, epoch, n_epochs, lr_init, batch,
     :param lr_init: (float)
     :param batch: (int)
     :param n_batch: (int)
-    :param method: (str)
+    :param method: (str) one of ("cosine", "multistep")
+    :param decay_rate: (float)
     """
     if method == 'cosine':
         T_total = n_epochs * n_batch
         T_cur = (epoch % n_epochs) * n_batch + batch
         lr = 0.5 * lr_init * (1 + np.cos(np.pi * T_cur / T_total))
     elif method == 'multistep':
-        lr, decay_rate = lr_init, 0.7
+        lr = lr_init
         if epoch >= n_epochs * 0.75:
             lr *= decay_rate ** 2
         elif epoch >= n_epochs * 0.5:
@@ -67,6 +68,8 @@ def loadNetwork(weights, num_output=6, model_type="cnn"):
         model = ConvolutionalNetwork(num_output=num_output)
     elif model_type == "custom":
         model = CustomNet(num_output=num_output)
+    elif model_type == "mlp":
+        model = MlpNetwork(INPUT_WIDTH * INPUT_HEIGHT * N_CHANNELS, num_output=num_output)
 
     model.load_state_dict(th.load(weights))
     model.eval()
@@ -144,6 +147,7 @@ class JsonDataset(Dataset):
     :param preprocess: (bool)
     :param random_flip: (float) probability of flipping the image
     """
+
     def __init__(self, labels, preprocess=False, random_flip=0.0):
         self.keys = list(labels.keys())
         self.labels = labels.copy()
@@ -153,7 +157,7 @@ class JsonDataset(Dataset):
     def __getitem__(self, index):
         """
         :param index: (int)
-        :return: (PyTorch Tensor, PyTorch Tensor)
+        :return: (th.Tensor, th.Tensor)
         """
         image = self.keys[index]
         margin_left, margin_top = 0, 0
@@ -187,9 +191,17 @@ class JsonDataset(Dataset):
     def __len__(self):
         return len(self.keys)
 
+
 def computeLossWithDataLoader(model, labels, batchsize, shuffle=False):
+    """
+    :param model: (Pytorch Model)
+    :param labels: (dict)
+    :param batchsize: (int)
+    :param shuffle: (bool)
+    :return: (float)
+    """
     dataloader = th.utils.data.DataLoader(JsonDataset(labels, preprocess=True),
-                                            batch_size=batchsize, shuffle=shuffle)
+                                          batch_size=batchsize, shuffle=shuffle)
 
     loss_fn = th.nn.MSELoss(size_average=True)
     total_loss = 0
@@ -205,9 +217,11 @@ def computeMSE(model, train_labels, val_labels, test_labels, batchsize=32):
     """
     Compute Mean Square Error
     and print its value for the different sets
+    :param model: (Pytorch Model)
     :param train_labels: (dict)
-    :param y_true: (numpy 1D array)
-    :param indices: [[int]] Indices of the different subsets
+    :param val_labels: (dict)
+    :param test_labels: (dict)
+    :param batchsize: (int)
     """
     model.eval()
     error_train = computeLossWithDataLoader(model, train_labels, batchsize)

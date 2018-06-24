@@ -46,8 +46,7 @@ images = None
 if video is None:
     if os.path.isfile("{}/labels.json".format(args.folders[0])):
         train_labels, val_labels, test_labels, labels = loadLabels(args.folders)
-        if False:
-            images = list(labels.keys())
+
     if images is None:
         images = []
         for folder in args.folders:
@@ -59,7 +58,7 @@ if video is None:
     idx_test = set(test_labels.keys())
     n_frames = len(images)
     current_idx = 0
-else: # pragma: no cover
+else:  # pragma: no cover
     # Load video
     if not video.isOpened():  # pragma: no cover
         print("Error opening video, check your opencv version (you may need to compile it from source)")
@@ -143,12 +142,11 @@ while True:  # pragma: no cover
         cv2.line(warped_image, (points[i, 0], points[i, 1]), (points[i + 1, 0], points[i + 1, 1]), color=(176, 114, 76),
                  thickness=10)
 
-
     path = calcBezierPath(points, n_points=10).astype(np.int32)
 
     cp = transformPoints(x, y)
     cp[:, 1] *= -1
-    current_pos = transformPoints([MAX_WIDTH/2], [MAX_HEIGHT])[0]
+    current_pos = transformPoints([MAX_WIDTH / 2], [MAX_HEIGHT])[0]
     # TODO: compute v in the pixel space
     state = State(x=current_pos[0], y=-current_pos[1], yaw=np.radians(90.0), v=10)
     cx, cy, cyaw, ck = calcTrajectory(cp, n_points=10)
@@ -167,7 +165,8 @@ while True:  # pragma: no cover
         cv2.line(warped_image, (path[i, 0], path[i, 1]), (path[i + 1, 0], path[i + 1, 1]),
                  color=(0, 0, int(0.8 * 255)), thickness=10)
 
-    warped_image = cv2.resize(warped_image, (warped_image.shape[1]//2, warped_image.shape[0]//2), interpolation=cv2.INTER_LINEAR)
+    warped_image = cv2.resize(warped_image, (warped_image.shape[1] // 2, warped_image.shape[0] // 2),
+                              interpolation=cv2.INTER_LINEAR)
     cv2.imshow('Warped image', warped_image)
     # r = ROI
     # im_cropped = image[int(r[1]):int(r[1] + r[3]), int(r[0]):int(r[0] + r[2])]
