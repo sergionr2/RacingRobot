@@ -199,23 +199,14 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 
 OpenCV
 - [PreCompiled](https://github.com/jabelone/OpenCV-for-Pi) This is the **recommended method**
-- [Guide](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
+Compile from source:
+- [Docs](https://docs.opencv.org/3.4.1/d7/d9f/tutorial_linux_install.html)
+- [Tutorial](https://www.life2coding.com/install-opencv-3-4-0-python-3-raspberry-pi-3/)
+- [Raspbian Tuto](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
 
-Libserial (apt-get or compile from source)
-- [LibSerial](https://github.com/crayzeewulf/libserial)
-- [Boost](http://www.boost.org/)
-- [SIP](http://pyqt.sourceforge.net/Docs/sip4/installation.html)
-
-```
-# Boost
-sudo apt-get install libboost-all-dev
-
-# After libserial installation:
-sudo ldconfig
-```
 
 #### Python Packages
-All the required packages (except pytorch) can be found in `requirements.txt`, install them using:
+All the required packages (except pytorch and torchvision) can be found in `requirements.txt`, install them using:
 
 ```
 pip install -r requirements.txt
@@ -229,9 +220,16 @@ In short:
 - ZeroMQ (for teleoperation)
 - Pytorch (you have to compile it from source for the RPI)
 - scikit-learn
+- scipy
 
 ```
-pip install pyserial tqdm pygame enum34 scikit-learn
+pip install pyserial tqdm pygame enum34 scikit-learn scipy
+```
+
+ZeroMQ (Message Passing with sockets) for remote control mode
+```
+sudo apt-get install libzmq3-dev
+pip install pyzmq
 ```
 
 Note: for using the serial port, you need to change current user permissions:
@@ -241,29 +239,12 @@ sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
 
-ZeroMQ (Message Passing with sockets) for remote control mode
-```
-sudo apt-get install libzmq3-dev
-pip install pyzmq
-```
-or
-```
-git clone https://github.com/zeromq/libzmq/
-./autogen.sh
-./configure
-make
-sudo make install
-sudo ldconfig
-pip install pyzmq
-```
 
 Additional python dev-dependencies for training the neural network:
 On your laptop:
 ```
 pip install pytorch
 pip install torchvision
-
-pip install sklearn # or sudo apt-get install python-sklearn
 ```
 
 On the raspberry pi :
@@ -286,6 +267,12 @@ Or follow this tutorial:
 
 2. Install PyTorch
 
+See [https://github.com/pytorch/pytorch](https://github.com/pytorch/pytorch) for dependencies.
+Additional dependencies:
+```
+sudo apt-get install libeigen3-dev libffi-dev 
+```
+
 ```
 # don't forget to set the env variables:
 export NO_CUDA=1
@@ -295,6 +282,7 @@ sudo -EH python setup.py install
 # torchvision is not used yet
 sudo -H pip install torchvision
 ```
+
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
 
