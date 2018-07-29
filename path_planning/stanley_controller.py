@@ -46,11 +46,11 @@ class State(object):
 def stanleyControl(state, cx, cy, cyaw, last_target_idx):
     """
     :param state: (State object)
-    :param cx: [float]
-    :param cy: [float]
-    :param cyaw: [float]
+    :param cx: ([float])
+    :param cy: ([float])
+    :param cyaw: ([float])
     :param last_target_idx: (int)
-    :return: (float, float, float)
+    :return: (float, int, float)
     """
     # Cross track error
     current_target_idx, error_front_axle = calcTargetIndex(state, cx, cy)
