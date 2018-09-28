@@ -186,9 +186,9 @@ sudo apt-get upgrade
 sudo rpi-update
 ```
 
-Arduino + Arduino Makefile + rlwrap + screen
+Arduino + Arduino Makefile + rlwrap + screen + MP4Box
 ```
-sudo apt-get install arduino-core arduino-mk rlwrap screen
+sudo apt-get install arduino-core arduino-mk rlwrap screen gpac
 ```
 
 - Arduino 1.0.5
@@ -263,14 +263,21 @@ Or follow this tutorial:
 
 0. Make sure you have at least 3 Go of Swap. (see link above)
 
+```
+sudo dd if=/dev/zero of=/swap1 bs=1M count=3072 Status=progress
+sudo mkswap /swap1
+sudo swapon /swap1
+```
+
 1. (optional) Install a recent version of cmake + scikit-build + ninja
 
 2. Install PyTorch
 
 See [https://github.com/pytorch/pytorch](https://github.com/pytorch/pytorch) for dependencies.
 Additional dependencies:
+
 ```
-sudo apt-get install libeigen3-dev libffi-dev 
+sudo apt-get install libopenblas-dev libeigen3-dev libffi-dev
 ```
 
 ```
@@ -278,13 +285,35 @@ sudo apt-get install libeigen3-dev libffi-dev
 export NO_CUDA=1
 export NO_DISTRIBUTED=1
 git clone --recursive https://github.com/pytorch/pytorch
-sudo -EH python setup.py install
+python setup.py install --user
 # torchvision is not used yet
-sudo -H pip install torchvision
+pip install torchvision --user
 ```
 
 
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
+
+OpenCV with Python 2 (RPI), compiling from source (cf [Docs](https://docs.opencv.org/3.4.1/d7/d9f/tutorial_linux_install.html) and [tuto](https://www.life2coding.com/install-opencv-3-4-0-python-3-raspberry-pi-3/)):
+Additional dependencies:
+
+```
+sudo apt-get install libtbb-dev opencl-headers libomp-dev libopenblas-dev libeigen3-dev
+sudo apt-get install libatlas-base-dev gfortran -y
+```
+
+with [Gstreamer](https://stackoverflow.com/questions/37678324/compiling-opencv-with-gstreamer-cmake-not-finding-gstreamer)
+Then:
+
+```
+cmake -D CMAKE_INSTALL_PREFIX=/usr/local \
+-D BUILD_opencv_java=OFF \
+-D BUILD_opencv_python2=ON \
+-D BUILD_opencv_python3=OFF \
+-D PYTHON_DEFAULT_EXECUTABLE=$(which python) \
+-D INSTALL_C_EXAMPLES=OFF \
+-DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
+```
+
 
 OpenCV with Anaconda, compiling from source:
 ```
