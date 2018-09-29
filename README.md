@@ -324,6 +324,21 @@ cmake -DPYTHON_EXECUTABLE=/home/ỳour_name/anaconda3/bin/python3 \
 -DPYTHON_NUMPY_INCLUDE_DIR=/home/ỳour_name/anaconda3/lib/python3.6/site-packages/core/include -DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DBUILD_opencv_java=OFF -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
 ```
 
+## Docker Support (Experimental)
+
+Info: [http://www.hotblackrobotics.com/en/blog/2018/01/22/docker-images-arm/](http://www.hotblackrobotics.com/en/blog/2018/01/22/docker-images-arm/)
+
+Build docker image (laptop image):
+```
+docker build . -f docker/Dockerfile.cpu -t racing-robot-cpu
+```
+
+Build docker image (raspberry pi image):
+```
+docker build . -f docker/Dockerfile.rpi3 -t racing-robot-rpi3
+```
+
+
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez
 - Antonin Raffin
