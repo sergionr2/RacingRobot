@@ -335,6 +335,10 @@ docker build . -f docker/Dockerfile.cpu -t racing-robot-cpu
 
 Build docker image (raspberry pi image):
 ```
+docker build . -f docker/DockerfileBase.rpi3 -t racing-robot-rpi3-base
+```
+
+```
 docker build . -f docker/Dockerfile.rpi3 -t racing-robot-rpi3
 ```
 
