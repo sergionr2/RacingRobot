@@ -6,20 +6,22 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV VENV /root/venv
 
-RUN apt-get -y update && apt-get -y install git wget htop nano python-dev python3-dev python-pip
+RUN apt-get -y update && \
+    apt-get -y install git wget htop \
+                       nano python-dev python3-dev python-pip \
+                       pkg-config apt-utils
 
-# OpenCV dependencies (libsm, libglib, ...)
+# OpenCV + PyGame dependencies
 RUN apt-get -y install cmake build-essential arduino-mk zlib1g-dev \
-              libsm6 libxext6 libfontconfig1 libxrender1 libglib2.0-0
-
-RUN apt-get -y install libpng12-dev pkg-config apt-utils libfreetype6-dev
-
-
-# OpenCV deps
-RUN apt-get install -y libtiff5-dev libjasper-dev libpng12-dev \
-                       libjpeg-dev libavcodec-dev libavformat-dev \
-                       libswscale-dev libv4l-dev libgtk2.0-dev \
-                       libatlas-base-dev gfortran
+              libsm6 libxext6 libfontconfig1 libxrender1 libglib2.0-0 \
+              libpng12-dev libfreetype6-dev \
+              libtiff5-dev libjasper-dev libpng12-dev \
+              libjpeg-dev libavcodec-dev libavformat-dev \
+              libswscale-dev libv4l-dev libgtk2.0-dev \
+              libatlas-base-dev gfortran \
+              libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsmpeg-dev \
+              libsdl1.2-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev libfreetype6-dev \
+              libzmq3-dev libopenblas-dev libeigen3-dev libffi-dev
 
 RUN pip install virtualenv && \
     virtualenv $VENV --python=python3 && \
@@ -34,27 +36,19 @@ RUN pip install virtualenv && \
     pip install robust-serial==0.1 && \
     pip install six==1.11.0 && \
     pip install tqdm==4.19.5 && \
-    pip install ipython
-    # matplotlib==2.2.2
-
-# pygame deps
-RUN apt-get install -y libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsmpeg-dev \
-    libsdl1.2-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev libfreetype6-dev \
-    libzmq3-dev
-
-RUN . $VENV/bin/activate && \
+    pip install ipython && \
+    pip install matplotlib && \
+    pip install pyyaml setuptools cffi typing && \
     pip install scipy==0.19.1 && \
     pip install scikit-learn==0.19.0 && \
     pip install pygame==1.9.3
 
 ENV PATH=$VENV/bin:$PATH
 
-# Install OPENCV
+# Compile OpenCV from source
 RUN wget https://github.com/opencv/opencv/archive/3.4.3.zip && \
     unzip 3.4.3.zip && \
     rm 3.4.3.zip
-
-RUN apt-get install -y libopenblas-dev libeigen3-dev libffi-dev
 
 ENV OPENCV_DIR opencv-3.4.3
 
@@ -80,20 +74,14 @@ RUN . $VENV/bin/activate && \
 RUN cp /usr/local/lib/python3.5/site-packages/cv2.cpython-35m-arm-linux-gnueabihf.so \
     $VENV/lib/python3.5/site-packages/cv2.so
 
-# Pytorch Dependencies
-RUN . $VENV/bin/activate && \
-    pip install pyyaml setuptools cffi typing
-
+# Compile PyTorch From Source
 RUN git clone --recursive https://github.com/pytorch/pytorch
 
 RUN . $VENV/bin/activate && \
     cd pytorch && \
     MAX_JOBS=8 NO_DISTRIBUTED=1 NO_CAFFE2_OPS=1 NO_CUDA=1 python setup.py install
 
-RUN . $VENV/bin/activate && \
-    pip install matplotlib
-
-# CLean up
+# Clean up
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf pytorch && \
