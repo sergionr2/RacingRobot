@@ -45,6 +45,8 @@ RUN pip install virtualenv && \
 
 ENV PATH=$VENV/bin:$PATH
 
+RUN apt-get -y install unzip
+
 # Compile OpenCV from source
 RUN wget https://github.com/opencv/opencv/archive/3.4.3.zip && \
     unzip 3.4.3.zip && \
