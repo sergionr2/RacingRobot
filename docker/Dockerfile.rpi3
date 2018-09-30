@@ -27,3 +27,6 @@ RUN . $VENV/bin/activate && \
     make -j4 && \
     make install && \
     ldconfig
+
+RUN cp /usr/local/lib/python3.5/site-packages/cv2.cpython-35m-arm-linux-gnueabihf.so \
+    $VENV/lib/python3.5/site-packages/cv2.so
