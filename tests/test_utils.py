@@ -3,7 +3,7 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 
 from .common import *
-from train.utils import preprocessImage, loadNetwork, predict
+from train.utils import preprocessImage, loadNetwork, predict, loadLabels
 from constants import *
 
 test_image = 234 * np.ones((MAX_WIDTH, MAX_HEIGHT, 3), dtype=np.uint8)
@@ -22,3 +22,10 @@ def testPreprocessing():
 def testPredict():
     model = loadNetwork(WEIGHTS_PTH, NUM_OUTPUT, MODEL_TYPE)
     x, y = predict(model, test_image)
+
+
+def testLoadLabels():
+    loadLabels(DATASET)
+    dataset_no_trailing_slash = DATASET[:-1]
+    folders = [DATASET, dataset_no_trailing_slash]
+    loadLabels(folders)

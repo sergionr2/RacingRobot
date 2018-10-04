@@ -36,7 +36,7 @@ def processImage(image, debug=False):
     # It estimates the line curve
 
     # Case x = cst, m = 0
-    if len(np.unique(x)) == 1:
+    if len(np.unique(x)) == 1: # pragma: no cover
         turn_percent = 0
     else:
         # Linear regression using least squares method

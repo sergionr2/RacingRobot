@@ -186,9 +186,9 @@ sudo apt-get upgrade
 sudo rpi-update
 ```
 
-Arduino + Arduino Makefile + rlwrap + screen
+Arduino + Arduino Makefile + rlwrap + screen + MP4Box
 ```
-sudo apt-get install arduino-core arduino-mk rlwrap screen
+sudo apt-get install arduino-core arduino-mk rlwrap screen gpac
 ```
 
 - Arduino 1.0.5
@@ -199,23 +199,14 @@ sudo apt-get install arduino-core arduino-mk rlwrap screen
 
 OpenCV
 - [PreCompiled](https://github.com/jabelone/OpenCV-for-Pi) This is the **recommended method**
-- [Guide](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
+Compile from source:
+- [Docs](https://docs.opencv.org/3.4.1/d7/d9f/tutorial_linux_install.html)
+- [Tutorial](https://www.life2coding.com/install-opencv-3-4-0-python-3-raspberry-pi-3/)
+- [Raspbian Tuto](http://www.pyimagesearch.com/2016/04/18/install-guide-raspberry-pi-3-raspbian-jessie-opencv-3/)
 
-Libserial (apt-get or compile from source)
-- [LibSerial](https://github.com/crayzeewulf/libserial)
-- [Boost](http://www.boost.org/)
-- [SIP](http://pyqt.sourceforge.net/Docs/sip4/installation.html)
-
-```
-# Boost
-sudo apt-get install libboost-all-dev
-
-# After libserial installation:
-sudo ldconfig
-```
 
 #### Python Packages
-All the required packages can be found in `requirements.txt`, install them using:
+All the required packages (except pytorch and torchvision) can be found in `requirements.txt`, install them using:
 
 ```
 pip install -r requirements.txt
@@ -229,9 +220,16 @@ In short:
 - ZeroMQ (for teleoperation)
 - Pytorch (you have to compile it from source for the RPI)
 - scikit-learn
+- scipy
 
 ```
-pip install pyserial tqdm pygame enum34 scikit-learn
+pip install pyserial tqdm pygame enum34 scikit-learn scipy
+```
+
+ZeroMQ (Message Passing with sockets) for remote control mode
+```
+sudo apt-get install libzmq3-dev
+pip install pyzmq
 ```
 
 Note: for using the serial port, you need to change current user permissions:
@@ -241,29 +239,12 @@ sudo usermod -a -G dialout $USER
 # You need to logout/login again for that change to be taken into account
 ```
 
-ZeroMQ (Message Passing with sockets) for remote control mode
-```
-sudo apt-get install libzmq3-dev
-pip install pyzmq
-```
-or
-```
-git clone https://github.com/zeromq/libzmq/
-./autogen.sh
-./configure
-make
-sudo make install
-sudo ldconfig
-pip install pyzmq
-```
 
 Additional python dev-dependencies for training the neural network:
 On your laptop:
 ```
 pip install pytorch
 pip install torchvision
-
-pip install sklearn # or sudo apt-get install python-sklearn
 ```
 
 On the raspberry pi :
@@ -282,21 +263,57 @@ Or follow this tutorial:
 
 0. Make sure you have at least 3 Go of Swap. (see link above)
 
+```
+sudo dd if=/dev/zero of=/swap1 bs=1M count=3072 Status=progress
+sudo mkswap /swap1
+sudo swapon /swap1
+```
+
 1. (optional) Install a recent version of cmake + scikit-build + ninja
 
 2. Install PyTorch
+
+See [https://github.com/pytorch/pytorch](https://github.com/pytorch/pytorch) for dependencies.
+Additional dependencies:
+
+```
+sudo apt-get install libopenblas-dev libeigen3-dev libffi-dev
+```
 
 ```
 # don't forget to set the env variables:
 export NO_CUDA=1
 export NO_DISTRIBUTED=1
 git clone --recursive https://github.com/pytorch/pytorch
-sudo -EH python setup.py install
+python setup.py install --user
 # torchvision is not used yet
-sudo -H pip install torchvision
+pip install torchvision --user
 ```
 
+
 [Wifi on RPI](https://www.raspberrypi.org/documentation/configuration/wireless/wireless-cli.md)
+
+OpenCV with Python 2 (RPI), compiling from source (cf [Docs](https://docs.opencv.org/3.4.1/d7/d9f/tutorial_linux_install.html) and [tuto](https://www.life2coding.com/install-opencv-3-4-0-python-3-raspberry-pi-3/)):
+Additional dependencies:
+
+```
+sudo apt-get install libtbb-dev opencl-headers libomp-dev libopenblas-dev libeigen3-dev
+sudo apt-get install libatlas-base-dev gfortran -y
+```
+
+with [Gstreamer](https://stackoverflow.com/questions/37678324/compiling-opencv-with-gstreamer-cmake-not-finding-gstreamer)
+Then:
+
+```
+cmake -D CMAKE_INSTALL_PREFIX=/usr/local \
+-D BUILD_opencv_java=OFF \
+-D BUILD_opencv_python2=ON \
+-D BUILD_opencv_python3=OFF \
+-D PYTHON_DEFAULT_EXECUTABLE=$(which python) \
+-D INSTALL_C_EXAMPLES=OFF \
+-DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
+```
+
 
 OpenCV with Anaconda, compiling from source:
 ```
@@ -306,6 +323,25 @@ cmake -DPYTHON_EXECUTABLE=/home/ỳour_name/anaconda3/bin/python3 \
 -DPYTHON_PACKAGES_PATH=/home/ỳour_name/anaconda3/lib/python3.6/site-packages \
 -DPYTHON_NUMPY_INCLUDE_DIR=/home/ỳour_name/anaconda3/lib/python3.6/site-packages/core/include -DINSTALL_PYTHON_EXAMPLES=ON -DBUILD_TIFF=ON -DBUILD_opencv_java=OFF -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_OPENCL=ON -DWITH_IPP=ON -DWITH_TBB=ON -DWITH_EIGEN=ON -DWITH_V4L=ON -DWITH_VTK=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DCMAKE_BUILD_TYPE=RELEASE ..
 ```
+
+## Docker Support (Experimental)
+
+Info: [http://www.hotblackrobotics.com/en/blog/2018/01/22/docker-images-arm/](http://www.hotblackrobotics.com/en/blog/2018/01/22/docker-images-arm/)
+
+Build docker image (laptop image):
+```
+docker build . -f docker/Dockerfile.cpu -t racing-robot-cpu
+```
+
+Build docker image (raspberry pi image):
+```
+docker build . -f docker/DockerfileBase.rpi3 -t racing-robot-rpi3-base
+```
+
+```
+docker build . -f docker/Dockerfile.rpi3 -t racing-robot-rpi3
+```
+
 
 ### Contributors
 - Sergio Nicolas Rodriguez Rodriguez

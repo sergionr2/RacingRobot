@@ -35,7 +35,11 @@ model = model.to("cpu")
 # Give an example input to compile the model
 # TODO: use real image for Benchmark
 example_input = th.ones((1, N_CHANNELS, INPUT_HEIGHT, INPUT_WIDTH)).to(th.float)
-model = trace(example_input)(model)
+# Backward compatibility with pytorch 0.4.1
+try:
+    model = trace(example_input)(model)
+except TypeError:
+    model = trace(model, example_inputs=example_input)
 
 time_deltas = []
 for i in range(N_ITER):

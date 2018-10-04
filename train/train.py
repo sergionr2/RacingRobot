@@ -20,7 +20,7 @@ VAL_BATCH_SIZE = 64  # Batch size for validation and test data
 
 
 def main(folders, num_epochs=100, batchsize=32,
-         learning_rate=0.0001, seed=42, device="cpu", random_flip=0.5,
+         learning_rate=0.0001, seed=42, device=th.device("cpu"), random_flip=0.5,
          model_type="custom", evaluate_print=1, saved_model_path=""):
     """
     :param folders: ([str])
@@ -28,7 +28,7 @@ def main(folders, num_epochs=100, batchsize=32,
     :param batchsize: (int)
     :param learning_rate: (float)
     :param seed: (int)
-    :param device: (str)
+    :param device: (th.device)
     :param random_flip: (float)
     :param model_type: (str)
     :param evaluate_print: (int)

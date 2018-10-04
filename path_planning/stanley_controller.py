@@ -46,11 +46,11 @@ class State(object):
 def stanleyControl(state, cx, cy, cyaw, last_target_idx):
     """
     :param state: (State object)
-    :param cx: [float]
-    :param cy: [float]
-    :param cyaw: [float]
+    :param cx: ([float])
+    :param cy: ([float])
+    :param cyaw: ([float])
     :param last_target_idx: (int)
-    :return: (float, float, float)
+    :return: (float, int, float)
     """
     # Cross track error
     current_target_idx, error_front_axle = calcTargetIndex(state, cx, cy)
@@ -137,10 +137,7 @@ def main(show_animation):
         delta, target_idx, cross_track_error = stanleyControl(state, cx, cy, cyaw, target_idx)
         state.update(acceleration, delta)
         cross_track_errors.append(cross_track_error)
-        if ck[target_idx] > 0:
-            current_radius = 1 / ck[target_idx]
-        else:
-            current_radius = np.inf
+        current_radius = 1 / ck[target_idx]
 
         h = 1 - (np.clip(current_radius, MIN_RADIUS, MAX_RADIUS) - MIN_RADIUS) / (MAX_RADIUS - MIN_RADIUS)
         target_speed = h * MIN_SPEED + (1 - h) * MAX_SPEED_STRAIGHT_LINE
