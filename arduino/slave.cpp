@@ -10,6 +10,7 @@ bool is_connected = false; ///< True if the connection with the master is availa
 int8_t motor_speed = 0;
 int16_t servo_angle = INITIAL_THETA;
 Servo servomotor;
+unsigned long last_time_received;
 
 void setup()
 {
@@ -34,12 +35,20 @@ void setup()
     wait_for_bytes(1, 1000);
     get_messages_from_serial();
   }
+  last_time_received = millis();
 
 }
 
 void loop()
 {
   get_messages_from_serial();
+  // Check for timeout
+  // stop if no messages were received for a while
+  if(millis() - last_time_received > TIMEOUT){
+    motor_speed = 0;
+    servo_angle = INITIAL_THETA;
+  }
+
   update_motors_orders();
 }
 
@@ -139,6 +148,7 @@ void get_messages_from_serial()
       }
     }
     write_order(RECEIVED); // Confirm the reception
+    last_time_received = millis();
   }
 }
 

@@ -13,5 +13,8 @@
 #define SPEED_MAX 100
 // If DEBUG is set to true, the arduino will send back all the received messages
 #define DEBUG false
+// Set speed and angle to zero if no messages where received
+// after 500ms
+#define TIMEOUT 500
 
 #endif
